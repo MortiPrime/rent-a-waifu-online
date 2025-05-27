@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Check, Heart, Crown, Star } from 'lucide-react';
+import { Check, Heart, Crown, Star, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
