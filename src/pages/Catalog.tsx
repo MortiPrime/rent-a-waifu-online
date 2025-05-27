@@ -1,209 +1,150 @@
 
 import { useState } from 'react';
-import { Search, Filter, Heart } from 'lucide-react';
+import { Heart, MessageCircle, Star, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Navbar from '@/components/Navbar';
-import CharacterCard from '@/components/CharacterCard';
+import ChatInterface from '@/components/ChatInterface';
 import { characters } from '@/data/characters';
+import { useAuth } from '@/hooks/useAuth';
 
 const Catalog = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [ageFilter, setAgeFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [selectedCharacter, setSelectedCharacter] = useState<any>(null);
+  const [filter, setFilter] = useState('all');
+  const { profile } = useAuth();
 
-  const handleFavoriteToggle = (id: number) => {
-    setFavorites(prev =>
-      prev.includes(id)
-        ? prev.filter(fav => fav !== id)
-        : [...prev, id]
-    );
+  const canAccessCharacter = (character: any) => {
+    if (character.tier === 'basic') return true;
+    if (character.tier === 'premium' && (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip')) return true;
+    if (character.tier === 'vip' && profile?.subscription_type === 'vip') return true;
+    return false;
   };
 
   const filteredCharacters = characters.filter(character => {
-    const matchesSearch = character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         character.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         character.personality.some(trait => trait.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    const matchesAge = ageFilter === 'all' || 
-                      (ageFilter === '18-22' && character.age >= 18 && character.age <= 22) ||
-                      (ageFilter === '23-25' && character.age >= 23 && character.age <= 25) ||
-                      (ageFilter === '26+' && character.age >= 26);
-
-    const matchesType = typeFilter === 'all' ||
-                       (typeFilter === 'free' && !character.isPremium && !character.isVip) ||
-                       (typeFilter === 'premium' && character.isPremium) ||
-                       (typeFilter === 'vip' && character.isVip);
-
-    const matchesFavorites = !showFavoritesOnly || favorites.includes(character.id);
-
-    return matchesSearch && matchesAge && matchesType && matchesFavorites;
+    if (filter === 'all') return true;
+    return character.tier === filter;
   });
+
+  if (selectedCharacter) {
+    return (
+      <ChatInterface
+        characterId={selectedCharacter.id}
+        characterName={selectedCharacter.name}
+        characterImage={selectedCharacter.image}
+        onBack={() => setSelectedCharacter(null)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-secondary">
       <Navbar />
       
-      <div className="pt-24 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Catálogo de Companions
-              </span>
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Descubre tu companion perfecta entre nuestra selección premium
-            </p>
-          </div>
-
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Catálogo de Companions
+          </h1>
+          <p className="text-white/80 text-lg mb-6">
+            Descubre y conecta con companions increíbles
+          </p>
+          
           {/* Filters */}
-          <div className="glass-card p-6 rounded-2xl mb-8">
-            <div className="grid md:grid-cols-4 gap-4 items-end">
-              {/* Search */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Buscar</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="Nombre, ocupación, personalidad..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Age Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Edad</label>
-                <Select value={ageFilter} onValueChange={setAgeFilter}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectItem value="all">Todas las edades</SelectItem>
-                    <SelectItem value="18-22">18-22 años</SelectItem>
-                    <SelectItem value="23-25">23-25 años</SelectItem>
-                    <SelectItem value="26+">26+ años</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Type Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Tipo</label>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectItem value="all">Todos los tipos</SelectItem>
-                    <SelectItem value="free">Gratis</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                    <SelectItem value="vip">VIP</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Favorites Toggle */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Filtros especiales</label>
-                <Button
-                  variant={showFavoritesOnly ? "default" : "outline"}
-                  onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                  className="w-full"
-                >
-                  <Heart className={`w-4 h-4 mr-2 ${showFavoritesOnly ? 'fill-current' : ''}`} />
-                  Solo Favoritas ({favorites.length})
-                </Button>
-              </div>
-            </div>
-
-            {/* Active Filters */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              {searchTerm && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  Búsqueda: {searchTerm}
-                </Badge>
-              )}
-              {ageFilter !== 'all' && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  Edad: {ageFilter}
-                </Badge>
-              )}
-              {typeFilter !== 'all' && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  Tipo: {typeFilter}
-                </Badge>
-              )}
-              {showFavoritesOnly && (
-                <Badge variant="secondary" className="bg-red-100 text-red-600">
-                  Solo favoritas
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          {/* Results Count */}
-          <div className="mb-6">
-            <p className="text-gray-600">
-              Mostrando {filteredCharacters.length} de {characters.length} companions
-            </p>
-          </div>
-
-          {/* Character Grid */}
-          {filteredCharacters.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredCharacters.map((character, index) => (
-                <div key={character.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <CharacterCard
-                    {...character}
-                    isFavorite={favorites.includes(character.id)}
-                    onFavoriteToggle={handleFavoriteToggle}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-12 h-12 text-gray-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-600 mb-4">
-                No se encontraron companions
-              </h3>
-              <p className="text-gray-500 mb-6">
-                Prueba ajustando los filtros de búsqueda
-              </p>
-              <Button 
-                onClick={() => {
-                  setSearchTerm('');
-                  setAgeFilter('all');
-                  setTypeFilter('all');
-                  setShowFavoritesOnly(false);
-                }}
-                variant="outline"
+          <div className="flex justify-center space-x-4">
+            {[
+              { key: 'all', label: 'Todos', icon: Star },
+              { key: 'basic', label: 'Básico', icon: Star },
+              { key: 'premium', label: 'Premium', icon: Heart },
+              { key: 'vip', label: 'VIP', icon: Crown },
+            ].map(({ key, label, icon: Icon }) => (
+              <Button
+                key={key}
+                variant={filter === key ? 'default' : 'outline'}
+                onClick={() => setFilter(key)}
+                className={filter === key ? 'anime-button' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}
               >
-                Limpiar filtros
+                <Icon className="w-4 h-4 mr-2" />
+                {label}
               </Button>
-            </div>
-          )}
-
-          {/* Load More (placeholder for future pagination) */}
-          {filteredCharacters.length >= 12 && (
-            <div className="text-center mt-12">
-              <Button size="lg" variant="outline" className="animate-pulse">
-                Cargar más companions
-              </Button>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
+
+        {/* Characters Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredCharacters.map((character) => {
+            const hasAccess = canAccessCharacter(character);
+            
+            return (
+              <Card key={character.id} className="character-card relative group">
+                <div className="relative overflow-hidden">
+                  <img
+                    src={character.image}
+                    alt={character.name}
+                    className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                  
+                  {/* Tier Badge */}
+                  <Badge
+                    className={`absolute top-3 right-3 ${
+                      character.tier === 'basic' ? 'bg-gray-500' :
+                      character.tier === 'premium' ? 'bg-primary' :
+                      'bg-yellow-500'
+                    }`}
+                  >
+                    {character.tier === 'basic' && <Star className="w-3 h-3 mr-1" />}
+                    {character.tier === 'premium' && <Heart className="w-3 h-3 mr-1" />}
+                    {character.tier === 'vip' && <Crown className="w-3 h-3 mr-1" />}
+                    {character.tier.toUpperCase()}
+                  </Badge>
+
+                  {/* Overlay for locked characters */}
+                  {!hasAccess && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <Crown className="w-8 h-8 mx-auto mb-2" />
+                        <p className="text-sm font-semibold">Suscripción Requerida</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-lg mb-2">{character.name}</h3>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    {character.description}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {character.traits.slice(0, 3).map((trait, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {trait}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={() => hasAccess ? setSelectedCharacter(character) : null}
+                      disabled={!hasAccess}
+                      className={hasAccess ? 'anime-button flex-1' : 'flex-1 opacity-50 cursor-not-allowed'}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      {hasAccess ? 'Chatear' : 'Bloqueado'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {filteredCharacters.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-white/60 text-lg">No se encontraron companions en esta categoría</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -9,7 +9,114 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      conversations: {
+        Row: {
+          character_id: number
+          character_name: string
+          created_at: string | null
+          id: string
+          last_message_at: string | null
+          messages: Json | null
+          user_id: string
+        }
+        Insert: {
+          character_id: number
+          character_name: string
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          messages?: Json | null
+          user_id: string
+        }
+        Update: {
+          character_id?: number
+          character_name?: string
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          messages?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          favorite_characters: number[] | null
+          full_name: string | null
+          id: string
+          subscription_expires_at: string | null
+          subscription_type: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          favorite_characters?: number[] | null
+          full_name?: string | null
+          id: string
+          subscription_expires_at?: string | null
+          subscription_type?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          favorite_characters?: number[] | null
+          full_name?: string | null
+          id?: string
+          subscription_expires_at?: string | null
+          subscription_type?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      subscription_history: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          expires_at: string
+          id: string
+          payment_method: string | null
+          payment_status: string | null
+          starts_at: string
+          subscription_type: string
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          expires_at: string
+          id?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          starts_at: string
+          subscription_type: string
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string
+          id?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          starts_at?: string
+          subscription_type?: string
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

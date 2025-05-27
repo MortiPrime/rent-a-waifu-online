@@ -1,11 +1,12 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/hooks/useAuth';
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,9 +15,21 @@ const Auth = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    name: '',
+    full_name: '',
+    username: '',
     acceptTerms: false
   });
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { signUp, signIn, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -26,14 +39,25 @@ const Auth = () => {
     }));
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', { email: formData.email, password: formData.password });
-    // Here would go authentication logic
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      await signIn(formData.email, formData.password);
+      navigate('/', { replace: true });
+    } catch (error) {
+      // Error is handled in the auth hook
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+
     if (formData.password !== formData.confirmPassword) {
       alert('Las contraseñas no coinciden');
       return;
@@ -42,8 +66,23 @@ const Auth = () => {
       alert('Debes aceptar los términos y condiciones');
       return;
     }
-    console.log('Register attempt:', formData);
-    // Here would go registration logic
+    if (formData.password.length < 6) {
+      alert('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await signUp(formData.email, formData.password, {
+        full_name: formData.full_name,
+        username: formData.username,
+      });
+      navigate('/', { replace: true });
+    } catch (error) {
+      // Error is handled in the auth hook
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -96,6 +135,7 @@ const Auth = () => {
                         onChange={handleInputChange}
                         className="pl-10"
                         required
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -112,54 +152,23 @@ const Auth = () => {
                         onChange={handleInputChange}
                         className="pl-10 pr-10"
                         required
+                        disabled={isLoading}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        disabled={isLoading}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center space-x-2 text-sm">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-gray-600">Recordarme</span>
-                    </label>
-                    <button type="button" className="text-sm text-primary hover:underline">
-                      ¿Olvidaste tu contraseña?
-                    </button>
-                  </div>
-
-                  <Button type="submit" className="anime-button w-full">
-                    Iniciar Sesión
+                  <Button type="submit" className="anime-button w-full" disabled={isLoading}>
+                    {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                   </Button>
                 </form>
-
-                {/* Social Login */}
-                <div className="mt-6">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">O continúa con</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <Button variant="outline" className="w-full">
-                      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="w-4 h-4 mr-2" />
-                      Google
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" className="w-4 h-4 mr-2" />
-                      Facebook
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
             </TabsContent>
 
@@ -179,12 +188,30 @@ const Auth = () => {
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
                         type="text"
-                        name="name"
+                        name="full_name"
                         placeholder="Tu nombre"
-                        value={formData.name}
+                        value={formData.full_name}
                         onChange={handleInputChange}
                         className="pl-10"
                         required
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Nombre de usuario</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        name="username"
+                        placeholder="tu_username"
+                        value={formData.username}
+                        onChange={handleInputChange}
+                        className="pl-10"
+                        required
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -201,6 +228,7 @@ const Auth = () => {
                         onChange={handleInputChange}
                         className="pl-10"
                         required
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -217,11 +245,14 @@ const Auth = () => {
                         onChange={handleInputChange}
                         className="pl-10 pr-10"
                         required
+                        disabled={isLoading}
+                        minLength={6}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        disabled={isLoading}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -240,11 +271,13 @@ const Auth = () => {
                         onChange={handleInputChange}
                         className="pl-10 pr-10"
                         required
+                        disabled={isLoading}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        disabled={isLoading}
                       >
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -260,35 +293,22 @@ const Auth = () => {
                         onChange={handleInputChange}
                         className="rounded mt-0.5"
                         required
+                        disabled={isLoading}
                       />
                       <span className="text-gray-600">
-                        Acepto los{' '}
-                        <button type="button" className="text-primary hover:underline">
-                          términos y condiciones
-                        </button>
-                        {' '}y la{' '}
-                        <button type="button" className="text-primary hover:underline">
-                          política de privacidad
-                        </button>
+                        Acepto los términos y condiciones y la política de privacidad
                       </span>
                     </label>
                   </div>
 
-                  <Button type="submit" className="anime-button w-full">
-                    Crear Cuenta
+                  <Button type="submit" className="anime-button w-full" disabled={isLoading}>
+                    {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
                   </Button>
                 </form>
               </CardContent>
             </TabsContent>
           </Tabs>
         </Card>
-
-        {/* Back to home */}
-        <div className="text-center mt-6">
-          <Link to="/" className="text-gray-600 hover:text-primary transition-colors">
-            ← Volver al inicio
-          </Link>
-        </div>
       </div>
     </div>
   );
