@@ -114,7 +114,7 @@
   }
   
   .character-card {
-    @apply bg-white rounded-2xl shadow-lg hover:shadow-premium transition-all duration-500 hover:scale-105 overflow-hidden group;
+    @apply bg-white rounded-2xl shadow-lg hover:shadow-premium transition-all duration-500 hover:scale-105 overflow-hidden;
   }
   
   .floating-heart {
