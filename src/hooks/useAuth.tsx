@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -89,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           full_name: data.full_name,
           username: data.username,
           avatar_url: data.avatar_url,
-          user_role: data.user_role || 'client',
+          user_role: (data as any).user_role || 'client', // Handle missing user_role
           subscription_type: data.subscription_type,
           subscription_expires_at: data.subscription_expires_at,
           favorite_characters: data.favorite_characters || [],
@@ -112,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         options: {
           data: {
             ...metadata,
-            user_role: metadata.user_role || 'client'
+            user_role: (metadata as any).user_role || 'client'
           }
         }
       });

@@ -11,7 +11,7 @@ export const characters: Character[] = [
     traits: ["Dulce", "Otaku", "Gamer", "Estudiosa"],
     age: 20,
     occupation: "Estudiante",
-    personality: "Tímida pero cariñosa"
+    personality: ["Tímida pero cariñosa"]
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ export const characters: Character[] = [
     traits: ["Artística", "Sensible", "Creativa", "Romántica"],
     age: 22,
     occupation: "Artista",
-    personality: "Sensible y expresiva"
+    personality: ["Sensible y expresiva"]
   },
   {
     id: 3,
@@ -33,7 +33,7 @@ export const characters: Character[] = [
     traits: ["Inteligente", "Ambiciosa", "Elegante", "Lider"],
     age: 25,
     occupation: "CEO",
-    personality: "Confiada y protectora"
+    personality: ["Confiada y protectora"]
   },
   {
     id: 4,
@@ -44,7 +44,7 @@ export const characters: Character[] = [
     traits: ["Culinaria", "Cariñosa", "Tradicional", "Hogareña"],
     age: 23,
     occupation: "Chef",
-    personality: "Maternal y acogedora"
+    personality: ["Maternal y acogedora"]
   },
   {
     id: 5,
@@ -55,7 +55,7 @@ export const characters: Character[] = [
     traits: ["Aventurera", "Carismática", "Moderna", "Extrovertida"],
     age: 21,
     occupation: "Modelo",
-    personality: "Enérgica y divertida"
+    personality: ["Enérgica y divertida"]
   },
   {
     id: 6,
@@ -66,6 +66,6 @@ export const characters: Character[] = [
     traits: ["Intelectual", "Curiosa", "Analítica", "Misteriosa"],
     age: 24,
     occupation: "Científica",
-    personality: "Inteligente y enigmática"
+    personality: ["Inteligente y enigmática"]
   }
 ];

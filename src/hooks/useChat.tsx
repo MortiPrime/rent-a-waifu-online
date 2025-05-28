@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,7 +43,7 @@ export const useChat = (characterId?: number, characterName?: string) => {
         let parsedMessages: Message[] = [];
         try {
           if (Array.isArray(conversation.messages)) {
-            parsedMessages = conversation.messages as Message[];
+            parsedMessages = conversation.messages as unknown as Message[];
           }
         } catch (parseError) {
           console.error('Error parsing messages:', parseError);
