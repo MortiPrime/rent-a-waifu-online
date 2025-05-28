@@ -5,12 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Message, Conversation } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
-export const useChat = (characterId: number, characterName: string) => {
+export const useChat = (characterId?: number, characterName?: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
 
   useEffect(() => {
     if (user && characterId) {
@@ -19,7 +20,7 @@ export const useChat = (characterId: number, characterName: string) => {
   }, [user, characterId]);
 
   const loadConversation = async () => {
-    if (!user) return;
+    if (!user || !characterId) return;
 
     try {
       const { data: conversations, error } = await supabase
@@ -38,11 +39,12 @@ export const useChat = (characterId: number, characterName: string) => {
       if (conversations && conversations.length > 0) {
         const conversation = conversations[0];
         setConversationId(conversation.id);
+        setCurrentConversation(conversation as Conversation);
         
         // Parse messages safely
         try {
           const parsedMessages = Array.isArray(conversation.messages) 
-            ? conversation.messages as Message[]
+            ? (conversation.messages as unknown as Message[])
             : [];
           setMessages(parsedMessages);
         } catch (parseError) {
@@ -55,8 +57,40 @@ export const useChat = (characterId: number, characterName: string) => {
     }
   };
 
+  const createConversation = async (charId: number, charName: string) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: user.id,
+          character_id: charId,
+          character_name: charName,
+          messages: [] as any,
+          last_message_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setConversationId(data.id);
+        setCurrentConversation(data as Conversation);
+        setMessages([]);
+      }
+    } catch (error: any) {
+      console.error('Error creating conversation:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear la conversación. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const sendMessage = async (content: string) => {
-    if (!user || !content.trim()) return;
+    if (!user || !content.trim() || !characterId || !characterName) return;
 
     setLoading(true);
     
@@ -109,7 +143,10 @@ export const useChat = (characterId: number, characterName: string) => {
           .single();
 
         if (error) throw error;
-        if (data) setConversationId(data.id);
+        if (data) {
+          setConversationId(data.id);
+          setCurrentConversation(data as Conversation);
+        }
       }
     } catch (error: any) {
       console.error('Error sending message:', error);
@@ -139,5 +176,7 @@ export const useChat = (characterId: number, characterName: string) => {
     messages,
     loading,
     sendMessage,
+    currentConversation,
+    createConversation,
   };
 };

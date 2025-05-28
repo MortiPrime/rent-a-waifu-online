@@ -14,7 +14,7 @@ interface ChatInterfaceProps {
 
 const ChatInterface = ({ characterId, characterName, characterImage, onBack }: ChatInterfaceProps) => {
   const [newMessage, setNewMessage] = useState('');
-  const { currentConversation, createConversation, sendMessage } = useChat();
+  const { messages, loading, sendMessage, currentConversation, createConversation } = useChat(characterId, characterName);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const ChatInterface = ({ characterId, characterName, characterImage, onBack }: C
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [currentConversation?.messages]);
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +64,7 @@ const ChatInterface = ({ characterId, characterName, characterImage, onBack }: C
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {currentConversation?.messages.map((message) => (
+        {messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -96,8 +96,9 @@ const ChatInterface = ({ characterId, characterName, characterImage, onBack }: C
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder={`Escribe un mensaje a ${characterName}...`}
             className="flex-1"
+            disabled={loading}
           />
-          <Button type="submit" className="anime-button px-4">
+          <Button type="submit" className="anime-button px-4" disabled={loading}>
             <Send className="w-4 h-4" />
           </Button>
         </div>

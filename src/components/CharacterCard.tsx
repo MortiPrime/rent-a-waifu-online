@@ -38,6 +38,9 @@ const CharacterCard = ({
     }
   };
 
+  // Ensure personality is always an array
+  const personalityArray = Array.isArray(personality) ? personality : [];
+
   return (
     <div className="character-card">
       {/* Premium/VIP Badge */}
@@ -105,7 +108,7 @@ const CharacterCard = ({
 
         {/* Personality Tags */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {personality.slice(0, 3).map((trait, index) => (
+          {personalityArray.slice(0, 3).map((trait, index) => (
             <Badge
               key={index}
               variant="secondary"
@@ -114,9 +117,9 @@ const CharacterCard = ({
               {trait}
             </Badge>
           ))}
-          {personality.length > 3 && (
+          {personalityArray.length > 3 && (
             <Badge variant="secondary" className="text-xs">
-              +{personality.length - 3}
+              +{personalityArray.length - 3}
             </Badge>
           )}
         </div>
