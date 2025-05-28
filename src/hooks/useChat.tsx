@@ -1,52 +1,121 @@
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Message, Conversation } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
-interface ChatContextType {
-  conversations: Conversation[];
-  currentConversation: Conversation | null;
-  loading: boolean;
-  createConversation: (characterId: number, characterName: string) => Promise<void>;
-  sendMessage: (content: string) => Promise<void>;
-  loadConversations: () => Promise<void>;
-}
-
-const ChatContext = createContext<ChatContextType | undefined>(undefined);
-
-export const ChatProvider = ({ children }: { children: ReactNode }) => {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
-  const [loading, setLoading] = useState(false);
+export const useChat = (characterId: number, characterName: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
-  const loadConversations = async () => {
+  useEffect(() => {
+    if (user && characterId) {
+      loadConversation();
+    }
+  }, [user, characterId]);
+
+  const loadConversation = async () => {
     if (!user) return;
 
     try {
-      setLoading(true);
-      const { data, error } = await supabase
+      const { data: conversations, error } = await supabase
         .from('conversations')
         .select('*')
         .eq('user_id', user.id)
-        .order('last_message_at', { ascending: false });
+        .eq('character_id', characterId)
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading conversation:', error);
+        return;
+      }
 
-      const formattedConversations: Conversation[] = data?.map(conv => ({
-        ...conv,
-        messages: Array.isArray(conv.messages) ? conv.messages as Message[] : []
-      })) || [];
+      if (conversations && conversations.length > 0) {
+        const conversation = conversations[0];
+        setConversationId(conversation.id);
+        
+        // Parse messages safely
+        try {
+          const parsedMessages = Array.isArray(conversation.messages) 
+            ? conversation.messages as Message[]
+            : [];
+          setMessages(parsedMessages);
+        } catch (parseError) {
+          console.error('Error parsing messages:', parseError);
+          setMessages([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error in loadConversation:', error);
+    }
+  };
 
-      setConversations(formattedConversations);
+  const sendMessage = async (content: string) => {
+    if (!user || !content.trim()) return;
+
+    setLoading(true);
+    
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: content.trim(),
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+    };
+
+    // Add user message immediately
+    setMessages(prev => [...prev, userMessage]);
+
+    try {
+      // Generate AI response
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: generateAIResponse(content, characterName),
+        sender: 'character',
+        timestamp: new Date().toISOString(),
+      };
+
+      const updatedMessages = [...messages, userMessage, aiResponse];
+      setMessages(updatedMessages);
+
+      // Save to database
+      if (conversationId) {
+        // Update existing conversation
+        const { error } = await supabase
+          .from('conversations')
+          .update({
+            messages: updatedMessages as any,
+            last_message_at: new Date().toISOString(),
+          })
+          .eq('id', conversationId);
+
+        if (error) throw error;
+      } else {
+        // Create new conversation
+        const { data, error } = await supabase
+          .from('conversations')
+          .insert({
+            user_id: user.id,
+            character_id: characterId,
+            character_name: characterName,
+            messages: updatedMessages as any,
+            last_message_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        if (data) setConversationId(data.id);
+      }
     } catch (error: any) {
-      console.error('Error loading conversations:', error);
+      console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las conversaciones",
+        description: "No se pudo enviar el mensaje. Inténtalo de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -54,135 +123,21 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const createConversation = async (characterId: number, characterName: string) => {
-    if (!user) return;
-
-    try {
-      // Check if conversation already exists
-      const existingConv = conversations.find(conv => conv.character_id === characterId);
-      if (existingConv) {
-        setCurrentConversation(existingConv);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('conversations')
-        .insert({
-          user_id: user.id,
-          character_id: characterId,
-          character_name: characterName,
-          messages: []
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const newConversation: Conversation = {
-        ...data,
-        messages: []
-      };
-
-      setConversations(prev => [newConversation, ...prev]);
-      setCurrentConversation(newConversation);
-    } catch (error: any) {
-      console.error('Error creating conversation:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo crear la conversación",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const sendMessage = async (content: string) => {
-    if (!currentConversation || !user) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content,
-      sender: 'user',
-      timestamp: new Date().toISOString()
-    };
-
-    const characterMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      content: generateCharacterResponse(content, currentConversation.character_name),
-      sender: 'character',
-      timestamp: new Date().toISOString()
-    };
-
-    const updatedMessages = [...currentConversation.messages, userMessage, characterMessage];
-
-    try {
-      const { error } = await supabase
-        .from('conversations')
-        .update({
-          messages: updatedMessages,
-          last_message_at: new Date().toISOString()
-        })
-        .eq('id', currentConversation.id);
-
-      if (error) throw error;
-
-      const updatedConversation = {
-        ...currentConversation,
-        messages: updatedMessages,
-        last_message_at: new Date().toISOString()
-      };
-
-      setCurrentConversation(updatedConversation);
-      setConversations(prev => prev.map(conv => 
-        conv.id === currentConversation.id ? updatedConversation : conv
-      ));
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo enviar el mensaje",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const generateCharacterResponse = (userMessage: string, characterName: string): string => {
+  const generateAIResponse = (userMessage: string, characterName: string): string => {
     const responses = [
-      `¡Hola! Soy ${characterName}, es genial conocerte 💕`,
-      `Me encanta hablar contigo, cuéntame más sobre ti 😊`,
-      `¡Qué interesante! ${characterName} piensa que eres muy dulce 💖`,
-      `Me haces sonreír con cada mensaje que me envías ✨`,
-      `¿Te gustaría saber más sobre mí? Me encanta compartir contigo 💫`
+      `¡Hola! Soy ${characterName}, es un placer conocerte 💕`,
+      `${userMessage}... ¡qué interesante! Cuéntame más sobre eso ✨`,
+      `Me encanta hablar contigo. ¿Qué planes tienes para hoy? 🌸`,
+      `Eres muy dulce, me haces sonreír 😊`,
+      `¿Te gusta el anime? ¡A mí me fascina! ¿Cuál es tu favorito? 🎌`,
     ];
     
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
-  useEffect(() => {
-    if (user) {
-      loadConversations();
-    }
-  }, [user]);
-
-  const value = {
-    conversations,
-    currentConversation,
+  return {
+    messages,
     loading,
-    createConversation,
     sendMessage,
-    loadConversations,
   };
-
-  return (
-    <ChatContext.Provider value={value}>
-      {children}
-    </ChatContext.Provider>
-  );
-};
-
-export const useChat = () => {
-  const context = useContext(ChatContext);
-  if (context === undefined) {
-    throw new Error('useChat must be used within a ChatProvider');
-  }
-  return context;
 };

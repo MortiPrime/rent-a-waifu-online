@@ -23,13 +23,13 @@ export interface Character {
   image: string;
   tier: 'basic' | 'premium' | 'vip';
   traits: string[];
-  age?: number;
+  age: number;
   occupation?: string;
   personality?: string;
 }
 
 export interface GirlfriendProfile {
-  id: string;
+  id?: string;
   user_id: string;
   stage_name: string;
   real_name: string;
@@ -47,6 +47,6 @@ export interface GirlfriendProfile {
   };
   status: 'pending' | 'approved' | 'rejected';
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }

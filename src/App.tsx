@@ -12,6 +12,7 @@ import Subscription from "./pages/Subscription";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import GirlfriendRegistration from "./pages/GirlfriendRegistration";
 
 const queryClient = new QueryClient();
 
