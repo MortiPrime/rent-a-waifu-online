@@ -1,12 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Heart, User, Mail, Lock, Eye, EyeOff, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import { UserRole } from '@/types';
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +19,7 @@ const Auth = () => {
     confirmPassword: '',
     full_name: '',
     username: '',
+    user_role: 'client' as UserRole,
     acceptTerms: false
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +39,13 @@ const Auth = () => {
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleRoleChange = (value: UserRole) => {
+    setFormData(prev => ({
+      ...prev,
+      user_role: value
     }));
   };
 
@@ -76,6 +86,7 @@ const Auth = () => {
       await signUp(formData.email, formData.password, {
         full_name: formData.full_name,
         username: formData.username,
+        user_role: formData.user_role,
       });
       navigate('/', { replace: true });
     } catch (error) {
@@ -182,6 +193,29 @@ const Auth = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Tipo de cuenta</label>
+                    <Select value={formData.user_role} onValueChange={handleRoleChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona el tipo de cuenta" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="client">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4" />
+                            <span>Cliente - Busco companions</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="girlfriend">
+                          <div className="flex items-center space-x-2">
+                            <Heart className="w-4 h-4" />
+                            <span>Companion - Quiero ofrecer servicios</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Nombre completo</label>
                     <div className="relative">

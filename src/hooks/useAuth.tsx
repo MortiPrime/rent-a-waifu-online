@@ -3,6 +3,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { UserRole, UserProfile } from '@/types';
 
 interface AuthContextType {
   user: User | null;
@@ -11,8 +12,12 @@ interface AuthContextType {
   signUp: (email: string, password: string, metadata?: any) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  profile: any;
+  profile: UserProfile | null;
   updateProfile: (updates: any) => Promise<void>;
+  userRole: UserRole;
+  isClient: boolean;
+  isGirlfriend: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,8 +26,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
+
+  // Compute user role and permissions
+  const userRole: UserRole = profile?.user_role || 'client';
+  const isClient = userRole === 'client';
+  const isGirlfriend = userRole === 'girlfriend';
+  const isAdmin = userRole === 'admin';
 
   useEffect(() => {
     // Set up auth state listener
@@ -71,7 +82,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      setProfile(data);
+      if (data) {
+        const userProfile: UserProfile = {
+          id: data.id,
+          user_id: data.id,
+          full_name: data.full_name,
+          username: data.username,
+          avatar_url: data.avatar_url,
+          user_role: data.user_role || 'client',
+          subscription_type: data.subscription_type,
+          subscription_expires_at: data.subscription_expires_at,
+          favorite_characters: data.favorite_characters || [],
+          created_at: data.created_at,
+          updated_at: data.updated_at
+        };
+        setProfile(userProfile);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
@@ -84,7 +110,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         password,
         options: {
-          data: metadata
+          data: {
+            ...metadata,
+            user_role: metadata.user_role || 'client'
+          }
         }
       });
 
@@ -164,7 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
 
-      setProfile({ ...profile, ...updates });
+      setProfile(prev => prev ? { ...prev, ...updates } : null);
       
       toast({
         title: "Perfil actualizado",
@@ -190,6 +219,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut,
     profile,
     updateProfile,
+    userRole,
+    isClient,
+    isGirlfriend,
+    isAdmin,
   };
 
   return (

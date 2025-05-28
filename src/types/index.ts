@@ -24,8 +24,8 @@ export interface Character {
   tier: 'basic' | 'premium' | 'vip';
   traits: string[];
   age: number;
-  occupation?: string;
-  personality?: string;
+  occupation: string;
+  personality: string[];
 }
 
 export interface GirlfriendProfile {
@@ -47,6 +47,22 @@ export interface GirlfriendProfile {
   };
   status: 'pending' | 'approved' | 'rejected';
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type UserRole = 'client' | 'girlfriend' | 'admin';
+
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  full_name?: string;
+  username?: string;
+  avatar_url?: string;
+  user_role: UserRole;
+  subscription_type?: string;
+  subscription_expires_at?: string;
+  favorite_characters?: number[];
   created_at?: string;
   updated_at?: string;
 }

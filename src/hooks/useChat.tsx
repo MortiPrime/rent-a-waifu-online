@@ -39,18 +39,30 @@ export const useChat = (characterId?: number, characterName?: string) => {
       if (conversations && conversations.length > 0) {
         const conversation = conversations[0];
         setConversationId(conversation.id);
-        setCurrentConversation(conversation as Conversation);
         
         // Parse messages safely
+        let parsedMessages: Message[] = [];
         try {
-          const parsedMessages = Array.isArray(conversation.messages) 
-            ? (conversation.messages as unknown as Message[])
-            : [];
-          setMessages(parsedMessages);
+          if (Array.isArray(conversation.messages)) {
+            parsedMessages = conversation.messages as Message[];
+          }
         } catch (parseError) {
           console.error('Error parsing messages:', parseError);
-          setMessages([]);
+          parsedMessages = [];
         }
+
+        const conversationData: Conversation = {
+          id: conversation.id,
+          user_id: conversation.user_id,
+          character_id: conversation.character_id,
+          character_name: conversation.character_name,
+          messages: parsedMessages,
+          last_message_at: conversation.last_message_at || '',
+          created_at: conversation.created_at || ''
+        };
+
+        setCurrentConversation(conversationData);
+        setMessages(parsedMessages);
       }
     } catch (error) {
       console.error('Error in loadConversation:', error);
@@ -76,7 +88,18 @@ export const useChat = (characterId?: number, characterName?: string) => {
       if (error) throw error;
       if (data) {
         setConversationId(data.id);
-        setCurrentConversation(data as Conversation);
+        
+        const conversationData: Conversation = {
+          id: data.id,
+          user_id: data.user_id,
+          character_id: data.character_id,
+          character_name: data.character_name,
+          messages: [],
+          last_message_at: data.last_message_at || '',
+          created_at: data.created_at || ''
+        };
+
+        setCurrentConversation(conversationData);
         setMessages([]);
       }
     } catch (error: any) {
@@ -145,7 +168,18 @@ export const useChat = (characterId?: number, characterName?: string) => {
         if (error) throw error;
         if (data) {
           setConversationId(data.id);
-          setCurrentConversation(data as Conversation);
+          
+          const conversationData: Conversation = {
+            id: data.id,
+            user_id: data.user_id,
+            character_id: data.character_id,
+            character_name: data.character_name,
+            messages: updatedMessages,
+            last_message_at: data.last_message_at || '',
+            created_at: data.created_at || ''
+          };
+
+          setCurrentConversation(conversationData);
         }
       }
     } catch (error: any) {
