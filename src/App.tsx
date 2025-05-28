@@ -44,6 +44,11 @@ const App = () => (
                 <Profile />
               </ProtectedRoute>
             } />
+            <Route path="/become-companion" element={
+              <ProtectedRoute>
+                <GirlfriendRegistration />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
