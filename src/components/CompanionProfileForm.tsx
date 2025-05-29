@@ -1,311 +1,288 @@
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { useCompanionProfile } from '@/hooks/useCompanionProfile';
-import { Save } from 'lucide-react';
-
-const companionSchema = z.object({
-  stage_name: z.string().min(2, 'El nombre artístico debe tener al menos 2 caracteres'),
-  real_name: z.string().min(2, 'El nombre real debe tener al menos 2 caracteres'),
-  age: z.number().min(18, 'Debes ser mayor de 18 años').max(65, 'Edad máxima 65 años'),
-  description: z.string().min(50, 'La descripción debe tener al menos 50 caracteres'),
-  basic_chat: z.number().min(50, 'Precio mínimo $50'),
-  premium_chat: z.number().min(100, 'Precio mínimo $100'),
-  video_call: z.number().min(200, 'Precio mínimo $200'),
-  promotion_plan: z.enum(['basic', 'premium', 'vip']),
-  availability_days: z.array(z.string()).min(1, 'Selecciona al menos un día'),
-  availability_hours: z.string().min(1, 'Especifica tus horarios'),
-});
-
-type CompanionFormData = z.infer<typeof companionSchema>;
+import { User, DollarSign, Clock, Star } from 'lucide-react';
 
 const CompanionProfileForm = () => {
   const { profile, createOrUpdateProfile, loading } = useCompanionProfile();
-  const [availableDays, setAvailableDays] = useState<string[]>([]);
-
-  const form = useForm<CompanionFormData>({
-    resolver: zodResolver(companionSchema),
-    defaultValues: {
-      stage_name: '',
-      real_name: '',
-      age: 18,
-      description: '',
+  
+  const [formData, setFormData] = useState({
+    stage_name: '',
+    real_name: '',
+    age: 18,
+    description: '',
+    pricing: {
       basic_chat: 150,
       premium_chat: 300,
-      video_call: 500,
-      promotion_plan: 'basic',
-      availability_days: [],
-      availability_hours: 'flexible',
+      video_call: 500
     },
+    availability: {
+      days: [] as string[],
+      hours: 'flexible'
+    },
+    promotion_plan: 'basic' as 'basic' | 'premium' | 'vip',
+    is_active: false
   });
+
+  const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
   useEffect(() => {
     if (profile) {
-      form.reset({
-        stage_name: profile.stage_name,
-        real_name: profile.real_name,
-        age: profile.age,
-        description: profile.description,
-        basic_chat: profile.pricing.basic_chat,
-        premium_chat: profile.pricing.premium_chat,
-        video_call: profile.pricing.video_call,
-        promotion_plan: profile.promotion_plan,
-        availability_days: profile.availability.days,
-        availability_hours: profile.availability.hours,
+      setFormData({
+        stage_name: profile.stage_name || '',
+        real_name: profile.real_name || '',
+        age: profile.age || 18,
+        description: profile.description || '',
+        pricing: profile.pricing || {
+          basic_chat: 150,
+          premium_chat: 300,
+          video_call: 500
+        },
+        availability: profile.availability || {
+          days: [],
+          hours: 'flexible'
+        },
+        promotion_plan: profile.promotion_plan || 'basic',
+        is_active: profile.is_active || false
       });
-      setAvailableDays(profile.availability.days);
     }
-  }, [profile, form]);
+  }, [profile]);
 
-  const onSubmit = async (data: CompanionFormData) => {
-    const profileData = {
-      stage_name: data.stage_name,
-      real_name: data.real_name,
-      age: data.age,
-      description: data.description,
-      pricing: {
-        basic_chat: data.basic_chat,
-        premium_chat: data.premium_chat,
-        video_call: data.video_call,
-      },
+  const handleDayToggle = (day: string) => {
+    setFormData(prev => ({
+      ...prev,
       availability: {
-        days: data.availability_days,
-        hours: data.availability_hours,
-      },
-      promotion_plan: data.promotion_plan,
-    };
-
-    await createOrUpdateProfile(profileData);
+        ...prev.availability,
+        days: prev.availability.days.includes(day)
+          ? prev.availability.days.filter(d => d !== day)
+          : [...prev.availability.days, day]
+      }
+    }));
   };
 
-  const weekDays = [
-    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'
-  ];
-
-  const handleDayToggle = (day: string, checked: boolean) => {
-    const newDays = checked 
-      ? [...availableDays, day]
-      : availableDays.filter(d => d !== day);
-    
-    setAvailableDays(newDays);
-    form.setValue('availability_days', newDays);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await createOrUpdateProfile(formData);
   };
 
   return (
-    <Card className="glass-card">
-      <CardHeader>
-        <CardTitle className="text-white">Perfil de Companion</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="stage_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Nombre Artístico</FormLabel>
-                    <FormControl>
-                      <Input {...field} className="bg-white/10 text-white" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <div className="space-y-6">
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <User className="w-5 h-5" />
+            Información Personal
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="stage_name" className="text-white">Nombre Artístico *</Label>
+                  <Input
+                    id="stage_name"
+                    value={formData.stage_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stage_name: e.target.value }))}
+                    placeholder="Ej: Sakura-chan"
+                    required
+                    className="bg-white/10 text-white border-white/20"
+                  />
+                </div>
 
-              <FormField
-                control={form.control}
-                name="real_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Nombre Real</FormLabel>
-                    <FormControl>
-                      <Input {...field} className="bg-white/10 text-white" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div>
+                  <Label htmlFor="real_name" className="text-white">Nombre Real *</Label>
+                  <Input
+                    id="real_name"
+                    value={formData.real_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, real_name: e.target.value }))}
+                    placeholder="Tu nombre completo"
+                    required
+                    className="bg-white/10 text-white border-white/20"
+                  />
+                </div>
 
-              <FormField
-                control={form.control}
-                name="age"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Edad</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        {...field} 
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                        className="bg-white/10 text-white" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="promotion_plan"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Plan de Promoción</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-white/10 text-white">
-                          <SelectValue placeholder="Selecciona un plan" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="basic">Básico ($49/mes)</SelectItem>
-                        <SelectItem value="premium">Premium ($99/mes)</SelectItem>
-                        <SelectItem value="vip">VIP ($199/mes)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Descripción</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      rows={4}
-                      className="bg-white/10 text-white"
-                      placeholder="Describe tu personalidad, intereses y qué tipo de conversaciones disfrutas..."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Precios por Servicio</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="basic_chat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Chat Básico (por hora)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field} 
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          className="bg-white/10 text-white" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="premium_chat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Chat Premium (por hora)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field} 
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          className="bg-white/10 text-white" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="video_call"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">Video Llamada (por hora)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field} 
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          className="bg-white/10 text-white" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Disponibilidad</h3>
-              <div className="space-y-3">
-                <label className="text-white text-sm">Días disponibles:</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {weekDays.map((day) => (
-                    <div key={day} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={day}
-                        checked={availableDays.includes(day)}
-                        onCheckedChange={(checked) => handleDayToggle(day, checked as boolean)}
-                      />
-                      <label htmlFor={day} className="text-white text-sm">{day}</label>
-                    </div>
-                  ))}
+                <div>
+                  <Label htmlFor="age" className="text-white">Edad *</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    min="18"
+                    max="50"
+                    value={formData.age}
+                    onChange={(e) => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
+                    required
+                    className="bg-white/10 text-white border-white/20"
+                  />
                 </div>
               </div>
 
-              <FormField
-                control={form.control}
-                name="availability_hours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Horarios</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        className="bg-white/10 text-white"
-                        placeholder="Ej: 9:00 AM - 11:00 PM"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div>
+                <Label htmlFor="description" className="text-white">Descripción Personal *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Cuéntanos sobre tu personalidad, hobbies e intereses..."
+                  rows={8}
+                  required
+                  className="bg-white/10 text-white border-white/20"
+                />
+              </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full anime-button">
-              <Save className="w-4 h-4 mr-2" />
+            <Card className="bg-white/5">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Precios por Servicio (MXN)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-white">Chat Básico (por hora)</Label>
+                    <Input
+                      type="number"
+                      min="50"
+                      value={formData.pricing.basic_chat}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        pricing: { ...prev.pricing, basic_chat: parseInt(e.target.value) }
+                      }))}
+                      className="bg-white/10 text-white border-white/20"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-white">Chat Premium (por hora)</Label>
+                    <Input
+                      type="number"
+                      min="100"
+                      value={formData.pricing.premium_chat}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        pricing: { ...prev.pricing, premium_chat: parseInt(e.target.value) }
+                      }))}
+                      className="bg-white/10 text-white border-white/20"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-white">Video Llamada (por hora)</Label>
+                    <Input
+                      type="number"
+                      min="200"
+                      value={formData.pricing.video_call}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        pricing: { ...prev.pricing, video_call: parseInt(e.target.value) }
+                      }))}
+                      className="bg-white/10 text-white border-white/20"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  Disponibilidad
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-white">Días Disponibles</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {days.map(day => (
+                      <Badge
+                        key={day}
+                        variant={formData.availability.days.includes(day) ? "default" : "outline"}
+                        className="cursor-pointer"
+                        onClick={() => handleDayToggle(day)}
+                      >
+                        {day}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-white">Horario Disponible</Label>
+                  <Select onValueChange={(value) => setFormData(prev => ({
+                    ...prev,
+                    availability: { ...prev.availability, hours: value }
+                  }))}>
+                    <SelectTrigger className="bg-white/10 text-white border-white/20">
+                      <SelectValue placeholder="Selecciona tu horario" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="morning">Matutino (8:00 - 14:00)</SelectItem>
+                      <SelectItem value="afternoon">Vespertino (14:00 - 20:00)</SelectItem>
+                      <SelectItem value="evening">Nocturno (20:00 - 02:00)</SelectItem>
+                      <SelectItem value="flexible">Horario Flexible</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Star className="w-5 h-5" />
+                  Plan de Promoción
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Select onValueChange={(value: 'basic' | 'premium' | 'vip') => setFormData(prev => ({
+                  ...prev,
+                  promotion_plan: value
+                }))}>
+                  <SelectTrigger className="bg-white/10 text-white border-white/20">
+                    <SelectValue placeholder="Selecciona tu plan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Básico - $99/mes</SelectItem>
+                    <SelectItem value="premium">Premium - $199/mes</SelectItem>
+                    <SelectItem value="vip">VIP - $399/mes</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                  />
+                  <Label htmlFor="is_active" className="text-white">
+                    Perfil activo (visible para clientes)
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button 
+              type="submit" 
+              className="w-full anime-button" 
+              disabled={loading}
+            >
               {loading ? 'Guardando...' : 'Guardar Perfil'}
             </Button>
           </form>
-        </Form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

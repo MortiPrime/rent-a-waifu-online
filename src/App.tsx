@@ -12,7 +12,7 @@ import Subscription from "./pages/Subscription";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import GirlfriendRegistration from "./pages/GirlfriendRegistration";
+import BecomeCompanion from "./pages/BecomeCompanion";
 
 const queryClient = new QueryClient();
 
@@ -47,7 +47,7 @@ const App = () => (
             } />
             <Route path="/become-companion" element={
               <ProtectedRoute>
-                <GirlfriendRegistration />
+                <BecomeCompanion />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />

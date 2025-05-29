@@ -3,36 +3,22 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { useCompanionProfile } from '@/hooks/useCompanionProfile';
-import { Plus, Trash2, Star, Image } from 'lucide-react';
+import { Camera, Upload, X, Star } from 'lucide-react';
 
 const CompanionPhotosManager = () => {
   const { photos, addPhoto, removePhoto, loading } = useCompanionProfile();
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
-  const [newPhotoCaption, setNewPhotoCaption] = useState('');
-  const [isAddingPhoto, setIsAddingPhoto] = useState(false);
+  const [caption, setCaption] = useState('');
 
-  const handleAddPhoto = async () => {
+  const handleAddPhoto = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!newPhotoUrl.trim()) return;
 
-    setIsAddingPhoto(true);
-    try {
-      await addPhoto(newPhotoUrl, newPhotoCaption || undefined, photos.length === 0);
-      setNewPhotoUrl('');
-      setNewPhotoCaption('');
-    } catch (error) {
-      console.error('Error adding photo:', error);
-    } finally {
-      setIsAddingPhoto(false);
-    }
-  };
-
-  const handleRemovePhoto = async (photoId: string) => {
-    if (window.confirm('¿Estás segura de que quieres eliminar esta foto?')) {
-      await removePhoto(photoId);
-    }
+    await addPhoto(newPhotoUrl, caption, photos.length === 0);
+    setNewPhotoUrl('');
+    setCaption('');
   };
 
   return (
@@ -40,98 +26,118 @@ const CompanionPhotosManager = () => {
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
-            <Image className="w-5 h-5" />
-            Gestión de Fotos
+            <Upload className="w-5 h-5" />
+            Agregar Nueva Foto
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <Input
-              placeholder="URL de la foto"
-              value={newPhotoUrl}
-              onChange={(e) => setNewPhotoUrl(e.target.value)}
-              className="bg-white/10 text-white"
-            />
-            <Textarea
-              placeholder="Descripción de la foto (opcional)"
-              value={newPhotoCaption}
-              onChange={(e) => setNewPhotoCaption(e.target.value)}
-              rows={2}
-              className="bg-white/10 text-white"
-            />
-            <Button 
-              onClick={handleAddPhoto} 
-              disabled={isAddingPhoto || !newPhotoUrl.trim()}
-              className="anime-button"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {isAddingPhoto ? 'Agregando...' : 'Agregar Foto'}
-            </Button>
-          </div>
+        <CardContent>
+          <form onSubmit={handleAddPhoto} className="space-y-4">
+            <div>
+              <Label htmlFor="photo_url" className="text-white">URL de la Foto *</Label>
+              <Input
+                id="photo_url"
+                type="url"
+                value={newPhotoUrl}
+                onChange={(e) => setNewPhotoUrl(e.target.value)}
+                placeholder="https://ejemplo.com/mi-foto.jpg"
+                required
+                className="bg-white/10 text-white border-white/20"
+              />
+            </div>
 
-          <div className="text-sm text-gray-300">
-            <p>• La primera foto que agregues será tu foto principal</p>
-            <p>• Usa URLs válidas de imágenes (jpg, png, gif)</p>
-            <p>• Recomendamos fotos de alta calidad para mejor presentación</p>
-          </div>
+            <div>
+              <Label htmlFor="caption" className="text-white">Descripción (opcional)</Label>
+              <Input
+                id="caption"
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Descripción de la foto..."
+                className="bg-white/10 text-white border-white/20"
+              />
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full anime-button" 
+              disabled={loading}
+            >
+              {loading ? 'Agregando...' : 'Agregar Foto'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {photos.map((photo, index) => (
-          <Card key={photo.id} className="glass-card overflow-hidden">
-            <div className="relative">
-              <img
-                src={photo.photo_url}
-                alt={photo.caption || `Foto ${index + 1}`}
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=300&fit=crop&crop=face';
-                }}
-              />
-              <div className="absolute top-2 right-2 flex gap-2">
-                {photo.is_primary && (
-                  <Badge className="bg-yellow-500 text-white">
-                    <Star className="w-3 h-3 mr-1" />
-                    Principal
-                  </Badge>
-                )}
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleRemovePhoto(photo.id)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            <CardContent className="p-3">
-              {photo.caption && (
-                <p className="text-sm text-gray-300">{photo.caption}</p>
-              )}
-              <p className="text-xs text-gray-400 mt-1">
-                Orden: {photo.display_order + 1}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Camera className="w-5 h-5" />
+            Mis Fotos ({photos.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {photos.length === 0 ? (
+            <div className="text-center py-8">
+              <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">
+                No tienes fotos aún
+              </h3>
+              <p className="text-gray-300">
+                Agrega fotos para hacer tu perfil más atractivo.
               </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {photos.map((photo) => (
+                <div key={photo.id} className="relative group">
+                  <div className="aspect-square rounded-lg overflow-hidden bg-white/5">
+                    <img
+                      src={photo.photo_url}
+                      alt={photo.caption || 'Foto de perfil'}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/placeholder.svg';
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    {photo.is_primary && (
+                      <div className="bg-yellow-500 text-white p-1 rounded-full">
+                        <Star className="w-4 h-4" />
+                      </div>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="bg-red-500/80 hover:bg-red-500"
+                      onClick={() => removePhoto(photo.id)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
 
-      {photos.length === 0 && (
-        <Card className="glass-card">
-          <CardContent className="p-8 text-center">
-            <Image className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">
-              No tienes fotos aún
-            </h3>
-            <p className="text-gray-300">
-              Agrega algunas fotos para mostrar tu personalidad y atraer más clientes.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+                  {photo.caption && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 text-sm">
+                      {photo.caption}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-semibold text-blue-800 mb-2">Consejos para Fotos</h4>
+        <ul className="text-sm text-blue-700 space-y-1">
+          <li>• Usa fotos de alta calidad y bien iluminadas</li>
+          <li>• Incluye al menos 3-5 fotos diferentes</li>
+          <li>• La primera foto será tu foto principal</li>
+          <li>• Evita contenido inapropiado o explícito</li>
+          <li>• Usa fotos recientes que te representen bien</li>
+        </ul>
+      </div>
     </div>
   );
 };

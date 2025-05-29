@@ -1,215 +1,200 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, User, Mail, Lock, Eye, EyeOff, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
-import { UserRole } from '@/types';
+import { Heart, Mail, Lock, User, Crown } from 'lucide-react';
 
 const Auth = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
+  const { signIn, signUp, loading } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('signin');
+
+  const [signInData, setSignInData] = useState({
+    email: '',
+    password: ''
+  });
+
+  const [signUpData, setSignUpData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
-    full_name: '',
-    username: '',
-    user_role: 'client' as UserRole,
-    acceptTerms: false
+    fullName: '',
+    userRole: 'client' as 'client' | 'girlfriend'
   });
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const { signUp, signIn, user } = useAuth();
-  const navigate = useNavigate();
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      navigate('/', { replace: true });
-    }
-  }, [user, navigate]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleRoleChange = (value: UserRole) => {
-    setFormData(prev => ({
-      ...prev,
-      user_role: value
-    }));
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
-
-    setIsLoading(true);
     try {
-      await signIn(formData.email, formData.password);
-      navigate('/', { replace: true });
+      await signIn(signInData.email, signInData.password);
+      navigate('/');
     } catch (error) {
-      // Error is handled in the auth hook
-    } finally {
-      setIsLoading(false);
+      // Error handling is done in the useAuth hook
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
-
-    if (formData.password !== formData.confirmPassword) {
+    
+    if (signUpData.password !== signUpData.confirmPassword) {
       alert('Las contraseñas no coinciden');
       return;
     }
-    if (!formData.acceptTerms) {
-      alert('Debes aceptar los términos y condiciones');
-      return;
-    }
-    if (formData.password.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
 
-    setIsLoading(true);
     try {
-      await signUp(formData.email, formData.password, {
-        full_name: formData.full_name,
-        username: formData.username,
-        user_role: formData.user_role,
+      await signUp(signUpData.email, signUpData.password, {
+        full_name: signUpData.fullName,
+        user_role: signUpData.userRole
       });
-      navigate('/', { replace: true });
+      
+      // If successful, switch to sign in tab
+      setActiveTab('signin');
+      setSignInData({
+        email: signUpData.email,
+        password: ''
+      });
     } catch (error) {
-      // Error is handled in the auth hook
-    } finally {
-      setIsLoading(false);
+      // Error handling is done in the useAuth hook
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-secondary flex items-center justify-center p-4">
-      {/* Background Animation */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md">
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
-              <Heart className="w-7 h-7 text-white" />
-            </div>
-            <span className="font-playfair text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <Heart className="w-10 h-10 text-primary" />
+            <span className="text-2xl font-playfair font-bold text-white">
               AnimeDating
             </span>
           </Link>
+          <p className="text-gray-300 mt-2">
+            Conecta con personas increíbles
+          </p>
         </div>
 
-        <Card className="glass-card border-white/20">
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-              <TabsTrigger value="register">Registrarse</TabsTrigger>
-            </TabsList>
+        <Card className="glass-card">
+          <CardHeader className="text-center">
+            <CardTitle className="text-white">Bienvenido</CardTitle>
+            <CardDescription className="text-gray-300">
+              Inicia sesión o crea tu cuenta para comenzar
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2 glass-card">
+                <TabsTrigger value="signin">Iniciar Sesión</TabsTrigger>
+                <TabsTrigger value="signup">Registrarse</TabsTrigger>
+              </TabsList>
 
-            {/* Login Tab */}
-            <TabsContent value="login">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold">¡Bienvenido de vuelta!</CardTitle>
-                <CardDescription>
-                  Inicia sesión para continuar con tus companions favoritas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleLogin} className="space-y-4">
+              <TabsContent value="signin">
+                <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Email</label>
+                    <Label htmlFor="signin-email" className="text-white">
+                      Correo Electrónico
+                    </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
+                        id="signin-email"
                         type="email"
-                        name="email"
                         placeholder="tu@email.com"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="pl-10"
+                        value={signInData.email}
+                        onChange={(e) => setSignInData(prev => ({ ...prev, email: e.target.value }))}
                         required
-                        disabled={isLoading}
+                        className="pl-10 bg-white/10 text-white border-white/20"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Contraseña</label>
+                    <Label htmlFor="signin-password" className="text-white">
+                      Contraseña
+                    </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
+                        id="signin-password"
+                        type="password"
                         placeholder="••••••••"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        className="pl-10 pr-10"
+                        value={signInData.password}
+                        onChange={(e) => setSignInData(prev => ({ ...prev, password: e.target.value }))}
                         required
-                        disabled={isLoading}
+                        className="pl-10 bg-white/10 text-white border-white/20"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        disabled={isLoading}
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
                     </div>
                   </div>
 
-                  <Button type="submit" className="anime-button w-full" disabled={isLoading}>
-                    {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                  <Button type="submit" className="w-full anime-button" disabled={loading}>
+                    {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                   </Button>
                 </form>
-              </CardContent>
-            </TabsContent>
+              </TabsContent>
 
-            {/* Register Tab */}
-            <TabsContent value="register">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold">¡Únete a nosotros!</CardTitle>
-                <CardDescription>
-                  Crea tu cuenta y descubre companions increíbles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleRegister} className="space-y-4">
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Tipo de cuenta</label>
-                    <Select value={formData.user_role} onValueChange={handleRoleChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona el tipo de cuenta" />
+                    <Label htmlFor="signup-name" className="text-white">
+                      Nombre Completo
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Tu nombre completo"
+                        value={signUpData.fullName}
+                        onChange={(e) => setSignUpData(prev => ({ ...prev, fullName: e.target.value }))}
+                        required
+                        className="pl-10 bg-white/10 text-white border-white/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email" className="text-white">
+                      Correo Electrónico
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="tu@email.com"
+                        value={signUpData.email}
+                        onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
+                        required
+                        className="pl-10 bg-white/10 text-white border-white/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="user-role" className="text-white">
+                      Tipo de Usuario
+                    </Label>
+                    <Select onValueChange={(value: 'client' | 'girlfriend') => setSignUpData(prev => ({ ...prev, userRole: value }))}>
+                      <SelectTrigger className="bg-white/10 text-white border-white/20">
+                        <SelectValue placeholder="Selecciona tu rol" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="client">
-                          <div className="flex items-center space-x-2">
-                            <User className="w-4 h-4" />
-                            <span>Cliente - Busco companions</span>
+                          <div className="flex items-center gap-2">
+                            <Heart className="w-4 h-4" />
+                            Cliente - Busco companía
                           </div>
                         </SelectItem>
                         <SelectItem value="girlfriend">
-                          <div className="flex items-center space-x-2">
-                            <Heart className="w-4 h-4" />
-                            <span>Companion - Quiero ofrecer servicios</span>
+                          <div className="flex items-center gap-2">
+                            <Crown className="w-4 h-4" />
+                            Companion - Ofrezco servicios
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -217,132 +202,55 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Nombre completo</label>
+                    <Label htmlFor="signup-password" className="text-white">
+                      Contraseña
+                    </Label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        type="text"
-                        name="full_name"
-                        placeholder="Tu nombre"
-                        value={formData.full_name}
-                        onChange={handleInputChange}
-                        className="pl-10"
-                        required
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Nombre de usuario</label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        type="text"
-                        name="username"
-                        placeholder="tu_username"
-                        value={formData.username}
-                        onChange={handleInputChange}
-                        className="pl-10"
-                        required
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Email</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        type="email"
-                        name="email"
-                        placeholder="tu@email.com"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="pl-10"
-                        required
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Contraseña</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
+                        id="signup-password"
+                        type="password"
                         placeholder="••••••••"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        className="pl-10 pr-10"
+                        value={signUpData.password}
+                        onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
                         required
-                        disabled={isLoading}
-                        minLength={6}
+                        className="pl-10 bg-white/10 text-white border-white/20"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        disabled={isLoading}
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Confirmar contraseña</label>
+                    <Label htmlFor="signup-confirm-password" className="text-white">
+                      Confirmar Contraseña
+                    </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        type={showConfirmPassword ? "text" : "password"}
-                        name="confirmPassword"
+                        id="signup-confirm-password"
+                        type="password"
                         placeholder="••••••••"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        className="pl-10 pr-10"
+                        value={signUpData.confirmPassword}
+                        onChange={(e) => setSignUpData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                         required
-                        disabled={isLoading}
+                        className="pl-10 bg-white/10 text-white border-white/20"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        disabled={isLoading}
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <label className="flex items-start space-x-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="acceptTerms"
-                        checked={formData.acceptTerms}
-                        onChange={handleInputChange}
-                        className="rounded mt-0.5"
-                        required
-                        disabled={isLoading}
-                      />
-                      <span className="text-gray-600">
-                        Acepto los términos y condiciones y la política de privacidad
-                      </span>
-                    </label>
-                  </div>
-
-                  <Button type="submit" className="anime-button w-full" disabled={isLoading}>
-                    {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                  <Button type="submit" className="w-full anime-button" disabled={loading}>
+                    {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
                   </Button>
                 </form>
-              </CardContent>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
         </Card>
+
+        <div className="text-center mt-6">
+          <Link to="/" className="text-gray-300 hover:text-white transition-colors">
+            ← Volver al inicio
+          </Link>
+        </div>
       </div>
     </div>
   );
