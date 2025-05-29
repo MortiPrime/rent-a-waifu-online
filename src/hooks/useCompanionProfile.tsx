@@ -100,16 +100,34 @@ export const useCompanionProfile = () => {
 
     try {
       setLoading(true);
-      const dataToSave = {
-        ...profileData,
+      
+      // Ensure required fields are present for database operations
+      const requiredData = {
         user_id: user.id,
+        stage_name: profileData.stage_name || '',
+        real_name: profileData.real_name || '',
+        age: profileData.age || 18,
+        description: profileData.description || '',
+        pricing: profileData.pricing || {
+          basic_chat: 150,
+          premium_chat: 300,
+          video_call: 500
+        },
+        availability: profileData.availability || {
+          days: [],
+          hours: 'flexible'
+        },
+        promotion_plan: profileData.promotion_plan || 'basic',
+        exit_rules: profileData.exit_rules || [],
+        is_active: profileData.is_active ?? false,
+        status: profileData.status || 'pending'
       };
 
       if (profile) {
         // Update existing profile
         const { data, error } = await supabase
           .from('companion_profiles')
-          .update(dataToSave)
+          .update(requiredData)
           .eq('id', profile.id)
           .select()
           .single();
@@ -120,7 +138,7 @@ export const useCompanionProfile = () => {
         // Create new profile
         const { data, error } = await supabase
           .from('companion_profiles')
-          .insert(dataToSave)
+          .insert(requiredData)
           .select()
           .single();
 
