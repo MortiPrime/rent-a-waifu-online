@@ -28,6 +28,63 @@ export interface Character {
   personality: string[];
 }
 
+export interface CompanionProfile {
+  id: string;
+  user_id: string;
+  stage_name: string;
+  real_name: string;
+  age: number;
+  description: string;
+  pricing: {
+    basic_chat: number;
+    premium_chat: number;
+    video_call: number;
+  };
+  availability: {
+    days: string[];
+    hours: string;
+  };
+  promotion_plan: 'basic' | 'premium' | 'vip';
+  exit_rules: string[];
+  is_active: boolean;
+  status: 'pending' | 'approved' | 'rejected' | 'suspended';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CompanionPhoto {
+  id: string;
+  companion_id: string;
+  photo_url: string;
+  is_primary: boolean;
+  caption?: string;
+  display_order: number;
+  created_at: string;
+}
+
+export interface ChatSession {
+  id: string;
+  conversation_id: string;
+  client_id: string;
+  companion_id: string;
+  session_type: 'basic_chat' | 'premium_chat' | 'video_call';
+  started_at: string;
+  ended_at?: string;
+  duration_minutes?: number;
+  total_cost?: number;
+  payment_status: 'pending' | 'paid' | 'cancelled';
+  created_at: string;
+}
+
+export interface CompanionRule {
+  id: string;
+  companion_id: string;
+  rule_type: 'boundary' | 'availability' | 'pricing' | 'behavior';
+  rule_text: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface GirlfriendProfile {
   id?: string;
   user_id: string;

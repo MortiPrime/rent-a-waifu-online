@@ -9,6 +9,187 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_sessions: {
+        Row: {
+          client_id: string
+          companion_id: string
+          conversation_id: string
+          created_at: string | null
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          payment_status: string | null
+          session_type: string | null
+          started_at: string | null
+          total_cost: number | null
+        }
+        Insert: {
+          client_id: string
+          companion_id: string
+          conversation_id: string
+          created_at?: string | null
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          payment_status?: string | null
+          session_type?: string | null
+          started_at?: string | null
+          total_cost?: number | null
+        }
+        Update: {
+          client_id?: string
+          companion_id?: string
+          conversation_id?: string
+          created_at?: string | null
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          payment_status?: string | null
+          session_type?: string | null
+          started_at?: string | null
+          total_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_sessions_companion_id_fkey"
+            columns: ["companion_id"]
+            isOneToOne: false
+            referencedRelation: "companion_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_sessions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companion_photos: {
+        Row: {
+          caption: string | null
+          companion_id: string
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_primary: boolean | null
+          photo_url: string
+        }
+        Insert: {
+          caption?: string | null
+          companion_id: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_primary?: boolean | null
+          photo_url: string
+        }
+        Update: {
+          caption?: string | null
+          companion_id?: string
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_primary?: boolean | null
+          photo_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companion_photos_companion_id_fkey"
+            columns: ["companion_id"]
+            isOneToOne: false
+            referencedRelation: "companion_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companion_profiles: {
+        Row: {
+          age: number
+          availability: Json | null
+          created_at: string | null
+          description: string
+          exit_rules: string[] | null
+          id: string
+          is_active: boolean | null
+          pricing: Json | null
+          promotion_plan: string | null
+          real_name: string
+          stage_name: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          age: number
+          availability?: Json | null
+          created_at?: string | null
+          description: string
+          exit_rules?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          pricing?: Json | null
+          promotion_plan?: string | null
+          real_name: string
+          stage_name: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          age?: number
+          availability?: Json | null
+          created_at?: string | null
+          description?: string
+          exit_rules?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          pricing?: Json | null
+          promotion_plan?: string | null
+          real_name?: string
+          stage_name?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      companion_rules: {
+        Row: {
+          companion_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          rule_text: string
+          rule_type: string
+        }
+        Insert: {
+          companion_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          rule_text: string
+          rule_type: string
+        }
+        Update: {
+          companion_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          rule_text?: string
+          rule_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companion_rules_companion_id_fkey"
+            columns: ["companion_id"]
+            isOneToOne: false
+            referencedRelation: "companion_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           character_id: number
