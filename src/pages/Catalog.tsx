@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Star, Crown, MapPin, Filter } from 'lucide-react';
+import { Heart, MessageCircle, Star, Crown, MapPin, Filter, Phone, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,10 @@ const Catalog = () => {
     return false;
   };
 
+  const canSeeContactInfo = () => {
+    return profile?.subscription_type && profile.subscription_type !== 'basic';
+  };
+
   const filteredListings = listings.filter(listing => {
     if (filter === 'all') return true;
     return listing.promotion_plan === filter;
@@ -40,12 +44,10 @@ const Catalog = () => {
     
     if (value === 'all') {
       delete newFilter[type];
-      // Si cambiamos estado, limpiar ciudad y municipio
       if (type === 'state') {
         delete newFilter.city;
         delete newFilter.municipality;
       }
-      // Si cambiamos ciudad, limpiar municipio
       if (type === 'city') {
         delete newFilter.municipality;
       }
@@ -79,6 +81,16 @@ const Catalog = () => {
           <p className="text-white/80 text-lg mb-6">
             Descubre y conecta con companions increíbles cerca de ti
           </p>
+          
+          {/* Subscription Status */}
+          {!canSeeContactInfo() && (
+            <div className="mb-6 p-4 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
+              <p className="text-yellow-300 text-sm">
+                <Lock className="w-4 h-4 inline mr-2" />
+                Suscríbete a un plan Premium o VIP para ver información de contacto
+              </p>
+            </div>
+          )}
           
           {/* Filters */}
           <div className="flex flex-col space-y-4">
@@ -226,6 +238,14 @@ const Catalog = () => {
                         <div className="flex items-center text-gray-500 text-sm mb-3">
                           <MapPin className="w-3 h-3 mr-1" />
                           {listing.city && listing.state ? `${listing.city}, ${listing.state}` : listing.city || listing.state}
+                        </div>
+                      )}
+
+                      {/* Contact Info - Only for subscribed users */}
+                      {canSeeContactInfo() && listing.contact_number && (
+                        <div className="flex items-center text-green-600 text-sm mb-3">
+                          <Phone className="w-3 h-3 mr-1" />
+                          {listing.contact_number}
                         </div>
                       )}
 

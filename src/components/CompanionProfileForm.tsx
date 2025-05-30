@@ -33,6 +33,7 @@ const CompanionProfileForm = () => {
     state: '',
     city: '',
     municipality: '',
+    contact_number: '',
     pricing: {
       basic_chat: 150,
       premium_chat: 300,
@@ -56,13 +57,13 @@ const CompanionProfileForm = () => {
         state: profile.state || '',
         city: profile.city || '',
         municipality: profile.municipality || '',
+        contact_number: profile.contact_number || '',
         pricing: profile.pricing,
         availability: profile.availability,
         promotion_plan: profile.promotion_plan,
         is_active: profile.is_active ?? false,
       });
     } else {
-      // Load profile if it exists
       loadCompanionProfile();
     }
   }, [profile]);
@@ -79,10 +80,10 @@ const CompanionProfileForm = () => {
       return;
     }
 
-    if (!formData.state || !formData.city) {
+    if (!formData.state || !formData.city || !formData.contact_number) {
       toast({
         title: "Error",
-        description: "Por favor proporciona tu ubicación (estado y ciudad)",
+        description: "Por favor proporciona tu ubicación y número de contacto",
         variant: "destructive",
       });
       return;
@@ -140,6 +141,16 @@ const CompanionProfileForm = () => {
                   required
                 />
               </div>
+              <div>
+                <Label htmlFor="contact_number">Número de Contacto *</Label>
+                <Input
+                  id="contact_number"
+                  value={formData.contact_number}
+                  onChange={(e) => setFormData(prev => ({ ...prev, contact_number: e.target.value }))}
+                  placeholder="ej. +52 55 1234 5678"
+                  required
+                />
+              </div>
             </div>
           </div>
 
@@ -194,7 +205,8 @@ const CompanionProfileForm = () => {
               </div>
             </div>
             <p className="text-sm text-gray-500">
-              Esta información ayudará a los clientes a encontrarte en tu área
+              Esta información ayudará a los clientes a encontrarte en tu área. 
+              Solo usuarios con suscripción podrán ver tu número de contacto.
             </p>
           </div>
 

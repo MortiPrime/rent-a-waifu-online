@@ -110,6 +110,7 @@ export const useCompanionProfile = () => {
         state: profileData.state || '',
         city: profileData.city || '',
         municipality: profileData.municipality || '',
+        contact_number: profileData.contact_number || '',
         pricing: profileData.pricing || {
           basic_chat: 150,
           premium_chat: 300,

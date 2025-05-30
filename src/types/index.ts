@@ -34,9 +34,10 @@ export interface CompanionProfile {
   real_name: string;
   age: number;
   description: string;
-  state?: string;
-  city?: string;
-  municipality?: string;
+  state: string;
+  city: string;
+  municipality: string;
+  contact_number: string;
   pricing: {
     basic_chat: number;
     premium_chat: number;
@@ -128,15 +129,16 @@ export interface UserProfile {
 
 export interface CompanionListing {
   id: string;
-  companion_id?: string;
+  companion_id: string;
   user_id: string;
   stage_name: string;
-  description?: string;
-  age?: number;
-  state?: string;
-  city?: string;
-  municipality?: string;
-  pricing?: {
+  description: string;
+  age: number;
+  state: string;
+  city: string;
+  municipality: string;
+  contact_number: string;
+  pricing: {
     basic_chat: number;
     premium_chat: number;
     video_call: number;

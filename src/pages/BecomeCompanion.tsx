@@ -1,22 +1,53 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Star, DollarSign, Shield, Users, Crown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Heart, Star, DollarSign, Shield, Users, Crown, Phone, MapPin } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { useCompanionProfile } from '@/hooks/useCompanionProfile';
+import { useToast } from '@/hooks/use-toast';
 
 const BecomeCompanion = () => {
   const { user, profile, updateProfile } = useAuth();
+  const { createOrUpdateProfile, loading } = useCompanionProfile();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    // If user is already a girlfriend, redirect to dashboard
-    if (profile?.user_role === 'girlfriend') {
-      navigate('/');
-    }
-  }, [profile, navigate]);
+  const [formData, setFormData] = useState({
+    stage_name: '',
+    real_name: '',
+    age: 18,
+    description: '',
+    state: '',
+    city: '',
+    municipality: '',
+    contact_number: '',
+    pricing: {
+      basic_chat: 150,
+      premium_chat: 300,
+      video_call: 500
+    },
+    availability: {
+      days: [] as string[],
+      hours: 'flexible'
+    },
+    promotion_plan: 'basic' as 'basic' | 'premium' | 'vip',
+    is_active: false
+  });
+
+  // Si ya es companion, redirigir al dashboard
+  if (profile?.user_role === 'girlfriend') {
+    navigate('/');
+    return null;
+  }
 
   const handleBecomeCompanion = async () => {
     if (!user) {
@@ -24,13 +55,251 @@ const BecomeCompanion = () => {
       return;
     }
 
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.stage_name || !formData.real_name || !formData.description) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.state || !formData.city || !formData.contact_number) {
+      toast({
+        title: "Error",
+        description: "Por favor proporciona tu ubicación y número de contacto",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      // Primero cambiar el rol del usuario
       await updateProfile({ user_role: 'girlfriend' });
+      
+      // Luego crear el perfil de companion
+      await createOrUpdateProfile(formData);
+      
+      toast({
+        title: "¡Éxito!",
+        description: "Tu perfil de companion ha sido creado. Está pendiente de aprobación.",
+      });
+      
       navigate('/');
     } catch (error) {
-      console.error('Error updating user role:', error);
+      console.error('Error creating companion profile:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear el perfil. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
     }
   };
+
+  if (showForm) {
+    return (
+      <div className="min-h-screen bg-gradient-secondary">
+        <Navbar />
+        
+        <div className="pt-24 pb-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="text-white text-center">
+                  Crear Perfil de Companion
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Información Básica */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Información Básica *</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="stage_name" className="text-white">Nombre Artístico *</Label>
+                        <Input
+                          id="stage_name"
+                          value={formData.stage_name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, stage_name: e.target.value }))}
+                          placeholder="ej. LunaDelMar"
+                          required
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="real_name" className="text-white">Nombre Real *</Label>
+                        <Input
+                          id="real_name"
+                          value={formData.real_name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, real_name: e.target.value }))}
+                          placeholder="ej. María López"
+                          required
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="age" className="text-white">Edad *</Label>
+                        <Input
+                          id="age"
+                          type="number"
+                          value={formData.age}
+                          onChange={(e) => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
+                          placeholder="ej. 25"
+                          required
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="contact_number" className="text-white">Número de Contacto *</Label>
+                        <Input
+                          id="contact_number"
+                          value={formData.contact_number}
+                          onChange={(e) => setFormData(prev => ({ ...prev, contact_number: e.target.value }))}
+                          placeholder="ej. +52 55 1234 5678"
+                          required
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ubicación */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Ubicación *</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="state" className="text-white">Estado *</Label>
+                        <Input
+                          id="state"
+                          value={formData.state}
+                          onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                          placeholder="ej. Ciudad de México"
+                          required
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="city" className="text-white">Ciudad *</Label>
+                        <Input
+                          id="city"
+                          value={formData.city}
+                          onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                          placeholder="ej. CDMX"
+                          required
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="municipality" className="text-white">Municipio/Delegación</Label>
+                        <Input
+                          id="municipality"
+                          value={formData.municipality}
+                          onChange={(e) => setFormData(prev => ({ ...prev, municipality: e.target.value }))}
+                          placeholder="ej. Coyoacán"
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Descripción */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Descripción *</h3>
+                    <Label htmlFor="description" className="text-white">
+                      Cuéntales a tus clientes sobre ti
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="ej. Soy una persona apasionada por..."
+                      rows={4}
+                      required
+                      className="bg-white/10 text-white border-white/20"
+                    />
+                  </div>
+
+                  {/* Precios */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Precios (MXN)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="basic_chat" className="text-white">Chat Básico</Label>
+                        <Input
+                          id="basic_chat"
+                          type="number"
+                          value={formData.pricing.basic_chat}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            pricing: { ...prev.pricing, basic_chat: parseInt(e.target.value) }
+                          }))}
+                          placeholder="ej. 150"
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="premium_chat" className="text-white">Chat Premium</Label>
+                        <Input
+                          id="premium_chat"
+                          type="number"
+                          value={formData.pricing.premium_chat}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            pricing: { ...prev.pricing, premium_chat: parseInt(e.target.value) }
+                          }))}
+                          placeholder="ej. 300"
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="video_call" className="text-white">Video Llamada</Label>
+                        <Input
+                          id="video_call"
+                          type="number"
+                          value={formData.pricing.video_call}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            pricing: { ...prev.pricing, video_call: parseInt(e.target.value) }
+                          }))}
+                          placeholder="ej. 500"
+                          className="bg-white/10 text-white border-white/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setShowForm(false)}
+                      className="flex-1"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={loading} 
+                      className="anime-button flex-1"
+                    >
+                      {loading ? 'Creando perfil...' : 'Crear Perfil'}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-secondary">
@@ -67,24 +336,24 @@ const BecomeCompanion = () => {
 
             <Card className="glass-card text-center">
               <CardHeader>
-                <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
-                <CardTitle className="text-white">Ambiente Seguro</CardTitle>
+                <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
+                <CardTitle className="text-white">Contacto Directo</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-300">
-                  Plataforma verificada con políticas estrictas de respeto y seguridad.
+                  Los usuarios suscritos podrán ver tu número de contacto para comunicarse contigo.
                 </p>
               </CardContent>
             </Card>
 
             <Card className="glass-card text-center">
               <CardHeader>
-                <Users className="w-12 h-12 text-primary mx-auto mb-4" />
-                <CardTitle className="text-white">Comunidad Activa</CardTitle>
+                <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
+                <CardTitle className="text-white">Búsqueda Local</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-300">
-                  Conecta con clientes genuinos buscando companía y conversaciones auténticas.
+                  Los clientes pueden encontrarte fácilmente por tu ubicación geográfica.
                 </p>
               </CardContent>
             </Card>
