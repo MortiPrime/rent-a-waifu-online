@@ -66,6 +66,68 @@ export type Database = {
           },
         ]
       }
+      companion_listings: {
+        Row: {
+          age: number | null
+          city: string | null
+          companion_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          municipality: string | null
+          pricing: Json | null
+          promotion_plan: string | null
+          stage_name: string
+          state: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          city?: string | null
+          companion_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          municipality?: string | null
+          pricing?: Json | null
+          promotion_plan?: string | null
+          stage_name: string
+          state?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          city?: string | null
+          companion_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          municipality?: string | null
+          pricing?: Json | null
+          promotion_plan?: string | null
+          stage_name?: string
+          state?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companion_listings_companion_id_fkey"
+            columns: ["companion_id"]
+            isOneToOne: false
+            referencedRelation: "companion_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companion_photos: {
         Row: {
           caption: string | null
@@ -108,15 +170,18 @@ export type Database = {
         Row: {
           age: number
           availability: Json | null
+          city: string | null
           created_at: string | null
           description: string
           exit_rules: string[] | null
           id: string
           is_active: boolean | null
+          municipality: string | null
           pricing: Json | null
           promotion_plan: string | null
           real_name: string
           stage_name: string
+          state: string | null
           status: string | null
           updated_at: string | null
           user_id: string
@@ -124,15 +189,18 @@ export type Database = {
         Insert: {
           age: number
           availability?: Json | null
+          city?: string | null
           created_at?: string | null
           description: string
           exit_rules?: string[] | null
           id?: string
           is_active?: boolean | null
+          municipality?: string | null
           pricing?: Json | null
           promotion_plan?: string | null
           real_name: string
           stage_name: string
+          state?: string | null
           status?: string | null
           updated_at?: string | null
           user_id: string
@@ -140,15 +208,18 @@ export type Database = {
         Update: {
           age?: number
           availability?: Json | null
+          city?: string | null
           created_at?: string | null
           description?: string
           exit_rules?: string[] | null
           id?: string
           is_active?: boolean | null
+          municipality?: string | null
           pricing?: Json | null
           promotion_plan?: string | null
           real_name?: string
           stage_name?: string
+          state?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string
@@ -216,6 +287,51 @@ export type Database = {
           id?: string
           last_message_at?: string | null
           messages?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mercadopago_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          external_reference: string | null
+          id: string
+          payment_id: string | null
+          preference_id: string
+          status: string | null
+          subscription_months: number | null
+          subscription_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          external_reference?: string | null
+          id?: string
+          payment_id?: string | null
+          preference_id: string
+          status?: string | null
+          subscription_months?: number | null
+          subscription_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          external_reference?: string | null
+          id?: string
+          payment_id?: string | null
+          preference_id?: string
+          status?: string | null
+          subscription_months?: number | null
+          subscription_type?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -303,7 +419,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      process_mercadopago_webhook: {
+        Args: { payment_data: Json }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,4 +1,3 @@
-
 export interface Message {
   id: string;
   content: string;
@@ -35,6 +34,9 @@ export interface CompanionProfile {
   real_name: string;
   age: number;
   description: string;
+  state?: string;
+  city?: string;
+  municipality?: string;
   pricing: {
     basic_chat: number;
     premium_chat: number;
@@ -122,4 +124,56 @@ export interface UserProfile {
   favorite_characters?: number[];
   created_at?: string;
   updated_at?: string;
+}
+
+export interface CompanionListing {
+  id: string;
+  companion_id?: string;
+  user_id: string;
+  stage_name: string;
+  description?: string;
+  age?: number;
+  state?: string;
+  city?: string;
+  municipality?: string;
+  pricing?: {
+    basic_chat: number;
+    premium_chat: number;
+    video_call: number;
+  };
+  promotion_plan: 'basic' | 'premium' | 'vip';
+  is_featured: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MercadoPagoTransaction {
+  id: string;
+  user_id: string;
+  preference_id: string;
+  payment_id?: string;
+  external_reference?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  amount: number;
+  currency: string;
+  subscription_type: string;
+  subscription_months: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LocationFilter {
+  state?: string;
+  city?: string;
+  municipality?: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  duration: number; // months
+  features: string[];
+  popular?: boolean;
 }

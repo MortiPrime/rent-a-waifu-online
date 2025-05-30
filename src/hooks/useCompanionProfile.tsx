@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -108,6 +107,9 @@ export const useCompanionProfile = () => {
         real_name: profileData.real_name || '',
         age: profileData.age || 18,
         description: profileData.description || '',
+        state: profileData.state || '',
+        city: profileData.city || '',
+        municipality: profileData.municipality || '',
         pricing: profileData.pricing || {
           basic_chat: 150,
           premium_chat: 300,

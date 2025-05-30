@@ -4,16 +4,20 @@ import { Check, Heart, Crown, Star, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Navbar from '@/components/Navbar';
+import { useMercadoPago } from '@/hooks/useMercadoPago';
 
 const Subscription = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [selectedMonths, setSelectedMonths] = useState<number>(1);
+  const { loading, redirectToCheckout } = useMercadoPago();
 
   const plans = [
     {
       id: 'basic',
       name: 'Básico',
-      price: '$9.99',
+      price: 199,
       period: '/mes',
       icon: Heart,
       color: 'from-gray-400 to-gray-600',
@@ -33,7 +37,7 @@ const Subscription = () => {
     {
       id: 'premium',
       name: 'Premium',
-      price: '$19.99',
+      price: 399,
       period: '/mes',
       icon: Star,
       color: 'from-primary-400 to-primary-600',
@@ -55,7 +59,7 @@ const Subscription = () => {
     {
       id: 'vip',
       name: 'VIP',
-      price: '$39.99',
+      price: 799,
       period: '/mes',
       icon: Crown,
       color: 'from-yellow-400 to-orange-500',
@@ -75,10 +79,29 @@ const Subscription = () => {
     }
   ];
 
-  const handleSelectPlan = (planId: string) => {
+  const monthOptions = [
+    { value: 1, label: '1 mes', discount: 0 },
+    { value: 3, label: '3 meses', discount: 10 },
+    { value: 6, label: '6 meses', discount: 15 },
+    { value: 12, label: '12 meses', discount: 20 },
+  ];
+
+  const handleSelectPlan = async (planId: string) => {
     setSelectedPlan(planId);
-    // Here would go Mercado Pago integration
-    console.log(`Selected plan: ${planId}`);
+    
+    // Redirigir automáticamente a MercadoPago
+    await redirectToCheckout({
+      plan: planId as 'basic' | 'premium' | 'vip',
+      months: selectedMonths
+    });
+  };
+
+  const calculatePrice = (basePrice: number, months: number) => {
+    const monthOption = monthOptions.find(option => option.value === months);
+    const discount = monthOption?.discount || 0;
+    const totalBeforeDiscount = basePrice * months;
+    const discountAmount = totalBeforeDiscount * (discount / 100);
+    return totalBeforeDiscount - discountAmount;
   };
 
   return (
@@ -98,10 +121,27 @@ const Subscription = () => {
               Elige el plan perfecto para tu experiencia. Todos los planes incluyen acceso completo a la plataforma.
             </p>
             
+            {/* Duration Selector */}
+            <div className="mb-8">
+              <label className="block text-white mb-4 text-lg">Duración de la suscripción:</label>
+              <Select value={selectedMonths.toString()} onValueChange={(value) => setSelectedMonths(parseInt(value))}>
+                <SelectTrigger className="w-64 mx-auto bg-white/10 text-white border-white/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value.toString()}>
+                      {option.label} {option.discount > 0 && `(${option.discount}% descuento)`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
             {/* Money-back guarantee */}
             <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-4 py-2 rounded-full">
               <Check className="w-5 h-5" />
-              <span className="font-medium">Garantía de 30 días</span>
+              <span className="font-medium">Pagos seguros con MercadoPago</span>
             </div>
           </div>
 
@@ -110,6 +150,9 @@ const Subscription = () => {
             {plans.map((plan) => {
               const IconComponent = plan.icon;
               const isSelected = selectedPlan === plan.id;
+              const finalPrice = calculatePrice(plan.price, selectedMonths);
+              const originalPrice = plan.price * selectedMonths;
+              const hasDiscount = finalPrice < originalPrice;
               
               return (
                 <Card 
@@ -134,9 +177,19 @@ const Subscription = () => {
                       <IconComponent className="w-8 h-8 text-white" />
                     </div>
                     <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                    <CardDescription className="text-4xl font-bold text-gray-900">
-                      {plan.price}
-                      <span className="text-lg font-normal text-gray-600">{plan.period}</span>
+                    <CardDescription className="space-y-1">
+                      {hasDiscount && (
+                        <div className="text-sm text-gray-500 line-through">
+                          ${originalPrice.toLocaleString()} MXN
+                        </div>
+                      )}
+                      <div className="text-4xl font-bold text-gray-900">
+                        ${finalPrice.toLocaleString()}
+                        <span className="text-lg font-normal text-gray-600"> MXN</span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {selectedMonths === 1 ? 'por mes' : `por ${selectedMonths} meses`}
+                      </div>
                     </CardDescription>
                   </CardHeader>
 
@@ -175,8 +228,9 @@ const Subscription = () => {
                         e.stopPropagation();
                         handleSelectPlan(plan.id);
                       }}
+                      disabled={loading}
                     >
-                      {isSelected ? 'Seleccionado' : 'Seleccionar Plan'}
+                      {loading && isSelected ? 'Procesando...' : 'Seleccionar Plan'}
                     </Button>
                   </CardFooter>
                 </Card>

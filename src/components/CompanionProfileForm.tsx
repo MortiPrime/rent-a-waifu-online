@@ -1,24 +1,37 @@
-
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useCompanionProfile } from '@/hooks/useCompanionProfile';
-import { User, DollarSign, Clock, Star } from 'lucide-react';
+import { CompanionProfile } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { User } from 'lucide-react';
 
 const CompanionProfileForm = () => {
-  const { profile, createOrUpdateProfile, loading } = useCompanionProfile();
-  
+  const { user } = useAuth();
+  const { profile, createOrUpdateProfile, loading, loadCompanionProfile } = useCompanionProfile();
+  const { toast } = useToast();
+
   const [formData, setFormData] = useState({
     stage_name: '',
     real_name: '',
     age: 18,
     description: '',
+    state: '',
+    city: '',
+    municipality: '',
     pricing: {
       basic_chat: 150,
       premium_chat: 300,
@@ -32,257 +45,289 @@ const CompanionProfileForm = () => {
     is_active: false
   });
 
-  const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-
   useEffect(() => {
     if (profile) {
       setFormData({
-        stage_name: profile.stage_name || '',
-        real_name: profile.real_name || '',
-        age: profile.age || 18,
-        description: profile.description || '',
-        pricing: profile.pricing || {
-          basic_chat: 150,
-          premium_chat: 300,
-          video_call: 500
-        },
-        availability: profile.availability || {
-          days: [],
-          hours: 'flexible'
-        },
-        promotion_plan: profile.promotion_plan || 'basic',
-        is_active: profile.is_active || false
+        stage_name: profile.stage_name,
+        real_name: profile.real_name,
+        age: profile.age,
+        description: profile.description,
+        state: profile.state || '',
+        city: profile.city || '',
+        municipality: profile.municipality || '',
+        pricing: profile.pricing,
+        availability: profile.availability,
+        promotion_plan: profile.promotion_plan,
+        is_active: profile.is_active ?? false,
       });
+    } else {
+      // Load profile if it exists
+      loadCompanionProfile();
     }
   }, [profile]);
 
-  const handleDayToggle = (day: string) => {
-    setFormData(prev => ({
-      ...prev,
-      availability: {
-        ...prev.availability,
-        days: prev.availability.days.includes(day)
-          ? prev.availability.days.filter(d => d !== day)
-          : [...prev.availability.days, day]
-      }
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.stage_name || !formData.real_name || !formData.description) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.state || !formData.city) {
+      toast({
+        title: "Error",
+        description: "Por favor proporciona tu ubicación (estado y ciudad)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     await createOrUpdateProfile(formData);
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <User className="w-5 h-5" />
-            Información Personal
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="stage_name" className="text-white">Nombre Artístico *</Label>
-                  <Input
-                    id="stage_name"
-                    value={formData.stage_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, stage_name: e.target.value }))}
-                    placeholder="Ej: Sakura-chan"
-                    required
-                    className="bg-white/10 text-white border-white/20"
-                  />
-                </div>
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <User className="w-5 h-5" />
+          Perfil de Companion
+        </CardTitle>
+        <CardDescription>
+          Completa tu información para crear tu perfil público
+        </CardDescription>
+      </CardHeader>
 
-                <div>
-                  <Label htmlFor="real_name" className="text-white">Nombre Real *</Label>
-                  <Input
-                    id="real_name"
-                    value={formData.real_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, real_name: e.target.value }))}
-                    placeholder="Tu nombre completo"
-                    required
-                    className="bg-white/10 text-white border-white/20"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="age" className="text-white">Edad *</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    min="18"
-                    max="50"
-                    value={formData.age}
-                    onChange={(e) => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
-                    required
-                    className="bg-white/10 text-white border-white/20"
-                  />
-                </div>
-              </div>
-
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Info Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Información Básica *</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="description" className="text-white">Descripción Personal *</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Cuéntanos sobre tu personalidad, hobbies e intereses..."
-                  rows={8}
+                <Label htmlFor="stage_name">Nombre Artístico *</Label>
+                <Input
+                  id="stage_name"
+                  value={formData.stage_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, stage_name: e.target.value }))}
+                  placeholder="ej. LunaDelMar"
                   required
-                  className="bg-white/10 text-white border-white/20"
+                />
+              </div>
+              <div>
+                <Label htmlFor="real_name">Nombre Real *</Label>
+                <Input
+                  id="real_name"
+                  value={formData.real_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, real_name: e.target.value }))}
+                  placeholder="ej. María López"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="age">Edad *</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  value={formData.age}
+                  onChange={(e) => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
+                  placeholder="ej. 25"
+                  required
                 />
               </div>
             </div>
+          </div>
 
-            <Card className="bg-white/5">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  Precios por Servicio (MXN)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-white">Chat Básico (por hora)</Label>
-                    <Input
-                      type="number"
-                      min="50"
-                      value={formData.pricing.basic_chat}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        pricing: { ...prev.pricing, basic_chat: parseInt(e.target.value) }
-                      }))}
-                      className="bg-white/10 text-white border-white/20"
-                    />
-                  </div>
+          {/* Description Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Descripción *</h3>
+            <Label htmlFor="description">
+              Cuéntales a tus clientes sobre ti
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="ej. Soy una persona apasionada por..."
+              rows={4}
+              required
+            />
+          </div>
 
-                  <div>
-                    <Label className="text-white">Chat Premium (por hora)</Label>
-                    <Input
-                      type="number"
-                      min="100"
-                      value={formData.pricing.premium_chat}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        pricing: { ...prev.pricing, premium_chat: parseInt(e.target.value) }
-                      }))}
-                      className="bg-white/10 text-white border-white/20"
-                    />
-                  </div>
+          {/* Location Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Ubicación *</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="state">Estado *</Label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                  placeholder="ej. Ciudad de México"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="city">Ciudad *</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                  placeholder="ej. CDMX"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="municipality">Municipio/Delegación</Label>
+                <Input
+                  id="municipality"
+                  value={formData.municipality}
+                  onChange={(e) => setFormData(prev => ({ ...prev, municipality: e.target.value }))}
+                  placeholder="ej. Coyoacán"
+                />
+              </div>
+            </div>
+            <p className="text-sm text-gray-500">
+              Esta información ayudará a los clientes a encontrarte en tu área
+            </p>
+          </div>
 
-                  <div>
-                    <Label className="text-white">Video Llamada (por hora)</Label>
-                    <Input
-                      type="number"
-                      min="200"
-                      value={formData.pricing.video_call}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        pricing: { ...prev.pricing, video_call: parseInt(e.target.value) }
-                      }))}
-                      className="bg-white/10 text-white border-white/20"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/5">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Disponibilidad
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-white">Días Disponibles</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {days.map(day => (
-                      <Badge
-                        key={day}
-                        variant={formData.availability.days.includes(day) ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => handleDayToggle(day)}
-                      >
-                        {day}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-white">Horario Disponible</Label>
-                  <Select onValueChange={(value) => setFormData(prev => ({
+          {/* Pricing Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Precios (MXN)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="basic_chat">Chat Básico</Label>
+                <Input
+                  id="basic_chat"
+                  type="number"
+                  value={formData.pricing.basic_chat}
+                  onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    availability: { ...prev.availability, hours: value }
-                  }))}>
-                    <SelectTrigger className="bg-white/10 text-white border-white/20">
-                      <SelectValue placeholder="Selecciona tu horario" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="morning">Matutino (8:00 - 14:00)</SelectItem>
-                      <SelectItem value="afternoon">Vespertino (14:00 - 20:00)</SelectItem>
-                      <SelectItem value="evening">Nocturno (20:00 - 02:00)</SelectItem>
-                      <SelectItem value="flexible">Horario Flexible</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+                    pricing: { ...prev.pricing, basic_chat: parseInt(e.target.value) }
+                  }))}
+                  placeholder="ej. 150"
+                />
+              </div>
+              <div>
+                <Label htmlFor="premium_chat">Chat Premium</Label>
+                <Input
+                  id="premium_chat"
+                  type="number"
+                  value={formData.pricing.premium_chat}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, premium_chat: parseInt(e.target.value) }
+                  }))}
+                  placeholder="ej. 300"
+                />
+              </div>
+              <div>
+                <Label htmlFor="video_call">Video Llamada</Label>
+                <Input
+                  id="video_call"
+                  type="number"
+                  value={formData.pricing.video_call}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, video_call: parseInt(e.target.value) }
+                  }))}
+                  placeholder="ej. 500"
+                />
+              </div>
+            </div>
+          </div>
 
-            <Card className="bg-white/5">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Star className="w-5 h-5" />
-                  Plan de Promoción
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Select onValueChange={(value: 'basic' | 'premium' | 'vip') => setFormData(prev => ({
-                  ...prev,
-                  promotion_plan: value
-                }))}>
-                  <SelectTrigger className="bg-white/10 text-white border-white/20">
-                    <SelectValue placeholder="Selecciona tu plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basic">Básico - $99/mes</SelectItem>
-                    <SelectItem value="premium">Premium - $199/mes</SelectItem>
-                    <SelectItem value="vip">VIP - $399/mes</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_active"
-                    checked={formData.is_active}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+          {/* Availability Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Disponibilidad</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(day => (
+                <div key={day} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={day}
+                    checked={formData.availability.days.includes(day)}
+                    onCheckedChange={(checked) => {
+                      setFormData(prev => {
+                        let newDays = [...prev.availability.days];
+                        if (checked) {
+                          newDays.push(day);
+                        } else {
+                          newDays = newDays.filter(d => d !== day);
+                        }
+                        return { ...prev, availability: { ...prev.availability, days: newDays } };
+                      });
+                    }}
                   />
-                  <Label htmlFor="is_active" className="text-white">
-                    Perfil activo (visible para clientes)
-                  </Label>
+                  <Label htmlFor={day}>{day}</Label>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
+            <div>
+              <Label htmlFor="hours">Horario</Label>
+              <Select
+                id="hours"
+                value={formData.availability.hours}
+                onValueChange={(value) => setFormData(prev => ({
+                  ...prev,
+                  availability: { ...prev.availability, hours: value }
+                }))}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Flexible" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="flexible">Flexible</SelectItem>
+                  <SelectItem value="morning">Mañana</SelectItem>
+                  <SelectItem value="afternoon">Tarde</SelectItem>
+                  <SelectItem value="evening">Noche</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <Button 
-              type="submit" 
-              className="w-full anime-button" 
-              disabled={loading}
+          {/* Promotion Plan Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Plan de Promoción</h3>
+            <Label htmlFor="promotion_plan">Selecciona tu plan</Label>
+            <Select
+              id="promotion_plan"
+              value={formData.promotion_plan}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, promotion_plan: value as 'basic' | 'premium' | 'vip' }))}
             >
-              {loading ? 'Guardando...' : 'Guardar Perfil'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Básico" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="basic">Básico</SelectItem>
+                <SelectItem value="premium">Premium</SelectItem>
+                <SelectItem value="vip">VIP</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Active Status Section */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="is_active"
+              checked={formData.is_active}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+            />
+            <Label htmlFor="is_active">Activar Perfil</Label>
+          </div>
+
+          {/* Submit Section */}
+          <Button disabled={loading} className="w-full anime-button">
+            {loading ? 'Guardando...' : 'Guardar Perfil'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
