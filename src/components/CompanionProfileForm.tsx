@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionProfile } from '@/hooks/useCompanionProfile';
@@ -271,7 +272,6 @@ const CompanionProfileForm = () => {
             <div>
               <Label htmlFor="hours">Horario</Label>
               <Select
-                id="hours"
                 value={formData.availability.hours}
                 onValueChange={(value) => setFormData(prev => ({
                   ...prev,
@@ -296,7 +296,6 @@ const CompanionProfileForm = () => {
             <h3 className="text-lg font-semibold">Plan de Promoción</h3>
             <Label htmlFor="promotion_plan">Selecciona tu plan</Label>
             <Select
-              id="promotion_plan"
               value={formData.promotion_plan}
               onValueChange={(value) => setFormData(prev => ({ ...prev, promotion_plan: value as 'basic' | 'premium' | 'vip' }))}
             >
@@ -316,7 +315,7 @@ const CompanionProfileForm = () => {
             <Checkbox
               id="is_active"
               checked={formData.is_active}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: !!checked }))}
             />
             <Label htmlFor="is_active">Activar Perfil</Label>
           </div>
