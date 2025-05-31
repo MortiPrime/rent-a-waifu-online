@@ -90,7 +90,7 @@ const Catalog = () => {
                       <SelectValue placeholder="Todos los estados" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
-                      <SelectItem value="" className="text-white">Todos los estados</SelectItem>
+                      <SelectItem value="all" className="text-white">Todos los estados</SelectItem>
                       {states.map(state => (
                         <SelectItem key={state} value={state} className="text-white">{state}</SelectItem>
                       ))}
@@ -105,7 +105,7 @@ const Catalog = () => {
                       <SelectValue placeholder="Todas las ciudades" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
-                      <SelectItem value="" className="text-white">Todas las ciudades</SelectItem>
+                      <SelectItem value="all" className="text-white">Todas las ciudades</SelectItem>
                       {cities.map(city => (
                         <SelectItem key={city} value={city} className="text-white">{city}</SelectItem>
                       ))}
@@ -120,7 +120,7 @@ const Catalog = () => {
                       <SelectValue placeholder="Todos los municipios" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
-                      <SelectItem value="" className="text-white">Todos los municipios</SelectItem>
+                      <SelectItem value="all" className="text-white">Todos los municipios</SelectItem>
                       {municipalities.map(municipality => (
                         <SelectItem key={municipality} value={municipality} className="text-white">{municipality}</SelectItem>
                       ))}
