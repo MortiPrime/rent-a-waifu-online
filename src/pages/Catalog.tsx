@@ -1,284 +1,276 @@
 
 import { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Star, Crown, MapPin, Filter, Phone, Lock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Navbar from '@/components/Navbar';
-import ChatInterface from '@/components/ChatInterface';
-import { useCompanionListings } from '@/hooks/useCompanionListings';
 import { useAuth } from '@/hooks/useAuth';
-import { LocationFilter } from '@/types';
+import { useCompanionListings } from '@/hooks/useCompanionListings';
+import { CompanionListing } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Phone, Crown, Star, DollarSign, Heart, Users } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 const Catalog = () => {
-  const [selectedCharacter, setSelectedCharacter] = useState<any>(null);
-  const [filter, setFilter] = useState('all');
-  const [locationFilter, setLocationFilter] = useState<LocationFilter>({});
-  const [showFilters, setShowFilters] = useState(false);
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { listings, loading, states, cities, municipalities, loadListings } = useCompanionListings();
-
-  useEffect(() => {
-    loadListings(locationFilter);
-  }, [locationFilter]);
-
-  const canAccessCompanion = (companion: any) => {
-    if (companion.promotion_plan === 'basic') return true;
-    if (companion.promotion_plan === 'premium' && (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip')) return true;
-    if (companion.promotion_plan === 'vip' && profile?.subscription_type === 'vip') return true;
-    return false;
-  };
-
-  const canSeeContactInfo = () => {
-    return profile?.subscription_type && profile.subscription_type !== 'basic';
-  };
-
-  const filteredListings = listings.filter(listing => {
-    if (filter === 'all') return true;
-    return listing.promotion_plan === filter;
+  const [searchFilters, setSearchFilters] = useState({
+    state: '',
+    city: '',
+    municipality: ''
   });
 
-  const handleLocationFilterChange = (type: keyof LocationFilter, value: string) => {
-    const newFilter = { ...locationFilter };
-    
-    if (value === 'all') {
-      delete newFilter[type];
-      if (type === 'state') {
-        delete newFilter.city;
-        delete newFilter.municipality;
-      }
-      if (type === 'city') {
-        delete newFilter.municipality;
-      }
-    } else {
-      newFilter[type] = value;
-    }
-    
-    setLocationFilter(newFilter);
+  useEffect(() => {
+    loadListings(searchFilters);
+  }, [searchFilters]);
+
+  const handleFilterChange = (key: string, value: string) => {
+    setSearchFilters(prev => ({
+      ...prev,
+      [key]: value,
+      // Reset dependent filters
+      ...(key === 'state' && { city: '', municipality: '' }),
+      ...(key === 'city' && { municipality: '' })
+    }));
   };
 
-  if (selectedCharacter) {
-    return (
-      <ChatInterface
-        characterId={selectedCharacter.id}
-        characterName={selectedCharacter.stage_name}
-        characterImage="/placeholder.svg"
-        onBack={() => setSelectedCharacter(null)}
-      />
-    );
-  }
+  const hasSubscription = profile?.subscription_type && 
+    profile?.subscription_expires_at && 
+    new Date(profile.subscription_expires_at) > new Date();
+
+  const isVipSubscription = hasSubscription && 
+    (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
+
+  const getPlanBadge = (plan: string) => {
+    switch (plan) {
+      case 'basic':
+        return <Badge className="bg-blue-500">Básico</Badge>;
+      case 'premium':
+        return <Badge className="bg-purple-500">Premium</Badge>;
+      case 'vip':
+        return <Badge className="bg-yellow-500"><Crown className="w-3 h-3 mr-1" />VIP</Badge>;
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-secondary">
+    <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Catálogo de Companions
-          </h1>
-          <p className="text-white/80 text-lg mb-6">
-            Descubre y conecta con companions increíbles cerca de ti
-          </p>
-          
-          {/* Subscription Status */}
-          {!canSeeContactInfo() && (
-            <div className="mb-6 p-4 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
-              <p className="text-yellow-300 text-sm">
-                <Lock className="w-4 h-4 inline mr-2" />
-                Suscríbete a un plan Premium o VIP para ver información de contacto
-              </p>
-            </div>
-          )}
-          
+      <div className="pt-24 pb-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-6xl font-playfair font-bold text-white mb-6">
+              Catálogo de
+              <span className="block bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+                Companions
+              </span>
+            </h1>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Descubre companions increíbles en tu área. Conecta con personalidades únicas.
+            </p>
+          </div>
+
           {/* Filters */}
-          <div className="flex flex-col space-y-4">
-            {/* Plan Filters */}
-            <div className="flex justify-center space-x-4">
-              {[
-                { key: 'all', label: 'Todos', icon: Star },
-                { key: 'basic', label: 'Básico', icon: Star },
-                { key: 'premium', label: 'Premium', icon: Heart },
-                { key: 'vip', label: 'VIP', icon: Crown },
-              ].map(({ key, label, icon: Icon }) => (
-                <Button
-                  key={key}
-                  variant={filter === key ? 'default' : 'outline'}
-                  onClick={() => setFilter(key)}
-                  className={filter === key ? 'anime-button' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {label}
-                </Button>
-              ))}
-            </div>
-
-            {/* Location Filters */}
-            <div className="flex justify-center">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Filtros de Ubicación
-                <MapPin className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-
-            {showFilters && (
-              <div className="flex flex-wrap justify-center gap-4 bg-white/10 p-4 rounded-lg">
-                <div className="min-w-[150px]">
-                  <Select onValueChange={(value) => handleLocationFilterChange('state', value)}>
-                    <SelectTrigger className="bg-white/20 text-white border-white/30">
-                      <SelectValue placeholder="Estado" />
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Filtros de Búsqueda
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="state-filter" className="text-white font-medium">Estado</Label>
+                  <Select value={searchFilters.state} onValueChange={(value) => handleFilterChange('state', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Todos los estados" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los estados</SelectItem>
-                      {states.map((state) => (
-                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                    <SelectContent className="bg-gray-900 border-gray-700">
+                      <SelectItem value="" className="text-white">Todos los estados</SelectItem>
+                      {states.map(state => (
+                        <SelectItem key={state} value={state} className="text-white">{state}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="min-w-[150px]">
-                  <Select onValueChange={(value) => handleLocationFilterChange('city', value)}>
-                    <SelectTrigger className="bg-white/20 text-white border-white/30">
-                      <SelectValue placeholder="Ciudad" />
+                <div>
+                  <Label htmlFor="city-filter" className="text-white font-medium">Ciudad</Label>
+                  <Select value={searchFilters.city} onValueChange={(value) => handleFilterChange('city', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Todas las ciudades" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las ciudades</SelectItem>
-                      {cities.map((city) => (
-                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                    <SelectContent className="bg-gray-900 border-gray-700">
+                      <SelectItem value="" className="text-white">Todas las ciudades</SelectItem>
+                      {cities.map(city => (
+                        <SelectItem key={city} value={city} className="text-white">{city}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="min-w-[150px]">
-                  <Select onValueChange={(value) => handleLocationFilterChange('municipality', value)}>
-                    <SelectTrigger className="bg-white/20 text-white border-white/30">
-                      <SelectValue placeholder="Municipio" />
+                <div>
+                  <Label htmlFor="municipality-filter" className="text-white font-medium">Municipio</Label>
+                  <Select value={searchFilters.municipality} onValueChange={(value) => handleFilterChange('municipality', value)}>
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectValue placeholder="Todos los municipios" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los municipios</SelectItem>
-                      {municipalities.map((municipality) => (
-                        <SelectItem key={municipality} value={municipality}>{municipality}</SelectItem>
+                    <SelectContent className="bg-gray-900 border-gray-700">
+                      <SelectItem value="" className="text-white">Todos los municipios</SelectItem>
+                      {municipalities.map(municipality => (
+                        <SelectItem key={municipality} value={municipality} className="text-white">{municipality}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            </CardContent>
+          </Card>
 
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-white text-lg">Cargando companions...</p>
-          </div>
-        ) : (
-          <>
-            {/* Companions Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredListings.map((listing) => {
-                const hasAccess = canAccessCompanion(listing);
-                
-                return (
-                  <Card key={listing.id} className="character-card relative group">
-                    <div className="relative overflow-hidden">
-                      <img
-                        src="/placeholder.svg"
-                        alt={listing.stage_name}
-                        className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-                      />
-                      
-                      {/* Tier Badge */}
-                      <Badge
-                        className={`absolute top-3 right-3 ${
-                          listing.promotion_plan === 'basic' ? 'bg-gray-500' :
-                          listing.promotion_plan === 'premium' ? 'bg-primary' :
-                          'bg-yellow-500'
-                        }`}
-                      >
-                        {listing.promotion_plan === 'basic' && <Star className="w-3 h-3 mr-1" />}
-                        {listing.promotion_plan === 'premium' && <Heart className="w-3 h-3 mr-1" />}
-                        {listing.promotion_plan === 'vip' && <Crown className="w-3 h-3 mr-1" />}
-                        {listing.promotion_plan.toUpperCase()}
-                      </Badge>
+          {!hasSubscription && (
+            <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 mb-8">
+              <CardContent className="p-6 text-center">
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  ¡Suscríbete para ver números de contacto!
+                </h3>
+                <p className="text-white/80 mb-4">
+                  Con una suscripción Premium o VIP podrás acceder a los números de contacto de las companions.
+                </p>
+                <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+                  Ver Planes de Suscripción
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
-                      {/* Featured Badge */}
-                      {listing.is_featured && (
-                        <Badge className="absolute top-3 left-3 bg-yellow-500">
-                          ⭐ Destacada
-                        </Badge>
-                      )}
+          {/* Listings Grid */}
+          {loading ? (
+            <div className="text-center text-white">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500 mx-auto"></div>
+              <p className="mt-4">Cargando companions...</p>
+            </div>
+          ) : listings.length === 0 ? (
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardContent className="p-12 text-center">
+                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">No se encontraron companions</h3>
+                <p className="text-gray-300">
+                  Intenta ajustar tus filtros de búsqueda o verifica más tarde.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {listings.map((companion) => (
+                <Card key={companion.id} className="bg-white/10 backdrop-blur-md border-white/20 overflow-hidden hover:bg-white/15 transition-all duration-300">
+                  <CardHeader className="pb-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-white text-xl mb-1">
+                          {companion.stage_name}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 text-white/80 text-sm">
+                          <MapPin className="w-4 h-4" />
+                          {companion.city}, {companion.state}
+                          {companion.municipality && ` - ${companion.municipality}`}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {getPlanBadge(companion.promotion_plan || 'basic')}
+                        {companion.is_featured && (
+                          <Badge className="bg-yellow-500">
+                            <Star className="w-3 h-3 mr-1" />
+                            Destacado
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
 
-                      {/* Overlay for locked companions */}
-                      {!hasAccess && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                          <div className="text-center text-white">
-                            <Crown className="w-8 h-8 mx-auto mb-2" />
-                            <p className="text-sm font-semibold">Suscripción Requerida</p>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-white/90 text-sm">
+                        <span className="font-semibold">Edad:</span> {companion.age} años
+                      </p>
+                      <p className="text-white/80 text-sm mt-2 line-clamp-3">
+                        {companion.description}
+                      </p>
+                    </div>
+
+                    {/* Pricing */}
+                    {companion.pricing && (
+                      <div className="space-y-2">
+                        <h4 className="text-white font-medium flex items-center gap-2">
+                          <DollarSign className="w-4 h-4" />
+                          Precios
+                        </h4>
+                        <div className="grid grid-cols-1 gap-1 text-sm">
+                          <div className="text-white/80">
+                            Chat Básico: ${(companion.pricing as any).basic_chat} MXN
                           </div>
+                          <div className="text-white/80">
+                            Chat Premium: ${(companion.pricing as any).premium_chat} MXN
+                          </div>
+                          <div className="text-white/80">
+                            Video Llamada: ${(companion.pricing as any).video_call} MXN
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Contact */}
+                    <div className="space-y-2">
+                      <h4 className="text-white font-medium flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        Contacto
+                      </h4>
+                      {isVipSubscription ? (
+                        <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
+                          <p className="text-green-300 font-medium text-sm">
+                            📞 {companion.contact_number}
+                          </p>
+                        </div>
+                      ) : hasSubscription ? (
+                        <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-md p-3">
+                          <p className="text-yellow-300 text-sm">
+                            Número disponible con suscripción Premium/VIP
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="bg-red-500/20 border border-red-500/30 rounded-md p-3">
+                          <p className="text-red-300 text-sm">
+                            Suscríbete para ver el número de contacto
+                          </p>
                         </div>
                       )}
                     </div>
 
-                    <CardContent className="p-4">
-                      <h3 className="font-bold text-lg mb-2">{listing.stage_name}</h3>
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {listing.description}
-                      </p>
-                      
-                      {/* Location */}
-                      {(listing.city || listing.state) && (
-                        <div className="flex items-center text-gray-500 text-sm mb-3">
-                          <MapPin className="w-3 h-3 mr-1" />
-                          {listing.city && listing.state ? `${listing.city}, ${listing.state}` : listing.city || listing.state}
-                        </div>
-                      )}
-
-                      {/* Contact Info - Only for subscribed users */}
-                      {canSeeContactInfo() && listing.contact_number && (
-                        <div className="flex items-center text-green-600 text-sm mb-3">
-                          <Phone className="w-3 h-3 mr-1" />
-                          {listing.contact_number}
-                        </div>
-                      )}
-
-                      {/* Pricing */}
-                      {listing.pricing && (
-                        <div className="text-sm text-gray-600 mb-4">
-                          Desde ${listing.pricing.basic_chat}/hora
-                        </div>
-                      )}
-
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={() => hasAccess ? setSelectedCharacter(listing) : null}
-                          disabled={!hasAccess}
-                          className={hasAccess ? 'anime-button flex-1' : 'flex-1 opacity-50 cursor-not-allowed'}
-                        >
-                          <MessageCircle className="w-4 h-4 mr-2" />
-                          {hasAccess ? 'Chatear' : 'Bloqueado'}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="flex-1 border-white/30 text-white hover:bg-white/10"
+                      >
+                        <Heart className="w-4 h-4 mr-1" />
+                        Me gusta
+                      </Button>
+                      <Button 
+                        size="sm"
+                        className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                      >
+                        Ver Perfil
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-
-            {filteredListings.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-white/60 text-lg">No se encontraron companions en esta área</p>
-              </div>
-            )}
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

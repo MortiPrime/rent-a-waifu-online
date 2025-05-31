@@ -71,6 +71,7 @@ export type Database = {
           age: number | null
           city: string | null
           companion_id: string | null
+          contact_number: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -88,6 +89,7 @@ export type Database = {
           age?: number | null
           city?: string | null
           companion_id?: string | null
+          contact_number?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -105,6 +107,7 @@ export type Database = {
           age?: number | null
           city?: string | null
           companion_id?: string | null
+          contact_number?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -171,6 +174,7 @@ export type Database = {
           age: number
           availability: Json | null
           city: string | null
+          contact_number: string | null
           created_at: string | null
           description: string
           exit_rules: string[] | null
@@ -190,6 +194,7 @@ export type Database = {
           age: number
           availability?: Json | null
           city?: string | null
+          contact_number?: string | null
           created_at?: string | null
           description: string
           exit_rules?: string[] | null
@@ -209,6 +214,7 @@ export type Database = {
           age?: number
           availability?: Json | null
           city?: string | null
+          contact_number?: string | null
           created_at?: string | null
           description?: string
           exit_rules?: string[] | null
@@ -346,6 +352,7 @@ export type Database = {
           subscription_expires_at: string | null
           subscription_type: string | null
           updated_at: string | null
+          user_role: string | null
           username: string | null
         }
         Insert: {
@@ -357,6 +364,7 @@ export type Database = {
           subscription_expires_at?: string | null
           subscription_type?: string | null
           updated_at?: string | null
+          user_role?: string | null
           username?: string | null
         }
         Update: {
@@ -368,6 +376,7 @@ export type Database = {
           subscription_expires_at?: string | null
           subscription_type?: string | null
           updated_at?: string | null
+          user_role?: string | null
           username?: string | null
         }
         Relationships: []

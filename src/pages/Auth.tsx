@@ -1,26 +1,29 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/hooks/useAuth';
-import { Heart, Mail, Lock, User, Crown } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Auth = () => {
   const { signIn, signUp, loading } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('signin');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [signInData, setSignInData] = useState({
+  // Login form state
+  const [loginData, setLoginData] = useState({
     email: '',
     password: ''
   });
 
-  const [signUpData, setSignUpData] = useState({
+  // Register form state
+  const [registerData, setRegisterData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
@@ -28,216 +31,223 @@ const Auth = () => {
     userRole: 'client' as 'client' | 'girlfriend'
   });
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signIn(signInData.email, signInData.password);
+      await signIn(loginData.email, loginData.password);
       navigate('/');
     } catch (error) {
-      // Error handling is done in the useAuth hook
+      console.error('Login error:', error);
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (signUpData.password !== signUpData.confirmPassword) {
+    if (registerData.password !== registerData.confirmPassword) {
       alert('Las contraseñas no coinciden');
       return;
     }
 
+    if (registerData.password.length < 6) {
+      alert('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
     try {
-      await signUp(signUpData.email, signUpData.password, {
-        full_name: signUpData.fullName,
-        user_role: signUpData.userRole
+      await signUp(registerData.email, registerData.password, {
+        full_name: registerData.fullName,
+        user_role: registerData.userRole
       });
-      
-      // If successful, switch to sign in tab
-      setActiveTab('signin');
-      setSignInData({
-        email: signUpData.email,
-        password: ''
-      });
+      navigate('/');
     } catch (error) {
-      // Error handling is done in the useAuth hook
+      console.error('Register error:', error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-secondary flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2">
-            <Heart className="w-10 h-10 text-primary" />
-            <span className="text-2xl font-playfair font-bold text-white">
-              AnimeDating
-            </span>
-          </Link>
-          <p className="text-gray-300 mt-2">
-            Conecta con personas increíbles
-          </p>
-        </div>
-
-        <Card className="glass-card">
+        <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-2xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-white">Bienvenido</CardTitle>
-            <CardDescription className="text-gray-300">
-              Inicia sesión o crea tu cuenta para comenzar
-            </CardDescription>
+            <CardTitle className="text-3xl font-bold text-white">
+              Bienvenida
+            </CardTitle>
           </CardHeader>
           
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 glass-card">
-                <TabsTrigger value="signin">Iniciar Sesión</TabsTrigger>
-                <TabsTrigger value="signup">Registrarse</TabsTrigger>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-white/10">
+                <TabsTrigger value="login" className="text-white data-[state=active]:bg-white/20">
+                  Iniciar Sesión
+                </TabsTrigger>
+                <TabsTrigger value="register" className="text-white data-[state=active]:bg-white/20">
+                  Registro
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
+              <TabsContent value="login" className="space-y-4 mt-6">
+                <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="text-white">
+                    <Label htmlFor="login-email" className="text-white font-medium">
                       Correo Electrónico
                     </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        placeholder="tu@email.com"
-                        value={signInData.email}
-                        onChange={(e) => setSignInData(prev => ({ ...prev, email: e.target.value }))}
-                        required
-                        className="pl-10 bg-white/10 text-white border-white/20"
-                      />
-                    </div>
+                    <Input
+                      id="login-email"
+                      type="email"
+                      value={loginData.email}
+                      onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50"
+                      placeholder="tu@email.com"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-white">
+                    <Label htmlFor="login-password" className="text-white font-medium">
                       Contraseña
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="signin-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={signInData.password}
-                        onChange={(e) => setSignInData(prev => ({ ...prev, password: e.target.value }))}
+                        id="login-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={loginData.password}
+                        onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                         required
-                        className="pl-10 bg-white/10 text-white border-white/20"
+                        className="bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 pr-10"
+                        placeholder="Tu contraseña"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-white/60 hover:text-white"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full anime-button" disabled={loading}>
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-2 transition-all duration-300"
+                  >
                     {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                   </Button>
                 </form>
               </TabsContent>
 
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
+              <TabsContent value="register" className="space-y-4 mt-6">
+                <form onSubmit={handleRegister} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name" className="text-white">
+                    <Label htmlFor="register-name" className="text-white font-medium">
                       Nombre Completo
                     </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="Tu nombre completo"
-                        value={signUpData.fullName}
-                        onChange={(e) => setSignUpData(prev => ({ ...prev, fullName: e.target.value }))}
-                        required
-                        className="pl-10 bg-white/10 text-white border-white/20"
-                      />
-                    </div>
+                    <Input
+                      id="register-name"
+                      type="text"
+                      value={registerData.fullName}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, fullName: e.target.value }))}
+                      required
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50"
+                      placeholder="Tu nombre completo"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-white">
+                    <Label htmlFor="register-email" className="text-white font-medium">
                       Correo Electrónico
                     </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="tu@email.com"
-                        value={signUpData.email}
-                        onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
-                        required
-                        className="pl-10 bg-white/10 text-white border-white/20"
-                      />
-                    </div>
+                    <Input
+                      id="register-email"
+                      type="email"
+                      value={registerData.email}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                      className="bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50"
+                      placeholder="tu@email.com"
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="user-role" className="text-white">
+                    <Label htmlFor="user-role" className="text-white font-medium">
                       Tipo de Usuario
                     </Label>
-                    <Select onValueChange={(value: 'client' | 'girlfriend') => setSignUpData(prev => ({ ...prev, userRole: value }))}>
-                      <SelectTrigger className="bg-white/10 text-white border-white/20">
-                        <SelectValue placeholder="Selecciona tu rol" />
+                    <Select 
+                      value={registerData.userRole} 
+                      onValueChange={(value: 'client' | 'girlfriend') => 
+                        setRegisterData(prev => ({ ...prev, userRole: value }))
+                      }
+                    >
+                      <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                        <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="client">
-                          <div className="flex items-center gap-2">
-                            <Heart className="w-4 h-4" />
-                            Cliente - Busco companía
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="girlfriend">
-                          <div className="flex items-center gap-2">
-                            <Crown className="w-4 h-4" />
-                            Companion - Ofrezco servicios
-                          </div>
-                        </SelectItem>
+                      <SelectContent className="bg-gray-900 border-gray-700">
+                        <SelectItem value="client" className="text-white">Cliente</SelectItem>
+                        <SelectItem value="girlfriend" className="text-white">Companion</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-white">
+                    <Label htmlFor="register-password" className="text-white font-medium">
                       Contraseña
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={signUpData.password}
-                        onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
+                        id="register-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={registerData.password}
+                        onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
                         required
-                        className="pl-10 bg-white/10 text-white border-white/20"
+                        className="bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 pr-10"
+                        placeholder="Mínimo 6 caracteres"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-white/60 hover:text-white"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-confirm-password" className="text-white">
+                    <Label htmlFor="register-confirm-password" className="text-white font-medium">
                       Confirmar Contraseña
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="signup-confirm-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={signUpData.confirmPassword}
-                        onChange={(e) => setSignUpData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        id="register-confirm-password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={registerData.confirmPassword}
+                        onChange={(e) => setRegisterData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                         required
-                        className="pl-10 bg-white/10 text-white border-white/20"
+                        className="bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 pr-10"
+                        placeholder="Confirma tu contraseña"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 text-white/60 hover:text-white"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full anime-button" disabled={loading}>
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-2 transition-all duration-300"
+                  >
                     {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
                   </Button>
                 </form>
@@ -245,12 +255,6 @@ const Auth = () => {
             </Tabs>
           </CardContent>
         </Card>
-
-        <div className="text-center mt-6">
-          <Link to="/" className="text-gray-300 hover:text-white transition-colors">
-            ← Volver al inicio
-          </Link>
-        </div>
       </div>
     </div>
   );
