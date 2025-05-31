@@ -37,7 +37,14 @@ const CompanionProfileForm = () => {
     pricing: {
       basic_chat: 150,
       premium_chat: 300,
-      video_call: 500
+      video_call: 500,
+      date_cost: 1000,
+      date_packages: {
+        coffee_date: { price: 800, duration: '2 horas', includes: ['Café o bebida', 'Conversación agradable', 'Lugar público'] },
+        dinner_date: { price: 1500, duration: '3 horas', includes: ['Cena en restaurante', 'Conversación', 'Compañía elegante'] },
+        event_companion: { price: 2500, duration: '4-6 horas', includes: ['Acompañamiento a evento', 'Vestimenta apropiada', 'Conversación social'] },
+        weekend_companion: { price: 5000, duration: '1 día completo', includes: ['Compañía durante el día', 'Actividades recreativas', 'Flexibilidad en planes'] }
+      }
     },
     availability: {
       days: [] as string[],

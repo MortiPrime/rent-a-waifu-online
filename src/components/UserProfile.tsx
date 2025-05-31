@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { User, Edit, Camera, Crown, Heart, MapPin, Phone, Calendar } from 'lucide-react';
+import { User, Edit, Camera, Crown, Heart, MapPin, Phone, Calendar, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 const UserProfile = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -47,6 +48,8 @@ const UserProfile = () => {
       </div>
     );
   };
+
+  const isCompanion = profile?.user_role === 'girlfriend';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900 p-4">
@@ -98,13 +101,43 @@ const UserProfile = () => {
                   {profile?.full_name || 'Usuario Anónimo'}
                 </CardTitle>
                 <p className="text-gray-300">@{profile?.username || 'usuario'}</p>
-                <div className="mt-2">
+                <div className="mt-2 flex flex-col items-center gap-2">
                   {getSubscriptionBadge()}
+                  {isCompanion && (
+                    <div className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-pink-500 text-white">
+                      <Users className="w-4 h-4" />
+                      <span>Companion</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </CardHeader>
         </Card>
+
+        {/* Account Type Conversion */}
+        {!isCompanion && (
+          <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                ¿Quieres ser Companion?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-white/80 mb-4">
+                Convierte tu cuenta en una cuenta de Companion y comienza a ofrecer tus servicios.
+                Podrás gestionar tu perfil, fotos, precios y reglas.
+              </p>
+              <Link to="/become-companion">
+                <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+                  <Users className="w-4 h-4 mr-2" />
+                  Convertir a Companion
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Profile Details */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
@@ -182,7 +215,9 @@ const UserProfile = () => {
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-300">Tipo de cuenta</Label>
-                    <p className="text-white text-lg capitalize">{profile?.user_role || 'cliente'}</p>
+                    <p className="text-white text-lg capitalize">
+                      {profile?.user_role === 'girlfriend' ? 'Companion' : 'Cliente'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -221,9 +256,11 @@ const UserProfile = () => {
                 <p className="text-white/80 text-sm mb-3">
                   Con una suscripción Premium o VIP tendrás acceso a números de contacto de companions.
                 </p>
-                <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
-                  Ver Planes
-                </Button>
+                <Link to="/subscription">
+                  <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+                    Ver Planes
+                  </Button>
+                </Link>
               </div>
             )}
           </CardContent>
