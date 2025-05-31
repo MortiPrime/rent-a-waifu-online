@@ -1,3 +1,4 @@
+
 export interface Message {
   id: string;
   content: string;
@@ -42,6 +43,13 @@ export interface CompanionProfile {
     basic_chat: number;
     premium_chat: number;
     video_call: number;
+    date_cost: number;
+    date_packages?: {
+      coffee_date: { price: number; duration: string; includes: string[] };
+      dinner_date: { price: number; duration: string; includes: string[] };
+      event_companion: { price: number; duration: string; includes: string[] };
+      weekend_companion: { price: number; duration: string; includes: string[] };
+    };
   };
   availability: {
     days: string[];
