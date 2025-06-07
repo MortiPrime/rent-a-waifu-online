@@ -37,7 +37,21 @@ export const useCompanionProfile = () => {
         throw profileError;
       }
 
-      setProfile(profileData);
+      if (profileData) {
+        // Convertir pricing de JSON a objeto tipado
+        const typedProfile: CompanionProfile = {
+          ...profileData,
+          pricing: typeof profileData.pricing === 'string' 
+            ? JSON.parse(profileData.pricing) 
+            : profileData.pricing || {
+                basic_chat: 150,
+                premium_chat: 300,
+                video_call: 500,
+                date_cost: 500
+              }
+        };
+        setProfile(typedProfile);
+      }
 
       if (profileData) {
         // Cargar fotos
@@ -53,7 +67,7 @@ export const useCompanionProfile = () => {
           setPhotos(photosData || []);
         }
 
-        // Cargar reglas
+        // Cargar reglas con type assertion
         const { data: rulesData, error: rulesError } = await supabase
           .from('companion_rules')
           .select('*')
@@ -63,10 +77,14 @@ export const useCompanionProfile = () => {
         if (rulesError) {
           console.error('Error loading rules:', rulesError);
         } else {
-          setRules(rulesData || []);
+          const typedRules: CompanionRule[] = (rulesData || []).map(rule => ({
+            ...rule,
+            rule_type: rule.rule_type as 'boundary' | 'availability' | 'pricing' | 'behavior'
+          }));
+          setRules(typedRules);
         }
 
-        // Cargar sesiones de chat
+        // Cargar sesiones de chat con type assertion
         const { data: chatData, error: chatError } = await supabase
           .from('chat_sessions')
           .select('*')
@@ -76,7 +94,11 @@ export const useCompanionProfile = () => {
         if (chatError) {
           console.error('Error loading chat sessions:', chatError);
         } else {
-          setChatSessions(chatData || []);
+          const typedSessions: ChatSession[] = (chatData || []).map(session => ({
+            ...session,
+            session_type: session.session_type as 'basic_chat' | 'premium_chat' | 'video_call'
+          }));
+          setChatSessions(typedSessions);
         }
       }
     } catch (error: any) {
@@ -108,7 +130,19 @@ export const useCompanionProfile = () => {
           .single();
 
         if (error) throw error;
-        setProfile(data);
+        
+        const typedProfile: CompanionProfile = {
+          ...data,
+          pricing: typeof data.pricing === 'string' 
+            ? JSON.parse(data.pricing) 
+            : data.pricing || {
+                basic_chat: 150,
+                premium_chat: 300,
+                video_call: 500,
+                date_cost: 500
+              }
+        };
+        setProfile(typedProfile);
       } else {
         // Crear nuevo perfil
         const { data, error } = await supabase
@@ -123,7 +157,19 @@ export const useCompanionProfile = () => {
           .single();
 
         if (error) throw error;
-        setProfile(data);
+        
+        const typedProfile: CompanionProfile = {
+          ...data,
+          pricing: typeof data.pricing === 'string' 
+            ? JSON.parse(data.pricing) 
+            : data.pricing || {
+                basic_chat: 150,
+                premium_chat: 300,
+                video_call: 500,
+                date_cost: 500
+              }
+        };
+        setProfile(typedProfile);
       }
     } catch (error: any) {
       console.error('Error updating profile:', error);
@@ -131,7 +177,7 @@ export const useCompanionProfile = () => {
     }
   };
 
-  const addPhoto = async (photoData: { photo_url: string; caption?: string; is_primary?: boolean }) => {
+  const addPhoto = async (photoUrl: string, caption?: string, isPrimary?: boolean) => {
     if (!profile) throw new Error('Perfil no encontrado');
 
     try {
@@ -139,9 +185,9 @@ export const useCompanionProfile = () => {
         .from('companion_photos')
         .insert({
           companion_id: profile.id,
-          photo_url: photoData.photo_url,
-          caption: photoData.caption,
-          is_primary: photoData.is_primary || false,
+          photo_url: photoUrl,
+          caption: caption,
+          is_primary: isPrimary || false,
           display_order: photos.length
         })
         .select()
@@ -171,7 +217,7 @@ export const useCompanionProfile = () => {
     }
   };
 
-  const addRule = async (ruleData: { rule_type: string; rule_text: string }) => {
+  const addRule = async (ruleType: 'boundary' | 'availability' | 'pricing' | 'behavior', ruleText: string) => {
     if (!profile) throw new Error('Perfil no encontrado');
 
     try {
@@ -179,14 +225,19 @@ export const useCompanionProfile = () => {
         .from('companion_rules')
         .insert({
           companion_id: profile.id,
-          rule_type: ruleData.rule_type,
-          rule_text: ruleData.rule_text
+          rule_type: ruleType,
+          rule_text: ruleText
         })
         .select()
         .single();
 
       if (error) throw error;
-      setRules(prev => [...prev, data]);
+      
+      const typedRule: CompanionRule = {
+        ...data,
+        rule_type: data.rule_type as 'boundary' | 'availability' | 'pricing' | 'behavior'
+      };
+      setRules(prev => [...prev, typedRule]);
       return data;
     } catch (error: any) {
       console.error('Error adding rule:', error);

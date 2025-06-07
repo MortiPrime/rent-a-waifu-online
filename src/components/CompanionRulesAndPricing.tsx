@@ -12,9 +12,9 @@ import { useCompanionProfile } from '@/hooks/useCompanionProfile';
 import { useToast } from '@/hooks/use-toast';
 
 const CompanionRulesAndPricing = () => {
-  const { profile, rules, addRule, removeRule, createOrUpdateProfile } = useCompanionProfile();
+  const { profile, rules, addRule, removeRule, updateProfile } = useCompanionProfile();
   const { toast } = useToast();
-  const [newRule, setNewRule] = useState({ type: 'boundary', text: '' });
+  const [newRule, setNewRule] = useState({ type: 'boundary' as 'boundary' | 'availability' | 'pricing' | 'behavior', text: '' });
   const [pricing, setPricing] = useState({
     date_cost: profile?.pricing?.date_cost || 500,
     basic_chat: profile?.pricing?.basic_chat || 150,
@@ -80,14 +80,14 @@ const CompanionRulesAndPricing = () => {
       return;
     }
 
-    await addRule(newRule.type as any, newRule.text);
+    await addRule(newRule.type, newRule.text);
     setNewRule({ type: 'boundary', text: '' });
   };
 
   const handleUpdatePricing = async () => {
     if (!profile) return;
 
-    await createOrUpdateProfile({
+    await updateProfile({
       ...profile,
       pricing: {
         ...profile.pricing,
@@ -302,7 +302,7 @@ const CompanionRulesAndPricing = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="text-white font-medium">Tipo de Regla</Label>
-                  <Select value={newRule.type} onValueChange={(value) => setNewRule(prev => ({ ...prev, type: value }))}>
+                  <Select value={newRule.type} onValueChange={(value: 'boundary' | 'availability' | 'pricing' | 'behavior') => setNewRule(prev => ({ ...prev, type: value }))}>
                     <SelectTrigger className="bg-white/10 border-white/30 text-white">
                       <SelectValue />
                     </SelectTrigger>
