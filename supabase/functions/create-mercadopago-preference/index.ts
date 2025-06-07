@@ -20,7 +20,10 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const mercadoPagoToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+    // Token de prueba - cambiar por token de producción cuando esté listo
+    const mercadoPagoToken = "TEST-1195552363186700-060621-190210f5b2c446adaf06cd9e1700adc8-301957132";
+    // const mercadoPagoToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN"); // Para producción
+    
     if (!mercadoPagoToken) {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN is not set");
     }
@@ -63,7 +66,7 @@ serve(async (req) => {
     const totalAmount = selectedPlan.amount * (months || 1);
     const externalReference = `sub_${user.id}_${Date.now()}`;
 
-    // Crear preferencia en MercadoPago
+    // Crear preferencia en MercadoPago para suscripciones
     const preferenceData = {
       items: [
         {
@@ -77,6 +80,7 @@ serve(async (req) => {
         email: user.email
       },
       external_reference: externalReference,
+      // URL del webhook para pruebas - cambiar dominio para producción
       notification_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/mercadopago-webhook`,
       back_urls: {
         success: `${req.headers.get("origin")}/subscription?success=true`,
@@ -88,7 +92,10 @@ serve(async (req) => {
 
     logStep("Creating MercadoPago preference", preferenceData);
 
-    const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
+    // API de MercadoPago - usar sandbox para pruebas, cambiar a api.mercadopago.com para producción
+    const apiUrl = "https://api.mercadopago.com/checkout/preferences"; // Producción y pruebas
+    
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${mercadoPagoToken}`,

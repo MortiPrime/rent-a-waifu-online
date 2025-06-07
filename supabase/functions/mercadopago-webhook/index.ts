@@ -11,7 +11,10 @@ serve(async (req) => {
   try {
     logStep("Webhook received");
 
-    const mercadoPagoToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+    // Token de prueba - cambiar por token de producción cuando esté listo
+    const mercadoPagoToken = "TEST-1195552363186700-060621-190210f5b2c446adaf06cd9e1700adc8-301957132";
+    // const mercadoPagoToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN"); // Para producción
+    
     if (!mercadoPagoToken) {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN is not set");
     }
@@ -31,6 +34,7 @@ serve(async (req) => {
       logStep("Processing payment", { paymentId });
 
       // Obtener detalles del pago desde MercadoPago
+      // API de MercadoPago - usar para producción y pruebas
       const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
         headers: {
           "Authorization": `Bearer ${mercadoPagoToken}`
