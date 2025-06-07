@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { CompanionProfile, CompanionPhoto, CompanionRule, ChatSession } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { CompanionProfile, CompanionPhoto, CompanionRule, ChatSession } from '@/types';
 
 export const useCompanionProfile = () => {
   const { user } = useAuth();
@@ -11,7 +12,7 @@ export const useCompanionProfile = () => {
   const [photos, setPhotos] = useState<CompanionPhoto[]>([]);
   const [rules, setRules] = useState<CompanionRule[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -24,140 +25,65 @@ export const useCompanionProfile = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+
+      // Cargar perfil
+      const { data: profileData, error: profileError } = await supabase
         .from('companion_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading companion profile:', error);
-        return;
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
       }
 
-      if (data) {
-        setProfile(data as CompanionProfile);
-        await loadPhotos(data.id);
-        await loadRules(data.id);
-        await loadChatSessions(data.id);
+      setProfile(profileData);
+
+      if (profileData) {
+        // Cargar fotos
+        const { data: photosData, error: photosError } = await supabase
+          .from('companion_photos')
+          .select('*')
+          .eq('companion_id', profileData.id)
+          .order('display_order');
+
+        if (photosError) {
+          console.error('Error loading photos:', photosError);
+        } else {
+          setPhotos(photosData || []);
+        }
+
+        // Cargar reglas
+        const { data: rulesData, error: rulesError } = await supabase
+          .from('companion_rules')
+          .select('*')
+          .eq('companion_id', profileData.id)
+          .eq('is_active', true);
+
+        if (rulesError) {
+          console.error('Error loading rules:', rulesError);
+        } else {
+          setRules(rulesData || []);
+        }
+
+        // Cargar sesiones de chat
+        const { data: chatData, error: chatError } = await supabase
+          .from('chat_sessions')
+          .select('*')
+          .eq('companion_id', profileData.id)
+          .order('created_at', { ascending: false });
+
+        if (chatError) {
+          console.error('Error loading chat sessions:', chatError);
+        } else {
+          setChatSessions(chatData || []);
+        }
       }
-    } catch (error) {
-      console.error('Error in loadCompanionProfile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadPhotos = async (companionId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('companion_photos')
-        .select('*')
-        .eq('companion_id', companionId)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      setPhotos(data as CompanionPhoto[]);
-    } catch (error) {
-      console.error('Error loading photos:', error);
-    }
-  };
-
-  const loadRules = async (companionId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('companion_rules')
-        .select('*')
-        .eq('companion_id', companionId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setRules(data as CompanionRule[]);
-    } catch (error) {
-      console.error('Error loading rules:', error);
-    }
-  };
-
-  const loadChatSessions = async (companionId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('chat_sessions')
-        .select('*')
-        .eq('companion_id', companionId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setChatSessions(data as ChatSession[]);
-    } catch (error) {
-      console.error('Error loading chat sessions:', error);
-    }
-  };
-
-  const createOrUpdateProfile = async (profileData: Partial<CompanionProfile>) => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      
-      // Ensure required fields are present for database operations
-      const requiredData = {
-        user_id: user.id,
-        stage_name: profileData.stage_name || '',
-        real_name: profileData.real_name || '',
-        age: profileData.age || 18,
-        description: profileData.description || '',
-        state: profileData.state || '',
-        city: profileData.city || '',
-        municipality: profileData.municipality || '',
-        contact_number: profileData.contact_number || '',
-        pricing: profileData.pricing || {
-          basic_chat: 150,
-          premium_chat: 300,
-          video_call: 500
-        },
-        availability: profileData.availability || {
-          days: [],
-          hours: 'flexible'
-        },
-        promotion_plan: profileData.promotion_plan || 'basic',
-        exit_rules: profileData.exit_rules || [],
-        is_active: profileData.is_active ?? false,
-        status: profileData.status || 'pending'
-      };
-
-      if (profile) {
-        // Update existing profile
-        const { data, error } = await supabase
-          .from('companion_profiles')
-          .update(requiredData)
-          .eq('id', profile.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        setProfile(data as CompanionProfile);
-      } else {
-        // Create new profile
-        const { data, error } = await supabase
-          .from('companion_profiles')
-          .insert(requiredData)
-          .select()
-          .single();
-
-        if (error) throw error;
-        setProfile(data as CompanionProfile);
-      }
-
-      toast({
-        title: "Perfil actualizado",
-        description: "Tu perfil de companion ha sido actualizado exitosamente.",
-      });
     } catch (error: any) {
-      console.error('Error saving profile:', error);
+      console.error('Error loading companion profile:', error);
       toast({
         title: "Error",
-        description: error.message || "No se pudo guardar el perfil",
+        description: "No se pudo cargar el perfil",
         variant: "destructive",
       });
     } finally {
@@ -165,36 +91,68 @@ export const useCompanionProfile = () => {
     }
   };
 
-  const addPhoto = async (photoUrl: string, caption?: string, isPrimary = false) => {
-    if (!profile) return;
+  const updateProfile = async (profileData: Partial<CompanionProfile>) => {
+    if (!user) throw new Error('Usuario no autenticado');
+
+    try {
+      if (profile) {
+        // Actualizar perfil existente
+        const { data, error } = await supabase
+          .from('companion_profiles')
+          .update({
+            ...profileData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', profile.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        setProfile(data);
+      } else {
+        // Crear nuevo perfil
+        const { data, error } = await supabase
+          .from('companion_profiles')
+          .insert({
+            ...profileData,
+            user_id: user.id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        setProfile(data);
+      }
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+
+  const addPhoto = async (photoData: { photo_url: string; caption?: string; is_primary?: boolean }) => {
+    if (!profile) throw new Error('Perfil no encontrado');
 
     try {
       const { data, error } = await supabase
         .from('companion_photos')
         .insert({
           companion_id: profile.id,
-          photo_url: photoUrl,
-          caption,
-          is_primary: isPrimary,
-          display_order: photos.length,
+          photo_url: photoData.photo_url,
+          caption: photoData.caption,
+          is_primary: photoData.is_primary || false,
+          display_order: photos.length
         })
         .select()
         .single();
 
       if (error) throw error;
-      setPhotos(prev => [...prev, data as CompanionPhoto]);
-
-      toast({
-        title: "Foto agregada",
-        description: "La foto ha sido agregada a tu perfil.",
-      });
+      setPhotos(prev => [...prev, data]);
+      return data;
     } catch (error: any) {
       console.error('Error adding photo:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo agregar la foto",
-        variant: "destructive",
-      });
+      throw error;
     }
   };
 
@@ -207,49 +165,32 @@ export const useCompanionProfile = () => {
 
       if (error) throw error;
       setPhotos(prev => prev.filter(photo => photo.id !== photoId));
-
-      toast({
-        title: "Foto eliminada",
-        description: "La foto ha sido eliminada de tu perfil.",
-      });
     } catch (error: any) {
       console.error('Error removing photo:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar la foto",
-        variant: "destructive",
-      });
+      throw error;
     }
   };
 
-  const addRule = async (ruleType: CompanionRule['rule_type'], ruleText: string) => {
-    if (!profile) return;
+  const addRule = async (ruleData: { rule_type: string; rule_text: string }) => {
+    if (!profile) throw new Error('Perfil no encontrado');
 
     try {
       const { data, error } = await supabase
         .from('companion_rules')
         .insert({
           companion_id: profile.id,
-          rule_type: ruleType,
-          rule_text: ruleText,
+          rule_type: ruleData.rule_type,
+          rule_text: ruleData.rule_text
         })
         .select()
         .single();
 
       if (error) throw error;
-      setRules(prev => [...prev, data as CompanionRule]);
-
-      toast({
-        title: "Regla agregada",
-        description: "La regla ha sido agregada a tu perfil.",
-      });
+      setRules(prev => [...prev, data]);
+      return data;
     } catch (error: any) {
       console.error('Error adding rule:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo agregar la regla",
-        variant: "destructive",
-      });
+      throw error;
     }
   };
 
@@ -262,18 +203,9 @@ export const useCompanionProfile = () => {
 
       if (error) throw error;
       setRules(prev => prev.filter(rule => rule.id !== ruleId));
-
-      toast({
-        title: "Regla eliminada",
-        description: "La regla ha sido desactivada.",
-      });
     } catch (error: any) {
       console.error('Error removing rule:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar la regla",
-        variant: "destructive",
-      });
+      throw error;
     }
   };
 
@@ -283,7 +215,7 @@ export const useCompanionProfile = () => {
     rules,
     chatSessions,
     loading,
-    createOrUpdateProfile,
+    updateProfile,
     addPhoto,
     removePhoto,
     addRule,

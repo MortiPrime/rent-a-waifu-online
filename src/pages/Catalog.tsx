@@ -21,11 +21,14 @@ const Catalog = () => {
     municipality: ''
   });
 
+  // Cargar todas las companions cuando cambien los filtros
   useEffect(() => {
+    console.log('Filtros cambiaron:', searchFilters);
     loadListings(searchFilters);
   }, [searchFilters]);
 
   const handleFilterChange = (key: string, value: string) => {
+    console.log('Cambiando filtro:', key, value);
     setSearchFilters(prev => ({
       ...prev,
       [key]: value,
@@ -45,15 +48,17 @@ const Catalog = () => {
   const getPlanBadge = (plan: string) => {
     switch (plan) {
       case 'basic':
-        return <Badge className="bg-blue-500">Básico</Badge>;
+        return <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">Básico</Badge>;
       case 'premium':
-        return <Badge className="bg-purple-500">Premium</Badge>;
+        return <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">Premium</Badge>;
       case 'vip':
-        return <Badge className="bg-yellow-500"><Crown className="w-3 h-3 mr-1" />VIP</Badge>;
+        return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30"><Crown className="w-3 h-3 mr-1" />VIP</Badge>;
       default:
         return null;
     }
   };
+
+  console.log('Renderizando catálogo con', listings.length, 'companions');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
@@ -90,7 +95,7 @@ const Catalog = () => {
                       <SelectValue placeholder="Todos los estados" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
-                      <SelectItem value="all" className="text-white">Todos los estados</SelectItem>
+                      <SelectItem value="" className="text-white">Todos los estados</SelectItem>
                       {states.map(state => (
                         <SelectItem key={state} value={state} className="text-white">{state}</SelectItem>
                       ))}
@@ -105,7 +110,7 @@ const Catalog = () => {
                       <SelectValue placeholder="Todas las ciudades" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
-                      <SelectItem value="all" className="text-white">Todas las ciudades</SelectItem>
+                      <SelectItem value="" className="text-white">Todas las ciudades</SelectItem>
                       {cities.map(city => (
                         <SelectItem key={city} value={city} className="text-white">{city}</SelectItem>
                       ))}
@@ -120,7 +125,7 @@ const Catalog = () => {
                       <SelectValue placeholder="Todos los municipios" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
-                      <SelectItem value="all" className="text-white">Todos los municipios</SelectItem>
+                      <SelectItem value="" className="text-white">Todos los municipios</SelectItem>
                       {municipalities.map(municipality => (
                         <SelectItem key={municipality} value={municipality} className="text-white">{municipality}</SelectItem>
                       ))}
@@ -182,7 +187,7 @@ const Catalog = () => {
                       <div className="flex flex-col gap-2">
                         {getPlanBadge(companion.promotion_plan || 'basic')}
                         {companion.is_featured && (
-                          <Badge className="bg-yellow-500">
+                          <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
                             <Star className="w-3 h-3 mr-1" />
                             Destacado
                           </Badge>
