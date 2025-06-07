@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,7 +37,7 @@ export const useCompanionProfile = () => {
       }
 
       if (profileData) {
-        // Convertir pricing de JSON a objeto tipado
+        // Convertir pricing y availability de JSON a objeto tipado
         const typedProfile: CompanionProfile = {
           ...profileData,
           pricing: typeof profileData.pricing === 'string' 
@@ -48,12 +47,16 @@ export const useCompanionProfile = () => {
                 premium_chat: 300,
                 video_call: 500,
                 date_cost: 500
+              },
+          availability: typeof profileData.availability === 'string'
+            ? JSON.parse(profileData.availability)
+            : profileData.availability || {
+                days: [],
+                hours: "flexible"
               }
         };
         setProfile(typedProfile);
-      }
 
-      if (profileData) {
         // Cargar fotos
         const { data: photosData, error: photosError } = await supabase
           .from('companion_photos')
@@ -96,7 +99,8 @@ export const useCompanionProfile = () => {
         } else {
           const typedSessions: ChatSession[] = (chatData || []).map(session => ({
             ...session,
-            session_type: session.session_type as 'basic_chat' | 'premium_chat' | 'video_call'
+            session_type: session.session_type as 'basic_chat' | 'premium_chat' | 'video_call',
+            payment_status: session.payment_status as 'pending' | 'paid' | 'cancelled'
           }));
           setChatSessions(typedSessions);
         }
@@ -119,12 +123,14 @@ export const useCompanionProfile = () => {
     try {
       if (profile) {
         // Actualizar perfil existente
+        const updateData = {
+          ...profileData,
+          updated_at: new Date().toISOString()
+        };
+
         const { data, error } = await supabase
           .from('companion_profiles')
-          .update({
-            ...profileData,
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', profile.id)
           .select()
           .single();
@@ -140,19 +146,29 @@ export const useCompanionProfile = () => {
                 premium_chat: 300,
                 video_call: 500,
                 date_cost: 500
+              },
+          availability: typeof data.availability === 'string'
+            ? JSON.parse(data.availability)
+            : data.availability || {
+                days: [],
+                hours: "flexible"
               }
         };
         setProfile(typedProfile);
       } else {
-        // Crear nuevo perfil
+        // Crear nuevo perfil - auto-aprobar para companions
+        const newProfileData = {
+          ...profileData,
+          user_id: user.id,
+          status: 'approved', // Auto-aprobar companions
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
         const { data, error } = await supabase
           .from('companion_profiles')
-          .insert({
-            ...profileData,
-            user_id: user.id,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
+          .insert(newProfileData)
           .select()
           .single();
 
@@ -167,9 +183,21 @@ export const useCompanionProfile = () => {
                 premium_chat: 300,
                 video_call: 500,
                 date_cost: 500
+              },
+          availability: typeof data.availability === 'string'
+            ? JSON.parse(data.availability)
+            : data.availability || {
+                days: [],
+                hours: "flexible"
               }
         };
         setProfile(typedProfile);
+
+        // Actualizar el rol del usuario
+        await supabase
+          .from('profiles')
+          .update({ user_role: 'girlfriend' })
+          .eq('id', user.id);
       }
     } catch (error: any) {
       console.error('Error updating profile:', error);

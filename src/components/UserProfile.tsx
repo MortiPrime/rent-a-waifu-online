@@ -9,10 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const UserProfile = () => {
   const { user, profile, updateProfile } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     username: profile?.username || '',
@@ -27,6 +28,21 @@ const UserProfile = () => {
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
+    }
+  };
+
+  const handleBecomeCompanion = async () => {
+    try {
+      // Actualizar el rol del usuario a companion
+      await updateProfile({ user_role: 'girlfriend' });
+      
+      // Navegar al dashboard de companion
+      navigate('/');
+      
+      // Recargar la página para que se actualice el contexto
+      window.location.reload();
+    } catch (error) {
+      console.error('Error converting to companion:', error);
     }
   };
 
@@ -102,7 +118,7 @@ const UserProfile = () => {
                 </CardTitle>
                 <p className="text-gray-300">@{profile?.username || 'usuario'}</p>
                 <div className="mt-2 flex flex-col items-center gap-2">
-                  {getSubscriptionBadge()}
+                  {!isCompanion && getSubscriptionBadge()}
                   {isCompanion && (
                     <div className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-sm bg-pink-500 text-white">
                       <Users className="w-4 h-4" />
@@ -127,14 +143,32 @@ const UserProfile = () => {
             <CardContent>
               <p className="text-white/80 mb-4">
                 Convierte tu cuenta en una cuenta de Companion y comienza a ofrecer tus servicios.
-                Podrás gestionar tu perfil, fotos, precios y reglas.
+                Podrás gestionar tu perfil, fotos, precios y reglas de manera profesional.
               </p>
-              <Link to="/become-companion">
-                <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
-                  <Users className="w-4 h-4 mr-2" />
-                  Convertir a Companion
-                </Button>
-              </Link>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="text-center p-4 bg-white/10 rounded-lg">
+                  <Heart className="w-8 h-8 text-pink-400 mx-auto mb-2" />
+                  <h4 className="text-white font-semibold">Ingresos</h4>
+                  <p className="text-white/70 text-sm">Genera ingresos con tus servicios</p>
+                </div>
+                <div className="text-center p-4 bg-white/10 rounded-lg">
+                  <Camera className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                  <h4 className="text-white font-semibold">Fotos</h4>
+                  <p className="text-white/70 text-sm">Sube fotos profesionales</p>
+                </div>
+                <div className="text-center p-4 bg-white/10 rounded-lg">
+                  <Crown className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+                  <h4 className="text-white font-semibold">Planes</h4>
+                  <p className="text-white/70 text-sm">Elige tu plan promocional</p>
+                </div>
+              </div>
+              <Button 
+                onClick={handleBecomeCompanion}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-lg py-6"
+              >
+                <Users className="w-5 h-5 mr-2" />
+                Convertir a Companion Ahora
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -225,46 +259,46 @@ const UserProfile = () => {
           </CardContent>
         </Card>
 
-        {/* Subscription Info */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Crown className="w-5 h-5" />
-              Información de Suscripción
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium text-gray-300">Plan actual</Label>
-                <p className="text-white text-lg capitalize">{profile?.subscription_type || 'básico'}</p>
+        {/* Subscription Info - Solo para clientes */}
+        {!isCompanion && (
+          <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Crown className="w-5 h-5" />
+                Información de Suscripción
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label className="text-sm font-medium text-gray-300">Plan actual</Label>
+                  <p className="text-white text-lg capitalize">{profile?.subscription_type || 'básico'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-300">Expira el</Label>
+                  <p className="text-white text-lg">
+                    {profile?.subscription_expires_at 
+                      ? new Date(profile.subscription_expires_at).toLocaleDateString('es-ES')
+                      : 'No aplica'
+                    }
+                  </p>
+                </div>
               </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-300">Expira el</Label>
-                <p className="text-white text-lg">
-                  {profile?.subscription_expires_at 
-                    ? new Date(profile.subscription_expires_at).toLocaleDateString('es-ES')
-                    : 'No aplica'
-                  }
-                </p>
-              </div>
-            </div>
-            
-            {(!profile?.subscription_type || profile.subscription_type === 'basic') && (
-              <div className="mt-4 p-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-lg">
-                <h4 className="text-white font-semibold mb-2">¡Mejora tu experiencia!</h4>
-                <p className="text-white/80 text-sm mb-3">
-                  Con una suscripción Premium o VIP tendrás acceso a números de contacto de companions.
-                </p>
-                <Link to="/subscription">
+              
+              {(!profile?.subscription_type || profile.subscription_type === 'basic') && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-lg">
+                  <h4 className="text-white font-semibold mb-2">¡Mejora tu experiencia!</h4>
+                  <p className="text-white/80 text-sm mb-3">
+                    Con una suscripción Premium o VIP tendrás acceso a números de contacto de companions.
+                  </p>
                   <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
                     Ver Planes
                   </Button>
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Statistics */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
@@ -290,7 +324,9 @@ const UserProfile = () => {
               </div>
               <div className="text-center p-4 bg-white/5 rounded-lg">
                 <p className="text-2xl font-bold text-blue-400">0</p>
-                <p className="text-sm text-gray-300">Citas realizadas</p>
+                <p className="text-sm text-gray-300">
+                  {isCompanion ? 'Clientes atendidos' : 'Citas realizadas'}
+                </p>
               </div>
               <div className="text-center p-4 bg-white/5 rounded-lg">
                 <p className="text-2xl font-bold text-green-400">0</p>
