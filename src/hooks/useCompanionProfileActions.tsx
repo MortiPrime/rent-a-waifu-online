@@ -57,7 +57,7 @@ export const useCompanionProfileActions = (
           real_name: profileData.real_name || '',
           age: profileData.age || 18,
           description: profileData.description || '',
-          status: 'approved', // Auto-aprobar companions
+          status: 'approved' as const, // Auto-aprobar companions
           is_active: true,
           promotion_plan: profileData.promotion_plan || 'basic',
           state: profileData.state,
