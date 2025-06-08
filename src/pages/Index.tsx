@@ -13,7 +13,7 @@ const Index = () => {
   // Si es una companion/girlfriend, mostrar su dashboard
   if (isGirlfriend) {
     return (
-      <div className="min-h-screen bg-gradient-secondary">
+      <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
         <Navbar />
         <div className="pt-16">
           <CompanionDashboard />
@@ -24,7 +24,7 @@ const Index = () => {
 
   // Para clientes, mostrar la página principal normal
   return (
-    <div className="min-h-screen bg-gradient-secondary">
+    <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
       <Navbar />
       
       {/* Hero Section */}
@@ -32,7 +32,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-5xl md:text-7xl font-playfair font-bold text-white mb-6">
             Encuentra tu
-            <span className="block bg-gradient-primary bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
               Companion Perfecta
             </span>
           </h1>
@@ -42,7 +42,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/catalog">
-              <Button size="lg" className="anime-button text-lg px-8 py-4">
+              <Button size="lg" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-lg px-8 py-4">
                 <Heart className="w-5 h-5 mr-2" />
                 Explorar Companions
               </Button>
@@ -64,37 +64,37 @@ const Index = () => {
             ¿Por qué elegir AnimeDating?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="glass-card text-center">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20 text-center">
               <CardHeader>
-                <Heart className="w-12 h-12 text-primary mx-auto mb-4" />
+                <Heart className="w-12 h-12 text-pink-400 mx-auto mb-4" />
                 <CardTitle className="text-white">Conexiones Auténticas</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-300">
+                <p className="text-white/80">
                   Conoce a personas reales con personalidades únicas y genuinas.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="glass-card text-center">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20 text-center">
               <CardHeader>
-                <MessageCircle className="w-12 h-12 text-primary mx-auto mb-4" />
+                <MessageCircle className="w-12 h-12 text-purple-400 mx-auto mb-4" />
                 <CardTitle className="text-white">Conversaciones Seguras</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-300">
-                  Plataforma segura con verificación de identidad y moderation 24/7.
+                <p className="text-white/80">
+                  Plataforma segura con verificación de identidad y moderación 24/7.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="glass-card text-center">
+            <Card className="bg-white/10 backdrop-blur-md border-white/20 text-center">
               <CardHeader>
-                <Users className="w-12 h-12 text-primary mx-auto mb-4" />
+                <Users className="w-12 h-12 text-blue-400 mx-auto mb-4" />
                 <CardTitle className="text-white">Comunidad Respetuosa</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-300">
+                <p className="text-white/80">
                   Ambiente libre de toxicidad donde todos son tratados con respeto.
                 </p>
               </CardContent>
@@ -108,20 +108,20 @@ const Index = () => {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <h3 className="text-4xl font-bold text-primary mb-2">500+</h3>
-              <p className="text-gray-300">Companions Verificadas</p>
+              <h3 className="text-4xl font-bold text-pink-400 mb-2">500+</h3>
+              <p className="text-white/80">Companions Verificadas</p>
             </div>
             <div>
-              <h3 className="text-4xl font-bold text-primary mb-2">10K+</h3>
-              <p className="text-gray-300">Usuarios Activos</p>
+              <h3 className="text-4xl font-bold text-purple-400 mb-2">10K+</h3>
+              <p className="text-white/80">Usuarios Activos</p>
             </div>
             <div>
-              <h3 className="text-4xl font-bold text-primary mb-2">50K+</h3>
-              <p className="text-gray-300">Conversaciones Diarias</p>
+              <h3 className="text-4xl font-bold text-blue-400 mb-2">50K+</h3>
+              <p className="text-white/80">Conversaciones Diarias</p>
             </div>
             <div>
-              <h3 className="text-4xl font-bold text-primary mb-2">99%</h3>
-              <p className="text-gray-300">Satisfacción</p>
+              <h3 className="text-4xl font-bold text-green-400 mb-2">99%</h3>
+              <p className="text-white/80">Satisfacción</p>
             </div>
           </div>
         </div>
@@ -133,11 +133,11 @@ const Index = () => {
           <h2 className="text-4xl font-playfair font-bold text-white mb-6">
             ¿Listo para comenzar?
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-white/80 mb-8">
             Únete a miles de personas que ya están disfrutando de conexiones auténticas.
           </p>
           <Link to="/catalog">
-            <Button size="lg" className="anime-button text-lg px-8 py-4">
+            <Button size="lg" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-lg px-8 py-4">
               Empezar Ahora
             </Button>
           </Link>

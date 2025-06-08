@@ -40,6 +40,7 @@ export const useCompanionProfile = () => {
         // Convertir pricing y availability de JSON a objeto tipado
         const typedProfile: CompanionProfile = {
           ...profileData,
+          promotion_plan: (profileData.promotion_plan as 'basic' | 'premium' | 'vip') || 'basic',
           pricing: typeof profileData.pricing === 'string' 
             ? JSON.parse(profileData.pricing) 
             : profileData.pricing || {
@@ -139,6 +140,7 @@ export const useCompanionProfile = () => {
         
         const typedProfile: CompanionProfile = {
           ...data,
+          promotion_plan: (data.promotion_plan as 'basic' | 'premium' | 'vip') || 'basic',
           pricing: typeof data.pricing === 'string' 
             ? JSON.parse(data.pricing) 
             : data.pricing || {
@@ -158,10 +160,20 @@ export const useCompanionProfile = () => {
       } else {
         // Crear nuevo perfil - auto-aprobar para companions
         const newProfileData = {
-          ...profileData,
           user_id: user.id,
+          stage_name: profileData.stage_name || '',
+          real_name: profileData.real_name || '',
+          age: profileData.age || 18,
+          description: profileData.description || '',
           status: 'approved', // Auto-aprobar companions
           is_active: true,
+          promotion_plan: profileData.promotion_plan || 'basic',
+          state: profileData.state,
+          city: profileData.city,
+          municipality: profileData.municipality,
+          contact_number: profileData.contact_number,
+          pricing: profileData.pricing,
+          availability: profileData.availability,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
@@ -176,6 +188,7 @@ export const useCompanionProfile = () => {
         
         const typedProfile: CompanionProfile = {
           ...data,
+          promotion_plan: (data.promotion_plan as 'basic' | 'premium' | 'vip') || 'basic',
           pricing: typeof data.pricing === 'string' 
             ? JSON.parse(data.pricing) 
             : data.pricing || {

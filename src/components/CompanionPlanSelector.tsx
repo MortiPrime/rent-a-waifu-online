@@ -10,11 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 const CompanionPlanSelector = () => {
   const { profile, updateProfile, loading } = useCompanionProfile();
   const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState(profile?.promotion_plan || 'basic');
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | 'vip'>(
+    (profile?.promotion_plan as 'basic' | 'premium' | 'vip') || 'basic'
+  );
 
   const plans = [
     {
-      id: 'basic',
+      id: 'basic' as const,
       name: 'Básico',
       icon: Users,
       color: 'from-blue-500 to-cyan-600',
@@ -29,7 +31,7 @@ const CompanionPlanSelector = () => {
       description: 'Perfecto para comenzar tu carrera como companion'
     },
     {
-      id: 'premium',
+      id: 'premium' as const,
       name: 'Premium',
       icon: Star,
       color: 'from-purple-500 to-pink-600',
@@ -47,7 +49,7 @@ const CompanionPlanSelector = () => {
       description: 'Ideal para companions que buscan mayor visibilidad'
     },
     {
-      id: 'vip',
+      id: 'vip' as const,
       name: 'VIP',
       icon: Crown,
       color: 'from-yellow-500 to-orange-600',
@@ -66,9 +68,9 @@ const CompanionPlanSelector = () => {
     }
   ];
 
-  const handleSelectPlan = async (planId: string) => {
+  const handleSelectPlan = async (planId: 'basic' | 'premium' | 'vip') => {
     try {
-      await updateProfile({ promotion_plan: planId as 'basic' | 'premium' | 'vip' });
+      await updateProfile({ promotion_plan: planId });
       setSelectedPlan(planId);
       
       toast({
