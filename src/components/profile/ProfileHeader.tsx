@@ -1,16 +1,16 @@
 
 import { useState } from 'react';
-import { Camera, Crown, Heart, Users } from 'lucide-react';
+import { Camera, Crown, Heart, Users, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { UserProfile } from '@/types';
-import { User } from '@supabase/supabase-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface ProfileHeaderProps {
-  user: User | null;
+  user: SupabaseUser | null;
   profile: UserProfile | null;
   updateProfile: (updates: any) => Promise<void>;
 }
