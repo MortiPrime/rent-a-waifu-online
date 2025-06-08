@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Star, Upload, DollarSign } from 'lucide-react';
+import { Heart, DollarSign } from 'lucide-react';
+import { MEXICO_STATES, getMunicipalitiesByState } from '@/data/mexicoStates';
 import Navbar from '@/components/Navbar';
 
 const GirlfriendRegistration = () => {
@@ -22,6 +23,9 @@ const GirlfriendRegistration = () => {
     real_name: '',
     age: '',
     description: '',
+    state: '',
+    municipality: '',
+    contact_number: '',
     pricing: {
       basic_chat: '',
       premium_chat: '',
@@ -34,6 +38,7 @@ const GirlfriendRegistration = () => {
   });
 
   const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  const availableMunicipalities = formData.state ? getMunicipalitiesByState(formData.state) : [];
 
   const handleDayToggle = (day: string) => {
     setFormData(prev => ({
@@ -47,9 +52,27 @@ const GirlfriendRegistration = () => {
     }));
   };
 
+  const handleStateChange = (state: string) => {
+    setFormData(prev => ({
+      ...prev,
+      state,
+      municipality: '' // Reset municipality when state changes
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // Validate required fields
+    if (!formData.state || !formData.municipality) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona tu estado y municipio",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -60,6 +83,9 @@ const GirlfriendRegistration = () => {
         real_name: formData.real_name,
         age: parseInt(formData.age),
         description: formData.description,
+        state: formData.state,
+        municipality: formData.municipality,
+        contact_number: formData.contact_number,
         images: [],
         pricing: {
           basic_chat: parseFloat(formData.pricing.basic_chat),
@@ -84,6 +110,9 @@ const GirlfriendRegistration = () => {
         real_name: '',
         age: '',
         description: '',
+        state: '',
+        municipality: '',
+        contact_number: '',
         pricing: {
           basic_chat: '',
           premium_chat: '',
@@ -167,6 +196,18 @@ const GirlfriendRegistration = () => {
                         required
                       />
                     </div>
+
+                    <div>
+                      <Label htmlFor="contact_number">Número de Contacto *</Label>
+                      <Input
+                        id="contact_number"
+                        type="tel"
+                        value={formData.contact_number}
+                        onChange={(e) => setFormData(prev => ({ ...prev, contact_number: e.target.value }))}
+                        placeholder="Ej: +52 55 1234 5678"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-4">
@@ -181,6 +222,42 @@ const GirlfriendRegistration = () => {
                         required
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="state">Estado *</Label>
+                    <Select value={formData.state} onValueChange={handleStateChange} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona tu estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(MEXICO_STATES).map(state => (
+                          <SelectItem key={state} value={state}>{state}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="municipality">Municipio *</Label>
+                    <Select 
+                      value={formData.municipality} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, municipality: value }))}
+                      disabled={!formData.state}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona tu municipio" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableMunicipalities.map(municipality => (
+                          <SelectItem key={municipality} value={municipality}>{municipality}</SelectItem>
+                        ))}
+                        <SelectItem value="Otro">Otro</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

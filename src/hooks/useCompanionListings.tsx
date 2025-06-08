@@ -8,7 +8,6 @@ export const useCompanionListings = () => {
   const [listings, setListings] = useState<CompanionListing[]>([]);
   const [loading, setLoading] = useState(false);
   const [states, setStates] = useState<string[]>([]);
-  const [cities, setCities] = useState<string[]>([]);
   const [municipalities, setMunicipalities] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -33,11 +32,11 @@ export const useCompanionListings = () => {
       if (filters?.state && filters.state !== 'all' && filters.state !== '') {
         query = query.eq('state', filters.state);
       }
-      if (filters?.city && filters.city !== 'all' && filters.city !== '') {
-        query = query.eq('city', filters.city);
-      }
       if (filters?.municipality && filters.municipality !== 'all' && filters.municipality !== '') {
         query = query.eq('municipality', filters.municipality);
+      }
+      if (filters?.phoneNumber && filters.phoneNumber.trim() !== '') {
+        query = query.ilike('contact_number', `%${filters.phoneNumber}%`);
       }
 
       const { data, error } = await query;
@@ -80,21 +79,6 @@ export const useCompanionListings = () => {
         setStates(uniqueStates);
       }
 
-      // Cargar ciudades únicas
-      const { data: citiesData, error: citiesError } = await supabase
-        .from('companion_listings')
-        .select('city')
-        .not('city', 'is', null)
-        .eq('is_active', true);
-
-      if (citiesError) {
-        console.error('Error cargando ciudades:', citiesError);
-      } else {
-        const uniqueCities = [...new Set(citiesData.map(item => item.city).filter(Boolean))];
-        console.log('Ciudades encontradas:', uniqueCities);
-        setCities(uniqueCities);
-      }
-
       // Cargar municipios únicos
       const { data: municipalitiesData, error: municipalitiesError } = await supabase
         .from('companion_listings')
@@ -118,7 +102,6 @@ export const useCompanionListings = () => {
     listings,
     loading,
     states,
-    cities,
     municipalities,
     loadListings,
     loadLocations,

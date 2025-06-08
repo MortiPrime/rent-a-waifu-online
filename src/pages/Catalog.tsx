@@ -9,16 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Phone, Crown, Star, DollarSign, Heart, Users } from 'lucide-react';
+import { MapPin, Crown, Star, DollarSign, Heart, Users } from 'lucide-react';
+import { MEXICO_STATES, getMunicipalitiesByState } from '@/data/mexicoStates';
 import Navbar from '@/components/Navbar';
 
 const Catalog = () => {
   const { user, profile } = useAuth();
-  const { listings, loading, states, cities, municipalities, loadListings } = useCompanionListings();
+  const { listings, loading, loadListings } = useCompanionListings();
   const [searchFilters, setSearchFilters] = useState({
     state: '',
-    city: '',
-    municipality: ''
+    municipality: '',
+    phoneNumber: ''
   });
 
   // Cargar todas las companions cuando cambien los filtros
@@ -32,9 +33,15 @@ const Catalog = () => {
     setSearchFilters(prev => ({
       ...prev,
       [key]: value,
-      // Reset dependent filters
-      ...(key === 'state' && { city: '', municipality: '' }),
-      ...(key === 'city' && { municipality: '' })
+      // Reset municipality when state changes
+      ...(key === 'state' && { municipality: '' })
+    }));
+  };
+
+  const handlePhoneNumberChange = (value: string) => {
+    setSearchFilters(prev => ({
+      ...prev,
+      phoneNumber: value
     }));
   };
 
@@ -57,6 +64,8 @@ const Catalog = () => {
         return null;
     }
   };
+
+  const availableMunicipalities = searchFilters.state ? getMunicipalitiesByState(searchFilters.state) : [];
 
   console.log('Renderizando catálogo con', listings.length, 'companions');
 
@@ -96,7 +105,7 @@ const Catalog = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
                       <SelectItem value="all" className="text-white">Todos los estados</SelectItem>
-                      {states.map(state => (
+                      {Object.keys(MEXICO_STATES).map(state => (
                         <SelectItem key={state} value={state} className="text-white">{state}</SelectItem>
                       ))}
                     </SelectContent>
@@ -104,33 +113,35 @@ const Catalog = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="city-filter" className="text-white font-medium">Ciudad</Label>
-                  <Select value={searchFilters.city} onValueChange={(value) => handleFilterChange('city', value)}>
-                    <SelectTrigger className="bg-white/10 border-white/30 text-white">
-                      <SelectValue placeholder="Todas las ciudades" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-700">
-                      <SelectItem value="all" className="text-white">Todas las ciudades</SelectItem>
-                      {cities.map(city => (
-                        <SelectItem key={city} value={city} className="text-white">{city}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
                   <Label htmlFor="municipality-filter" className="text-white font-medium">Municipio</Label>
-                  <Select value={searchFilters.municipality} onValueChange={(value) => handleFilterChange('municipality', value)}>
+                  <Select 
+                    value={searchFilters.municipality} 
+                    onValueChange={(value) => handleFilterChange('municipality', value)}
+                    disabled={!searchFilters.state || searchFilters.state === 'all'}
+                  >
                     <SelectTrigger className="bg-white/10 border-white/30 text-white">
                       <SelectValue placeholder="Todos los municipios" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
                       <SelectItem value="all" className="text-white">Todos los municipios</SelectItem>
-                      {municipalities.map(municipality => (
+                      {availableMunicipalities.map(municipality => (
                         <SelectItem key={municipality} value={municipality} className="text-white">{municipality}</SelectItem>
                       ))}
+                      <SelectItem value="Otro" className="text-white">Otro</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="phone-filter" className="text-white font-medium">Número de Teléfono</Label>
+                  <Input
+                    id="phone-filter"
+                    type="text"
+                    placeholder="Buscar por teléfono..."
+                    value={searchFilters.phoneNumber}
+                    onChange={(e) => handlePhoneNumberChange(e.target.value)}
+                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                  />
                 </div>
               </div>
             </CardContent>
@@ -145,7 +156,10 @@ const Catalog = () => {
                 <p className="text-white/80 mb-4">
                   Con una suscripción Premium o VIP podrás acceder a los números de contacto de las companions.
                 </p>
-                <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+                <Button 
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                  onClick={() => window.location.href = '/subscription'}
+                >
                   Ver Planes de Suscripción
                 </Button>
               </CardContent>
@@ -180,8 +194,7 @@ const Catalog = () => {
                         </CardTitle>
                         <div className="flex items-center gap-2 text-white/80 text-sm">
                           <MapPin className="w-4 h-4" />
-                          {companion.city}, {companion.state}
-                          {companion.municipality && ` - ${companion.municipality}`}
+                          {companion.municipality}, {companion.state}
                         </div>
                       </div>
                       <div className="flex flex-col gap-2">
@@ -230,7 +243,6 @@ const Catalog = () => {
                     {/* Contact */}
                     <div className="space-y-2">
                       <h4 className="text-white font-medium flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
                         Contacto
                       </h4>
                       {isVipSubscription ? (

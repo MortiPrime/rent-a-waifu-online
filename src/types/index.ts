@@ -1,4 +1,3 @@
-
 export interface Message {
   id: string;
   content: string;
@@ -175,8 +174,8 @@ export interface MercadoPagoTransaction {
 
 export interface LocationFilter {
   state?: string;
-  city?: string;
   municipality?: string;
+  phoneNumber?: string;
 }
 
 export interface SubscriptionPlan {
