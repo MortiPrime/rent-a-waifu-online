@@ -15,17 +15,28 @@ import Navbar from '@/components/Navbar';
 
 const Catalog = () => {
   const { user, profile } = useAuth();
-  const { listings, loading, loadListings } = useCompanionListings();
+  const { listings, loading, loadListings, loadAllListings } = useCompanionListings();
   const [searchFilters, setSearchFilters] = useState({
     state: '',
     municipality: '',
     phoneNumber: ''
   });
 
-  // Cargar todas las companions cuando cambien los filtros
+  // Cargar todas las companions al inicio
   useEffect(() => {
-    console.log('Filtros cambiaron:', searchFilters);
-    loadListings(searchFilters);
+    console.log('Componente montado, cargando companions...');
+    loadAllListings();
+  }, []);
+
+  // Aplicar filtros cuando cambien
+  useEffect(() => {
+    if (searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber) {
+      console.log('Aplicando filtros:', searchFilters);
+      loadListings(searchFilters);
+    } else {
+      console.log('Sin filtros, cargando todas las companions...');
+      loadAllListings();
+    }
   }, [searchFilters]);
 
   const handleFilterChange = (key: string, value: string) => {
@@ -43,6 +54,14 @@ const Catalog = () => {
       ...prev,
       phoneNumber: value
     }));
+  };
+
+  const clearFilters = () => {
+    setSearchFilters({
+      state: '',
+      municipality: '',
+      phoneNumber: ''
+    });
   };
 
   const hasSubscription = profile?.subscription_type && 
@@ -96,10 +115,10 @@ const Catalog = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="state-filter" className="text-white font-medium">Estado</Label>
-                  <Select value={searchFilters.state} onValueChange={(value) => handleFilterChange('state', value)}>
+                  <Select value={searchFilters.state} onValueChange={(value) => handleFilterChange('state', value === 'all' ? '' : value)}>
                     <SelectTrigger className="bg-white/10 border-white/30 text-white">
                       <SelectValue placeholder="Todos los estados" />
                     </SelectTrigger>
@@ -116,8 +135,8 @@ const Catalog = () => {
                   <Label htmlFor="municipality-filter" className="text-white font-medium">Municipio</Label>
                   <Select 
                     value={searchFilters.municipality} 
-                    onValueChange={(value) => handleFilterChange('municipality', value)}
-                    disabled={!searchFilters.state || searchFilters.state === 'all'}
+                    onValueChange={(value) => handleFilterChange('municipality', value === 'all' ? '' : value)}
+                    disabled={!searchFilters.state}
                   >
                     <SelectTrigger className="bg-white/10 border-white/30 text-white">
                       <SelectValue placeholder="Todos los municipios" />
@@ -143,6 +162,16 @@ const Catalog = () => {
                     className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
                   />
                 </div>
+
+                <div className="flex items-end">
+                  <Button 
+                    onClick={clearFilters}
+                    variant="outline"
+                    className="w-full border-white/30 text-white hover:bg-white/10"
+                  >
+                    Limpiar Filtros
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -166,6 +195,17 @@ const Catalog = () => {
             </Card>
           )}
 
+          {/* Debug info */}
+          {process.env.NODE_ENV === 'development' && (
+            <Card className="bg-blue-500/20 border-blue-500/30 mb-8">
+              <CardContent className="p-4">
+                <p className="text-blue-300 text-sm">
+                  Debug: {listings.length} companions encontradas | Loading: {loading.toString()}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Listings Grid */}
           {loading ? (
             <div className="text-center text-white">
@@ -177,9 +217,19 @@ const Catalog = () => {
               <CardContent className="p-12 text-center">
                 <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">No se encontraron companions</h3>
-                <p className="text-gray-300">
-                  Intenta ajustar tus filtros de búsqueda o verifica más tarde.
+                <p className="text-gray-300 mb-4">
+                  {searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber 
+                    ? 'Intenta ajustar tus filtros de búsqueda.' 
+                    : 'No hay companions registradas en este momento.'}
                 </p>
+                {(searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber) && (
+                  <Button 
+                    onClick={clearFilters}
+                    className="bg-pink-500 hover:bg-pink-600"
+                  >
+                    Ver Todas las Companions
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (

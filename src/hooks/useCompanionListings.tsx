@@ -98,6 +98,38 @@ export const useCompanionListings = () => {
     }
   };
 
+  // Nueva función para cargar todas las listings sin filtros
+  const loadAllListings = async () => {
+    try {
+      setLoading(true);
+      console.log('Cargando todas las listings...');
+      
+      const { data, error } = await supabase
+        .from('companion_listings')
+        .select('*')
+        .eq('is_active', true)
+        .order('is_featured', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error cargando todas las listings:', error);
+        throw error;
+      }
+      
+      console.log('Todas las listings cargadas:', data);
+      setListings(data as CompanionListing[]);
+    } catch (error: any) {
+      console.error('Error loading all listings:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las companions",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     listings,
     loading,
@@ -105,5 +137,6 @@ export const useCompanionListings = () => {
     municipalities,
     loadListings,
     loadLocations,
+    loadAllListings,
   };
 };
