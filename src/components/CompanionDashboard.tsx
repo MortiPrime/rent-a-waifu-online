@@ -230,9 +230,14 @@ const CompanionDashboard = () => {
             </TabsContent>
 
             <TabsContent value="profile">
-              <div className="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-6">
-                <CompanionProfileForm />
-              </div>
+              <Card className="bg-white/10 backdrop-blur-md border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-white">Configuración del Perfil</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CompanionProfileForm />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="photos">
