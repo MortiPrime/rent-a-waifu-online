@@ -21,6 +21,19 @@ export const useCompanionListings = () => {
       setLoading(true);
       console.log('Cargando listings con filtros:', filters);
       
+      // Primero verificar si hay companion_profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('companion_profiles')
+        .select('*')
+        .eq('is_active', true)
+        .eq('status', 'approved');
+
+      if (profilesError) {
+        console.error('Error cargando companion_profiles:', profilesError);
+      } else {
+        console.log('Companion profiles encontrados:', profilesData?.length || 0);
+      }
+
       let query = supabase
         .from('companion_listings')
         .select('*')
@@ -42,11 +55,13 @@ export const useCompanionListings = () => {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error en query:', error);
+        console.error('Error en query de companion_listings:', error);
         throw error;
       }
       
-      console.log('Datos recibidos:', data);
+      console.log('Companion listings encontrados:', data?.length || 0);
+      console.log('Datos de listings:', data);
+      
       setListings(data as CompanionListing[]);
     } catch (error: any) {
       console.error('Error loading listings:', error);
@@ -64,7 +79,7 @@ export const useCompanionListings = () => {
     try {
       console.log('Cargando ubicaciones...');
       
-      // Cargar estados únicos
+      // Cargar estados únicos desde companion_listings
       const { data: statesData, error: statesError } = await supabase
         .from('companion_listings')
         .select('state')
@@ -79,7 +94,7 @@ export const useCompanionListings = () => {
         setStates(uniqueStates);
       }
 
-      // Cargar municipios únicos
+      // Cargar municipios únicos desde companion_listings
       const { data: municipalitiesData, error: municipalitiesError } = await supabase
         .from('companion_listings')
         .select('municipality')
@@ -104,6 +119,14 @@ export const useCompanionListings = () => {
       setLoading(true);
       console.log('Cargando todas las listings...');
       
+      // Debug: verificar companion_profiles primero
+      const { data: profilesCheck } = await supabase
+        .from('companion_profiles')
+        .select('id, stage_name, status, is_active')
+        .limit(10);
+      
+      console.log('Sample companion_profiles:', profilesCheck);
+      
       const { data, error } = await supabase
         .from('companion_listings')
         .select('*')
@@ -116,7 +139,8 @@ export const useCompanionListings = () => {
         throw error;
       }
       
-      console.log('Todas las listings cargadas:', data);
+      console.log('Todas las listings cargadas:', data?.length || 0);
+      console.log('Sample listings data:', data?.slice(0, 2));
       setListings(data as CompanionListing[]);
     } catch (error: any) {
       console.error('Error loading all listings:', error);

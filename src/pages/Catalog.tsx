@@ -71,6 +71,37 @@ const Catalog = () => {
   const isVipSubscription = hasSubscription && 
     (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
 
+  // Filtrar companions según el plan del cliente
+  const getVisibleCompanions = () => {
+    if (!listings || listings.length === 0) return [];
+    
+    const userPlan = profile?.subscription_type || 'basic';
+    console.log('Plan del usuario:', userPlan);
+    
+    return listings.filter(companion => {
+      const companionPlan = companion.promotion_plan || 'basic';
+      
+      // Usuarios básicos solo ven companions básicos
+      if (userPlan === 'basic') {
+        return companionPlan === 'basic';
+      }
+      
+      // Usuarios premium ven básicos y premium
+      if (userPlan === 'premium') {
+        return companionPlan === 'basic' || companionPlan === 'premium';
+      }
+      
+      // Usuarios VIP ven todos los planes
+      if (userPlan === 'vip') {
+        return true;
+      }
+      
+      return companionPlan === 'basic';
+    });
+  };
+
+  const visibleCompanions = getVisibleCompanions();
+
   const getPlanBadge = (plan: string) => {
     switch (plan) {
       case 'basic':
@@ -86,7 +117,7 @@ const Catalog = () => {
 
   const availableMunicipalities = searchFilters.state ? getMunicipalitiesByState(searchFilters.state) : [];
 
-  console.log('Renderizando catálogo con', listings.length, 'companions');
+  console.log('Renderizando catálogo con', listings.length, 'companions totales y', visibleCompanions.length, 'visibles');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
@@ -200,7 +231,7 @@ const Catalog = () => {
             <Card className="bg-blue-500/20 border-blue-500/30 mb-8">
               <CardContent className="p-4">
                 <p className="text-blue-300 text-sm">
-                  Debug: {listings.length} companions encontradas | Loading: {loading.toString()}
+                  Debug: {listings.length} companions totales | {visibleCompanions.length} visibles para plan {profile?.subscription_type || 'basic'} | Loading: {loading.toString()}
                 </p>
               </CardContent>
             </Card>
@@ -212,29 +243,34 @@ const Catalog = () => {
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500 mx-auto"></div>
               <p className="mt-4">Cargando companions...</p>
             </div>
-          ) : listings.length === 0 ? (
+          ) : visibleCompanions.length === 0 ? (
             <Card className="bg-white/10 backdrop-blur-md border-white/20">
               <CardContent className="p-12 text-center">
                 <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">No se encontraron companions</h3>
                 <p className="text-gray-300 mb-4">
-                  {searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber 
-                    ? 'Intenta ajustar tus filtros de búsqueda.' 
-                    : 'No hay companions registradas en este momento.'}
+                  {listings.length === 0 
+                    ? 'No hay companions registradas en este momento.'
+                    : `No hay companions disponibles para tu plan actual (${profile?.subscription_type || 'básico'}).`
+                  }
                 </p>
-                {(searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber) && (
+                {listings.length === 0 ? (
+                  <p className="text-gray-400 text-sm">
+                    Si eres companion, asegúrate de que tu perfil esté aprobado y activo.
+                  </p>
+                ) : (
                   <Button 
-                    onClick={clearFilters}
                     className="bg-pink-500 hover:bg-pink-600"
+                    onClick={() => window.location.href = '/subscription'}
                   >
-                    Ver Todas las Companions
+                    Mejorar Plan de Suscripción
                   </Button>
                 )}
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {listings.map((companion) => (
+              {visibleCompanions.map((companion) => (
                 <Card key={companion.id} className="bg-white/10 backdrop-blur-md border-white/20 overflow-hidden hover:bg-white/15 transition-all duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex justify-between items-start">
