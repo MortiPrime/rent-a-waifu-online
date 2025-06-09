@@ -78,70 +78,84 @@ const Navbar = () => {
           {/* User Actions */}
           <div className="flex items-center space-x-4">
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-white hover:bg-white/10">
-                    <User className="w-5 h-5 mr-2" />
-                    {user.email?.split('@')[0]}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="w-56 bg-gray-900/95 border-gray-700 backdrop-blur-sm"
+              <>
+                {/* Quick Sign Out Button for Desktop */}
+                <Button
+                  onClick={handleSignOut}
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex bg-white/10 text-white border-white/20 hover:bg-white/20"
                 >
-                  {/* Mobile Navigation */}
-                  <div className="md:hidden">
-                    {getNavLinks().map((link) => {
-                      const Icon = link.icon;
-                      return (
-                        <DropdownMenuItem key={link.to} asChild>
-                          <Link
-                            to={link.to}
-                            className="flex items-center space-x-2 text-white cursor-pointer"
-                          >
-                            <Icon className="w-4 h-4" />
-                            <span>{link.label}</span>
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                    <DropdownMenuSeparator className="bg-gray-700" />
-                  </div>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Cerrar Sesión
+                </Button>
 
-                  {/* Role-specific actions */}
-                  {isClient && (
+                {/* Dropdown Menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="text-white hover:bg-white/10">
+                      <User className="w-5 h-5 mr-2" />
+                      {user.email?.split('@')[0]}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="w-56 bg-gray-900/95 border-gray-700 backdrop-blur-sm"
+                  >
+                    {/* Mobile Navigation */}
+                    <div className="md:hidden">
+                      {getNavLinks().map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <DropdownMenuItem key={link.to} asChild>
+                            <Link
+                              to={link.to}
+                              className="flex items-center space-x-2 text-white cursor-pointer"
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span>{link.label}</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                      <DropdownMenuSeparator className="bg-gray-700" />
+                    </div>
+
+                    {/* Role-specific actions */}
+                    {isClient && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/become-companion"
+                          className="flex items-center space-x-2 text-white cursor-pointer"
+                        >
+                          <Crown className="w-4 h-4" />
+                          <span>Ser Companion</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
                     <DropdownMenuItem asChild>
                       <Link
-                        to="/become-companion"
+                        to="/profile"
                         className="flex items-center space-x-2 text-white cursor-pointer"
                       >
-                        <Crown className="w-4 h-4" />
-                        <span>Ser Companion</span>
+                        <Settings className="w-4 h-4" />
+                        <span>Configuración</span>
                       </Link>
                     </DropdownMenuItem>
-                  )}
 
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/profile"
-                      className="flex items-center space-x-2 text-white cursor-pointer"
+                    <DropdownMenuSeparator className="bg-gray-700" />
+                    
+                    <DropdownMenuItem
+                      onClick={handleSignOut}
+                      className="flex items-center space-x-2 text-red-400 cursor-pointer hover:text-red-300"
                     >
-                      <Settings className="w-4 h-4" />
-                      <span>Configuración</span>
-                    </Link>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuSeparator className="bg-gray-700" />
-                  
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    className="flex items-center space-x-2 text-red-400 cursor-pointer hover:text-red-300"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Cerrar Sesión</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <LogOut className="w-4 h-4" />
+                      <span>Cerrar Sesión</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             ) : (
               <div className="flex items-center space-x-2">
                 <Button asChild variant="ghost" className="text-white hover:bg-white/10">

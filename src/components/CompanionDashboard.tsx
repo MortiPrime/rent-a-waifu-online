@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionProfile } from '@/hooks/useCompanionProfile';
@@ -6,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Camera, MessageSquare, DollarSign, Settings, Calendar, Heart, Users, Star, Crown } from 'lucide-react';
+import { Camera, MessageSquare, DollarSign, Settings, Calendar, Heart, Users, Star, Crown, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import CompanionProfileForm from './CompanionProfileForm';
 import CompanionPhotosManager from './CompanionPhotosManager';
 import CompanionRulesAndPricing from './CompanionRulesAndPricing';
@@ -14,9 +14,19 @@ import CompanionChatHistory from './CompanionChatHistory';
 import CompanionPlanSelector from './CompanionPlanSelector';
 
 const CompanionDashboard = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { profile, photos, rules, chatSessions, loading } = useCompanionProfile();
   const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -52,17 +62,27 @@ const CompanionDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
       <div className="pt-24 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-playfair font-bold text-white mb-4">
-              Dashboard de
-              <span className="block bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-                Companion
-              </span>
-            </h1>
-            <p className="text-xl text-white/80 max-w-2xl mx-auto">
-              Gestiona tu perfil, fotos, precios y conecta con tus clientes
-            </p>
+          {/* Header with Sign Out Button */}
+          <div className="flex justify-between items-center mb-8">
+            <div className="text-center flex-1">
+              <h1 className="text-4xl md:text-5xl font-playfair font-bold text-white mb-4">
+                Dashboard de
+                <span className="block bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+                  Companion
+                </span>
+              </h1>
+              <p className="text-xl text-white/80 max-w-2xl mx-auto">
+                Gestiona tu perfil, fotos, precios y conecta con tus clientes
+              </p>
+            </div>
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Cerrar Sesión
+            </Button>
           </div>
 
           {/* Status Cards */}
@@ -210,7 +230,9 @@ const CompanionDashboard = () => {
             </TabsContent>
 
             <TabsContent value="profile">
-              <CompanionProfileForm />
+              <div className="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-6">
+                <CompanionProfileForm />
+              </div>
             </TabsContent>
 
             <TabsContent value="photos">
