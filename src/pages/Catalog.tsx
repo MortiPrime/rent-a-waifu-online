@@ -71,7 +71,7 @@ const Catalog = () => {
   const isVipSubscription = hasSubscription && 
     (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
 
-  // Mostrar todas las companions activas (sin filtrar por plan)
+  // Mostrar todas las companions - aplicar efectos visuales según suscripción
   const visibleCompanions = listings || [];
 
   const getPlanBadge = (plan: string) => {
@@ -85,6 +85,14 @@ const Catalog = () => {
       default:
         return null;
     }
+  };
+
+  const shouldBlurCompanion = (companion: CompanionListing) => {
+    // Solo hacer blur a companions premium/vip si no tienes suscripción
+    if (companion.promotion_plan === 'premium' || companion.promotion_plan === 'vip') {
+      return !hasSubscription;
+    }
+    return false;
   };
 
   const availableMunicipalities = searchFilters.state ? getMunicipalitiesByState(searchFilters.state) : [];
@@ -183,10 +191,10 @@ const Catalog = () => {
             <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 mb-8">
               <CardContent className="p-6 text-center">
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  ¡Suscríbete para ver números de contacto!
+                  ¡Suscríbete para acceso completo!
                 </h3>
                 <p className="text-white/80 mb-4">
-                  Con una suscripción Premium o VIP podrás acceder a los números de contacto de las companions.
+                  Con una suscripción Premium o VIP podrás ver companions premium/VIP sin restricciones y acceder a números de contacto.
                 </p>
                 <Button 
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
@@ -204,6 +212,8 @@ const Catalog = () => {
               <CardContent className="p-4">
                 <p className="text-blue-300 text-sm">
                   Debug: {listings.length} companions totales | {visibleCompanions.length} visibles | Loading: {loading.toString()}
+                  <br />
+                  Suscripción: {hasSubscription ? 'Activa' : 'No activa'} | Tipo: {profile?.subscription_type || 'ninguno'}
                 </p>
               </CardContent>
             </Card>
@@ -221,116 +231,138 @@ const Catalog = () => {
                 <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">No se encontraron companions</h3>
                 <p className="text-gray-300 mb-4">
-                  No hay companions registradas en este momento.
+                  No hay companions registradas en este momento o no coinciden con los filtros aplicados.
                 </p>
                 <p className="text-gray-400 text-sm">
-                  Si eres companion, asegúrate de que tu perfil esté activo.
+                  Si eres companion, asegúrate de que tu perfil esté activo y haya sido sincronizado.
                 </p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {visibleCompanions.map((companion) => (
-                <Card key={companion.id} className="bg-white/10 backdrop-blur-md border-white/20 overflow-hidden hover:bg-white/15 transition-all duration-300">
-                  <CardHeader className="pb-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-white text-xl mb-1">
-                          {companion.stage_name}
-                        </CardTitle>
-                        <div className="flex items-center gap-2 text-white/80 text-sm">
-                          <MapPin className="w-4 h-4" />
-                          {companion.municipality}, {companion.state}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {getPlanBadge(companion.promotion_plan || 'basic')}
-                        {companion.is_featured && (
-                          <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
-                            <Star className="w-3 h-3 mr-1" />
-                            Destacado
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-white/90 text-sm">
-                        <span className="font-semibold">Edad:</span> {companion.age} años
-                      </p>
-                      <p className="text-white/80 text-sm mt-2 line-clamp-3">
-                        {companion.description}
-                      </p>
-                    </div>
-
-                    {/* Pricing */}
-                    {companion.pricing && (
-                      <div className="space-y-2">
-                        <h4 className="text-white font-medium flex items-center gap-2">
-                          <DollarSign className="w-4 h-4" />
-                          Precios
-                        </h4>
-                        <div className="grid grid-cols-1 gap-1 text-sm">
-                          <div className="text-white/80">
-                            Chat Básico: ${(companion.pricing as any).basic_chat} MXN
-                          </div>
-                          <div className="text-white/80">
-                            Chat Premium: ${(companion.pricing as any).premium_chat} MXN
-                          </div>
-                          <div className="text-white/80">
-                            Video Llamada: ${(companion.pricing as any).video_call} MXN
-                          </div>
+              {visibleCompanions.map((companion) => {
+                const isBlurred = shouldBlurCompanion(companion);
+                
+                return (
+                  <Card 
+                    key={companion.id} 
+                    className={`bg-white/10 backdrop-blur-md border-white/20 overflow-hidden hover:bg-white/15 transition-all duration-300 ${
+                      isBlurred ? 'relative' : ''
+                    }`}
+                  >
+                    {/* Overlay para efecto borroso */}
+                    {isBlurred && (
+                      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                        <div className="text-center p-4">
+                          <Crown className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+                          <p className="text-white font-semibold">Contenido Premium</p>
+                          <p className="text-white/80 text-sm">Suscríbete para ver</p>
                         </div>
                       </div>
                     )}
+                    
+                    <CardHeader className="pb-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-white text-xl mb-1">
+                            {companion.stage_name}
+                          </CardTitle>
+                          <div className="flex items-center gap-2 text-white/80 text-sm">
+                            <MapPin className="w-4 h-4" />
+                            {companion.municipality}, {companion.state}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {getPlanBadge(companion.promotion_plan || 'basic')}
+                          {companion.is_featured && (
+                            <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+                              <Star className="w-3 h-3 mr-1" />
+                              Destacado
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardHeader>
 
-                    {/* Contact */}
-                    <div className="space-y-2">
-                      <h4 className="text-white font-medium flex items-center gap-2">
-                        Contacto
-                      </h4>
-                      {isVipSubscription ? (
-                        <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
-                          <p className="text-green-300 font-medium text-sm">
-                            📞 {companion.contact_number}
-                          </p>
-                        </div>
-                      ) : hasSubscription ? (
-                        <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-md p-3">
-                          <p className="text-yellow-300 text-sm">
-                            Número disponible con suscripción Premium/VIP
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="bg-red-500/20 border border-red-500/30 rounded-md p-3">
-                          <p className="text-red-300 text-sm">
-                            Suscríbete para ver el número de contacto
-                          </p>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <p className="text-white/90 text-sm">
+                          <span className="font-semibold">Edad:</span> {companion.age} años
+                        </p>
+                        <p className="text-white/80 text-sm mt-2 line-clamp-3">
+                          {companion.description}
+                        </p>
+                      </div>
+
+                      {/* Pricing */}
+                      {companion.pricing && (
+                        <div className="space-y-2">
+                          <h4 className="text-white font-medium flex items-center gap-2">
+                            <DollarSign className="w-4 h-4" />
+                            Precios
+                          </h4>
+                          <div className="grid grid-cols-1 gap-1 text-sm">
+                            <div className="text-white/80">
+                              Chat Básico: ${(companion.pricing as any).basic_chat} MXN
+                            </div>
+                            <div className="text-white/80">
+                              Chat Premium: ${(companion.pricing as any).premium_chat} MXN
+                            </div>
+                            <div className="text-white/80">
+                              Video Llamada: ${(companion.pricing as any).video_call} MXN
+                            </div>
+                          </div>
                         </div>
                       )}
-                    </div>
 
-                    <div className="flex gap-2 pt-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="flex-1 border-white/30 text-white hover:bg-white/10"
-                      >
-                        <Heart className="w-4 h-4 mr-1" />
-                        Me gusta
-                      </Button>
-                      <Button 
-                        size="sm"
-                        className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                      >
-                        Ver Perfil
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      {/* Contact */}
+                      <div className="space-y-2">
+                        <h4 className="text-white font-medium flex items-center gap-2">
+                          Contacto
+                        </h4>
+                        {isVipSubscription ? (
+                          <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
+                            <p className="text-green-300 font-medium text-sm">
+                              📞 {companion.contact_number}
+                            </p>
+                          </div>
+                        ) : hasSubscription ? (
+                          <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-md p-3">
+                            <p className="text-yellow-300 text-sm">
+                              Número disponible con suscripción Premium/VIP
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="bg-red-500/20 border border-red-500/30 rounded-md p-3">
+                            <p className="text-red-300 text-sm">
+                              Suscríbete para ver el número de contacto
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="flex-1 border-white/30 text-white hover:bg-white/10"
+                          disabled={isBlurred}
+                        >
+                          <Heart className="w-4 h-4 mr-1" />
+                          Me gusta
+                        </Button>
+                        <Button 
+                          size="sm"
+                          className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                          disabled={isBlurred}
+                        >
+                          Ver Perfil
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

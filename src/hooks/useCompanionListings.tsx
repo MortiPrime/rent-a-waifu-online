@@ -21,19 +21,6 @@ export const useCompanionListings = () => {
       setLoading(true);
       console.log('Cargando listings con filtros:', filters);
       
-      // Primero verificar si hay companion_profiles activos (sin filtro de status)
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('companion_profiles')
-        .select('*')
-        .eq('is_active', true);
-
-      if (profilesError) {
-        console.error('Error cargando companion_profiles:', profilesError);
-      } else {
-        console.log('Companion profiles activos encontrados:', profilesData?.length || 0);
-        console.log('Sample profiles:', profilesData?.slice(0, 2));
-      }
-
       let query = supabase
         .from('companion_listings')
         .select('*')
@@ -113,21 +100,75 @@ export const useCompanionListings = () => {
     }
   };
 
-  // Nueva función para cargar todas las listings sin filtros
   const loadAllListings = async () => {
     try {
       setLoading(true);
       console.log('Cargando todas las listings...');
       
-      // Debug: verificar companion_profiles primero (sin filtro de status)
+      // Verificar si hay companion_profiles que necesitan sincronización
       const { data: profilesCheck } = await supabase
         .from('companion_profiles')
         .select('id, stage_name, status, is_active')
-        .eq('is_active', true)
-        .limit(10);
+        .eq('is_active', true);
       
-      console.log('Sample companion_profiles activos:', profilesCheck);
+      console.log('Companion_profiles activos encontrados:', profilesCheck?.length || 0);
       
+      if (profilesCheck && profilesCheck.length > 0) {
+        // Verificar cuáles no tienen listing
+        const { data: existingListings } = await supabase
+          .from('companion_listings')
+          .select('companion_id')
+          .in('companion_id', profilesCheck.map(p => p.id));
+        
+        const existingIds = existingListings?.map(l => l.companion_id) || [];
+        const missingProfiles = profilesCheck.filter(p => !existingIds.includes(p.id));
+        
+        if (missingProfiles.length > 0) {
+          console.log('Perfiles sin listing encontrados:', missingProfiles.length);
+          
+          // Crear listings faltantes
+          for (const profile of missingProfiles) {
+            console.log('Creando listing para perfil:', profile.id);
+            
+            // Obtener datos completos del perfil
+            const { data: fullProfile } = await supabase
+              .from('companion_profiles')
+              .select('*')
+              .eq('id', profile.id)
+              .single();
+            
+            if (fullProfile) {
+              const listingData = {
+                companion_id: fullProfile.id,
+                user_id: fullProfile.user_id,
+                stage_name: fullProfile.stage_name,
+                description: fullProfile.description,
+                age: fullProfile.age,
+                state: fullProfile.state,
+                city: fullProfile.city,
+                municipality: fullProfile.municipality,
+                contact_number: fullProfile.contact_number,
+                pricing: fullProfile.pricing,
+                promotion_plan: fullProfile.promotion_plan,
+                is_active: fullProfile.is_active,
+                updated_at: new Date().toISOString()
+              };
+              
+              const { error: insertError } = await supabase
+                .from('companion_listings')
+                .insert(listingData);
+              
+              if (insertError) {
+                console.error('Error creando listing:', insertError);
+              } else {
+                console.log('Listing creado exitosamente para perfil:', profile.id);
+              }
+            }
+          }
+        }
+      }
+      
+      // Cargar todas las listings
       const { data, error } = await supabase
         .from('companion_listings')
         .select('*')
