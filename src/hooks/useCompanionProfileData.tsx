@@ -19,6 +19,7 @@ export const useCompanionProfileData = () => {
 
     try {
       setLoading(true);
+      console.log('Cargando perfil de companion para usuario:', user.id);
 
       // Cargar perfil
       const { data: profileData, error: profileError } = await supabase
@@ -32,6 +33,8 @@ export const useCompanionProfileData = () => {
       }
 
       if (profileData) {
+        console.log('Perfil encontrado:', profileData);
+        
         // Convertir pricing y availability de JSON a objeto tipado con type assertion
         const typedProfile: CompanionProfile = {
           ...profileData,
@@ -101,6 +104,9 @@ export const useCompanionProfileData = () => {
           }));
           setChatSessions(typedSessions);
         }
+      } else {
+        console.log('No se encontró perfil de companion para el usuario');
+        setProfile(null);
       }
     } catch (error: any) {
       console.error('Error loading companion profile:', error);
@@ -112,6 +118,12 @@ export const useCompanionProfileData = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función para forzar recarga después de actualización
+  const reloadProfile = async () => {
+    console.log('Recargando perfil después de actualización...');
+    await loadCompanionProfile();
   };
 
   useEffect(() => {
@@ -129,6 +141,7 @@ export const useCompanionProfileData = () => {
     setProfile,
     setPhotos,
     setRules,
-    loadCompanionProfile
+    loadCompanionProfile,
+    reloadProfile
   };
 };

@@ -49,6 +49,9 @@ export const useCompanionProfileActions = (
               }
         };
         setProfile(typedProfile);
+
+        // Sincronizar con companion_listings inmediatamente
+        await syncCompanionListing(typedProfile);
       } else {
         // Crear nuevo perfil - auto-aprobar para companions
         const newProfileData = {
@@ -99,6 +102,9 @@ export const useCompanionProfileActions = (
         };
         setProfile(typedProfile);
 
+        // Crear listing inmediatamente
+        await syncCompanionListing(typedProfile);
+
         // Actualizar el rol del usuario
         await supabase
           .from('profiles')
@@ -107,6 +113,46 @@ export const useCompanionProfileActions = (
       }
     } catch (error: any) {
       console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+
+  const syncCompanionListing = async (profileData: CompanionProfile) => {
+    try {
+      console.log('Sincronizando companion_listing para perfil:', profileData.id);
+      
+      // Crear o actualizar el listing
+      const listingData = {
+        companion_id: profileData.id,
+        user_id: profileData.user_id,
+        stage_name: profileData.stage_name,
+        description: profileData.description,
+        age: profileData.age,
+        state: profileData.state,
+        city: profileData.city,
+        municipality: profileData.municipality,
+        contact_number: profileData.contact_number,
+        pricing: profileData.pricing,
+        promotion_plan: profileData.promotion_plan,
+        is_active: profileData.is_active && profileData.status === 'approved',
+        updated_at: new Date().toISOString()
+      };
+
+      const { error: listingError } = await supabase
+        .from('companion_listings')
+        .upsert(listingData, { 
+          onConflict: 'companion_id',
+          ignoreDuplicates: false 
+        });
+
+      if (listingError) {
+        console.error('Error sincronizando listing:', listingError);
+        throw listingError;
+      }
+
+      console.log('Listing sincronizado exitosamente');
+    } catch (error: any) {
+      console.error('Error en syncCompanionListing:', error);
       throw error;
     }
   };
