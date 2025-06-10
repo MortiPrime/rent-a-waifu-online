@@ -21,17 +21,17 @@ export const useCompanionListings = () => {
       setLoading(true);
       console.log('Cargando listings con filtros:', filters);
       
-      // Primero verificar si hay companion_profiles
+      // Primero verificar si hay companion_profiles activos (sin filtro de status)
       const { data: profilesData, error: profilesError } = await supabase
         .from('companion_profiles')
         .select('*')
-        .eq('is_active', true)
-        .eq('status', 'approved');
+        .eq('is_active', true);
 
       if (profilesError) {
         console.error('Error cargando companion_profiles:', profilesError);
       } else {
-        console.log('Companion profiles encontrados:', profilesData?.length || 0);
+        console.log('Companion profiles activos encontrados:', profilesData?.length || 0);
+        console.log('Sample profiles:', profilesData?.slice(0, 2));
       }
 
       let query = supabase
@@ -119,13 +119,14 @@ export const useCompanionListings = () => {
       setLoading(true);
       console.log('Cargando todas las listings...');
       
-      // Debug: verificar companion_profiles primero
+      // Debug: verificar companion_profiles primero (sin filtro de status)
       const { data: profilesCheck } = await supabase
         .from('companion_profiles')
         .select('id, stage_name, status, is_active')
+        .eq('is_active', true)
         .limit(10);
       
-      console.log('Sample companion_profiles:', profilesCheck);
+      console.log('Sample companion_profiles activos:', profilesCheck);
       
       const { data, error } = await supabase
         .from('companion_listings')

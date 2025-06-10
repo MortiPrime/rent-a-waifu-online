@@ -71,36 +71,8 @@ const Catalog = () => {
   const isVipSubscription = hasSubscription && 
     (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
 
-  // Filtrar companions según el plan del cliente
-  const getVisibleCompanions = () => {
-    if (!listings || listings.length === 0) return [];
-    
-    const userPlan = profile?.subscription_type || 'basic';
-    console.log('Plan del usuario:', userPlan);
-    
-    return listings.filter(companion => {
-      const companionPlan = companion.promotion_plan || 'basic';
-      
-      // Usuarios básicos solo ven companions básicos
-      if (userPlan === 'basic') {
-        return companionPlan === 'basic';
-      }
-      
-      // Usuarios premium ven básicos y premium
-      if (userPlan === 'premium') {
-        return companionPlan === 'basic' || companionPlan === 'premium';
-      }
-      
-      // Usuarios VIP ven todos los planes
-      if (userPlan === 'vip') {
-        return true;
-      }
-      
-      return companionPlan === 'basic';
-    });
-  };
-
-  const visibleCompanions = getVisibleCompanions();
+  // Mostrar todas las companions activas (sin filtrar por plan)
+  const visibleCompanions = listings || [];
 
   const getPlanBadge = (plan: string) => {
     switch (plan) {
@@ -231,7 +203,7 @@ const Catalog = () => {
             <Card className="bg-blue-500/20 border-blue-500/30 mb-8">
               <CardContent className="p-4">
                 <p className="text-blue-300 text-sm">
-                  Debug: {listings.length} companions totales | {visibleCompanions.length} visibles para plan {profile?.subscription_type || 'basic'} | Loading: {loading.toString()}
+                  Debug: {listings.length} companions totales | {visibleCompanions.length} visibles | Loading: {loading.toString()}
                 </p>
               </CardContent>
             </Card>
@@ -249,23 +221,11 @@ const Catalog = () => {
                 <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">No se encontraron companions</h3>
                 <p className="text-gray-300 mb-4">
-                  {listings.length === 0 
-                    ? 'No hay companions registradas en este momento.'
-                    : `No hay companions disponibles para tu plan actual (${profile?.subscription_type || 'básico'}).`
-                  }
+                  No hay companions registradas en este momento.
                 </p>
-                {listings.length === 0 ? (
-                  <p className="text-gray-400 text-sm">
-                    Si eres companion, asegúrate de que tu perfil esté aprobado y activo.
-                  </p>
-                ) : (
-                  <Button 
-                    className="bg-pink-500 hover:bg-pink-600"
-                    onClick={() => window.location.href = '/subscription'}
-                  >
-                    Mejorar Plan de Suscripción
-                  </Button>
-                )}
+                <p className="text-gray-400 text-sm">
+                  Si eres companion, asegúrate de que tu perfil esté activo.
+                </p>
               </CardContent>
             </Card>
           ) : (
