@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,11 +8,17 @@ import { useCompanionProfile } from '@/hooks/useCompanionProfile';
 import { useToast } from '@/hooks/use-toast';
 
 const CompanionPlanSelector = () => {
-  const { profile, updateProfile, loading } = useCompanionProfile();
+  const { profile, updateProfile } = useCompanionProfile();
   const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | 'vip'>(
-    (profile?.promotion_plan as 'basic' | 'premium' | 'vip') || 'basic'
-  );
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'premium' | 'vip'>('basic');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Sincronizar el estado local con el perfil cuando cambie
+  useEffect(() => {
+    if (profile?.promotion_plan) {
+      setSelectedPlan(profile.promotion_plan as 'basic' | 'premium' | 'vip');
+    }
+  }, [profile]);
 
   const plans = [
     {
@@ -69,22 +75,40 @@ const CompanionPlanSelector = () => {
   ];
 
   const handleSelectPlan = async (planId: 'basic' | 'premium' | 'vip') => {
+    if (!profile) {
+      toast({
+        title: "Error",
+        description: "No se pudo encontrar tu perfil",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      setIsUpdating(true);
+      console.log('Actualizando plan a:', planId);
+      
       await updateProfile({ promotion_plan: planId });
-      setSelectedPlan(planId);
       
       toast({
         title: "Plan actualizado",
         description: `Has seleccionado el plan ${plans.find(p => p.id === planId)?.name}`,
       });
+      
+      console.log('Plan actualizado exitosamente');
     } catch (error) {
+      console.error('Error actualizando plan:', error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar el plan",
+        description: "No se pudo actualizar el plan. Inténtalo de nuevo.",
         variant: "destructive",
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
+
+  const currentPlan = profile?.promotion_plan || 'basic';
 
   return (
     <div className="space-y-6">
@@ -104,18 +128,15 @@ const CompanionPlanSelector = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {plans.map((plan) => {
           const Icon = plan.icon;
-          const isSelected = selectedPlan === plan.id;
-          const isCurrentPlan = profile?.promotion_plan === plan.id;
+          const isCurrentPlan = currentPlan === plan.id;
           
           return (
             <Card 
               key={plan.id} 
               className={`bg-white/10 backdrop-blur-md border-2 transition-all duration-300 hover:scale-105 ${
-                isSelected 
-                  ? plan.borderColor 
-                  : isCurrentPlan 
-                    ? 'border-green-500/50' 
-                    : 'border-white/20'
+                isCurrentPlan 
+                  ? 'border-green-500/50' 
+                  : 'border-white/20'
               }`}
             >
               <CardHeader className="text-center relative">
@@ -153,14 +174,14 @@ const CompanionPlanSelector = () => {
                 
                 <Button
                   onClick={() => handleSelectPlan(plan.id)}
-                  disabled={loading || isCurrentPlan}
+                  disabled={isUpdating || isCurrentPlan}
                   className={`w-full ${
                     isCurrentPlan
                       ? 'bg-green-500 hover:bg-green-600'
                       : `bg-gradient-to-r ${plan.color} hover:opacity-90`
                   } text-white font-semibold py-3 transition-all duration-300`}
                 >
-                  {loading ? (
+                  {isUpdating ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   ) : isCurrentPlan ? (
                     <>
