@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_actions: {
+        Row: {
+          action_type: string
+          admin_id: string
+          created_at: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          reason: string | null
+          target_user_id: string
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          reason?: string | null
+          target_user_id: string
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          reason?: string | null
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       chat_sessions: {
         Row: {
           client_id: string
@@ -428,6 +461,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_companion_plan: {
+        Args: {
+          companion_profile_id: string
+          new_promotion_plan: string
+          reason?: string
+        }
+        Returns: Json
+      }
+      admin_update_user_subscription: {
+        Args: {
+          target_user_id: string
+          new_subscription_type: string
+          new_expires_at: string
+          reason?: string
+        }
+        Returns: Json
+      }
       process_mercadopago_webhook: {
         Args: { payment_data: Json }
         Returns: Json

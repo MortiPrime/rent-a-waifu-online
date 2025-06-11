@@ -1,173 +1,177 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { Heart, MessageCircle, User, Crown, Settings, LogOut } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Heart, Menu, X, User, LogOut, Crown, Settings, Home } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, signOut, isClient, isGirlfriend, isAdmin } = useAuth();
+  const { user, signOut, isGirlfriend, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate('/auth');
+      navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
-  const getNavLinks = () => {
-    if (isGirlfriend) {
-      return [
-        { to: '/', label: 'Dashboard', icon: Settings },
-        { to: '/profile', label: 'Mi Perfil', icon: User },
-      ];
-    }
-
-    if (isClient) {
-      return [
-        { to: '/catalog', label: 'Companions', icon: Heart },
-        { to: '/subscription', label: 'Suscripción', icon: Crown },
-        { to: '/profile', label: 'Mi Perfil', icon: User },
-      ];
-    }
-
-    return [];
-  };
-
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <Heart className="w-8 h-8 text-primary" />
-            <span className="text-xl font-playfair font-bold text-white">
-              AnimeDating
-            </span>
+            <Heart className="w-8 h-8 text-pink-500" />
+            <span className="text-xl font-bold text-white">AnimeDating</span>
           </Link>
 
-          {/* Navigation Links */}
-          {user && (
-            <div className="hidden md:flex items-center space-x-6">
-              {getNavLinks().map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors"
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{link.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-
-          {/* User Actions */}
-          <div className="flex items-center space-x-4">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link to="/" className="text-white hover:text-pink-400 transition-colors">
+              Catálogo
+            </Link>
+            <Link to="/home" className="text-white hover:text-pink-400 transition-colors">
+              Inicio
+            </Link>
             {user ? (
               <>
-                {/* Quick Sign Out Button for Desktop */}
+                <Link to="/profile" className="text-white hover:text-pink-400 transition-colors">
+                  Mi Perfil
+                </Link>
+                {!isGirlfriend && (
+                  <Link to="/subscription" className="text-white hover:text-pink-400 transition-colors">
+                    Suscripción
+                  </Link>
+                )}
+                {isAdmin && (
+                  <Link to="/admin" className="text-white hover:text-pink-400 transition-colors flex items-center gap-1">
+                    <Settings className="w-4 h-4" />
+                    Admin
+                  </Link>
+                )}
                 <Button
                   onClick={handleSignOut}
                   variant="outline"
                   size="sm"
-                  className="hidden md:flex bg-white/10 text-white border-white/20 hover:bg-white/20"
+                  className="bg-white/10 text-white border-white/20 hover:bg-white/20"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  Cerrar Sesión
+                  Salir
                 </Button>
-
-                {/* Dropdown Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="text-white hover:bg-white/10">
-                      <User className="w-5 h-5 mr-2" />
-                      {user.email?.split('@')[0]}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="w-56 bg-gray-900/95 border-gray-700 backdrop-blur-sm"
-                  >
-                    {/* Mobile Navigation */}
-                    <div className="md:hidden">
-                      {getNavLinks().map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <DropdownMenuItem key={link.to} asChild>
-                            <Link
-                              to={link.to}
-                              className="flex items-center space-x-2 text-white cursor-pointer"
-                            >
-                              <Icon className="w-4 h-4" />
-                              <span>{link.label}</span>
-                            </Link>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                      <DropdownMenuSeparator className="bg-gray-700" />
-                    </div>
-
-                    {/* Role-specific actions */}
-                    {isClient && (
-                      <DropdownMenuItem asChild>
-                        <Link
-                          to="/become-companion"
-                          className="flex items-center space-x-2 text-white cursor-pointer"
-                        >
-                          <Crown className="w-4 h-4" />
-                          <span>Ser Companion</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/profile"
-                        className="flex items-center space-x-2 text-white cursor-pointer"
-                      >
-                        <Settings className="w-4 h-4" />
-                        <span>Configuración</span>
-                      </Link>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuSeparator className="bg-gray-700" />
-                    
-                    <DropdownMenuItem
-                      onClick={handleSignOut}
-                      className="flex items-center space-x-2 text-red-400 cursor-pointer hover:text-red-300"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Cerrar Sesión</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button asChild variant="ghost" className="text-white hover:bg-white/10">
-                  <Link to="/auth">Iniciar Sesión</Link>
-                </Button>
-                <Button asChild className="anime-button">
-                  <Link to="/auth">Registrarse</Link>
-                </Button>
-              </div>
+              <>
+                <Link to="/become-companion" className="text-white hover:text-pink-400 transition-colors">
+                  Ser Companion
+                </Link>
+                <Link to="/auth">
+                  <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+                    Iniciar Sesión
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-white"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-white/10">
+            <div className="flex flex-col space-y-3">
+              <Link 
+                to="/" 
+                className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Heart className="w-4 h-4" />
+                Catálogo
+              </Link>
+              <Link 
+                to="/home" 
+                className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Home className="w-4 h-4" />
+                Inicio
+              </Link>
+              {user ? (
+                <>
+                  <Link 
+                    to="/profile" 
+                    className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    Mi Perfil
+                  </Link>
+                  {!isGirlfriend && (
+                    <Link 
+                      to="/subscription" 
+                      className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Crown className="w-4 h-4" />
+                      Suscripción
+                    </Link>
+                  )}
+                  {isAdmin && (
+                    <Link 
+                      to="/admin" 
+                      className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Settings className="w-4 h-4" />
+                      Panel Admin
+                    </Link>
+                  )}
+                  <Button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMenuOpen(false);
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white/10 text-white border-white/20 hover:bg-white/20 mx-3"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Salir
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    to="/become-companion" 
+                    className="text-white hover:text-pink-400 transition-colors px-3 py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Ser Companion
+                  </Link>
+                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 mx-3">
+                      Iniciar Sesión
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

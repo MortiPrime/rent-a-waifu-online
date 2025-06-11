@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Crown, Star, DollarSign, Heart, Users } from 'lucide-react';
+import { MapPin, Crown, Star, DollarSign, Heart, Users, LogIn, UserPlus } from 'lucide-react';
 import { MEXICO_STATES, getMunicipalitiesByState } from '@/data/mexicoStates';
+import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 
 const Catalog = () => {
@@ -71,7 +72,6 @@ const Catalog = () => {
   const isVipSubscription = hasSubscription && 
     (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
 
-  // Mostrar todas las companions - aplicar efectos visuales según suscripción
   const visibleCompanions = listings || [];
 
   const getPlanBadge = (plan: string) => {
@@ -88,7 +88,6 @@ const Catalog = () => {
   };
 
   const shouldBlurCompanion = (companion: CompanionListing) => {
-    // Solo hacer blur a companions premium/vip si no tienes suscripción
     if (companion.promotion_plan === 'premium' || companion.promotion_plan === 'vip') {
       return !hasSubscription;
     }
@@ -105,16 +104,36 @@ const Catalog = () => {
       
       <div className="pt-24 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
+          {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-playfair font-bold text-white mb-6">
-              Catálogo de
+              Encuentra tu
               <span className="block bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-                Companions
+                Companion Perfecta
               </span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Descubre companions increíbles en tu área. Conecta con personalidades únicas.
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+              Conecta con personas reales y auténticas en un ambiente seguro y respetuoso. 
+              Descubre conversaciones significativas y experiencias únicas.
             </p>
+            
+            {/* Auth buttons for non-logged users */}
+            {!user && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                <Link to="/auth">
+                  <Button size="lg" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-lg px-8 py-4">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    Iniciar Sesión
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button size="lg" variant="outline" className="text-lg px-8 py-4 bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    <UserPlus className="w-5 h-5 mr-2" />
+                    Registrarse
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Filters */}
@@ -187,7 +206,8 @@ const Catalog = () => {
             </CardContent>
           </Card>
 
-          {!hasSubscription && (
+          {/* Subscription CTA for non-subscribers */}
+          {user && !hasSubscription && (
             <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 mb-8">
               <CardContent className="p-6 text-center">
                 <h3 className="text-xl font-semibold text-white mb-2">
@@ -202,6 +222,33 @@ const Catalog = () => {
                 >
                   Ver Planes de Suscripción
                 </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Registration CTA for non-logged users */}
+          {!user && (
+            <Card className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30 mb-8">
+              <CardContent className="p-6 text-center">
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  ¿Quieres ser Companion?
+                </h3>
+                <p className="text-white/80 mb-4">
+                  Únete a nuestra plataforma y comienza a generar ingresos conectando con personas increíbles.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link to="/become-companion">
+                    <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
+                      <Star className="w-4 h-4 mr-2" />
+                      Ser Companion
+                    </Button>
+                  </Link>
+                  <Link to="/auth">
+                    <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                      Crear Cuenta
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -320,7 +367,13 @@ const Catalog = () => {
                         <h4 className="text-white font-medium flex items-center gap-2">
                           Contacto
                         </h4>
-                        {isVipSubscription ? (
+                        {!user ? (
+                          <div className="bg-pink-500/20 border border-pink-500/30 rounded-md p-3">
+                            <p className="text-pink-300 text-sm">
+                              Inicia sesión para ver información de contacto
+                            </p>
+                          </div>
+                        ) : isVipSubscription ? (
                           <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
                             <p className="text-green-300 font-medium text-sm">
                               📞 {companion.contact_number}
@@ -342,22 +395,36 @@ const Catalog = () => {
                       </div>
 
                       <div className="flex gap-2 pt-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 border-white/30 text-white hover:bg-white/10"
-                          disabled={isBlurred}
-                        >
-                          <Heart className="w-4 h-4 mr-1" />
-                          Me gusta
-                        </Button>
-                        <Button 
-                          size="sm"
-                          className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                          disabled={isBlurred}
-                        >
-                          Ver Perfil
-                        </Button>
+                        {user ? (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="flex-1 border-white/30 text-white hover:bg-white/10"
+                              disabled={isBlurred}
+                            >
+                              <Heart className="w-4 h-4 mr-1" />
+                              Me gusta
+                            </Button>
+                            <Button 
+                              size="sm"
+                              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                              disabled={isBlurred}
+                            >
+                              Ver Perfil
+                            </Button>
+                          </>
+                        ) : (
+                          <Link to="/auth" className="w-full">
+                            <Button 
+                              size="sm"
+                              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                            >
+                              <LogIn className="w-4 h-4 mr-2" />
+                              Iniciar Sesión para Contactar
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
