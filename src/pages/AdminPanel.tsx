@@ -32,6 +32,12 @@ interface CompanionProfile {
   created_at: string;
 }
 
+interface AdminResponse {
+  success?: boolean;
+  error?: string;
+  message?: string;
+}
+
 const AdminPanel = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -95,13 +101,15 @@ const AdminPanel = () => {
 
       if (error) throw error;
       
-      if (data?.error) {
-        throw new Error(data.error);
+      const response = data as AdminResponse;
+      
+      if (response?.error) {
+        throw new Error(response.error);
       }
 
       toast({
         title: "Suscripción actualizada",
-        description: data?.message || "La suscripción se actualizó correctamente",
+        description: response?.message || "La suscripción se actualizó correctamente",
       });
 
       // Recargar datos
@@ -132,13 +140,15 @@ const AdminPanel = () => {
 
       if (error) throw error;
       
-      if (data?.error) {
-        throw new Error(data.error);
+      const response = data as AdminResponse;
+      
+      if (response?.error) {
+        throw new Error(response.error);
       }
 
       toast({
         title: "Plan actualizado",
-        description: data?.message || "El plan se actualizó correctamente",
+        description: response?.message || "El plan se actualizó correctamente",
       });
 
       // Recargar datos
