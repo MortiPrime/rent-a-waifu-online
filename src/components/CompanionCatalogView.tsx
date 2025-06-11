@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings } from '@/hooks/useCompanionListings';
+import { useCompanionProfile } from '@/hooks/useCompanionProfile';
 import { CompanionListing } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Crown, Star, DollarSign, Users } from 'lucide-react';
+import { MapPin, Crown, Star, DollarSign, Users, Settings, Heart } from 'lucide-react';
 import { MEXICO_STATES, getMunicipalitiesByState } from '@/data/mexicoStates';
 
 const CompanionCatalogView = () => {
-  const { user, profile } = useAuth();
+  const { user, profile: userProfile } = useAuth();
+  const { profile: companionProfile, loading: profileLoading } = useCompanionProfile();
   const { listings, loading, loadListings, loadAllListings } = useCompanionListings();
   const [searchFilters, setSearchFilters] = useState({
     state: '',
@@ -71,12 +72,22 @@ const CompanionCatalogView = () => {
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    const badges = {
+      pending: <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">Pendiente</Badge>,
+      approved: <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30">Aprobado</Badge>,
+      rejected: <Badge variant="secondary" className="bg-red-500/20 text-red-300 border-red-500/30">Rechazado</Badge>,
+      suspended: <Badge variant="secondary" className="bg-gray-500/20 text-gray-300 border-gray-500/30">Suspendido</Badge>
+    };
+    return badges[status as keyof typeof badges] || badges.approved;
+  };
+
   // Filtrar companions excluyendo la propia
   const visibleCompanions = listings.filter(companion => companion.user_id !== user?.id);
 
   const availableMunicipalities = searchFilters.state ? getMunicipalitiesByState(searchFilters.state) : [];
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="text-center text-white">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500 mx-auto"></div>
@@ -98,6 +109,51 @@ const CompanionCatalogView = () => {
           Ve como otros perciben los perfiles de companions en la plataforma.
         </p>
       </div>
+
+      {/* Mi Perfil como Companion */}
+      {companionProfile && (
+        <Card className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Heart className="w-5 h-5 text-pink-400" />
+              Tu Perfil como Companion
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="text-center">
+                <p className="text-white/70 text-sm">Nombre Artístico</p>
+                <p className="text-white font-semibold text-lg">{companionProfile.stage_name}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-white/70 text-sm">Estado</p>
+                <div className="flex justify-center mt-1">
+                  {getStatusBadge(companionProfile.status || 'approved')}
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-white/70 text-sm">Plan</p>
+                <div className="flex justify-center mt-1">
+                  {getPlanBadge(companionProfile.promotion_plan || 'basic')}
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-white/70 text-sm">Ubicación</p>
+                <p className="text-white text-sm">{companionProfile.city}, {companionProfile.state}</p>
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <Button 
+                onClick={() => window.location.href = '/profile'}
+                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Ir a Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters */}
       <Card className="bg-white/10 backdrop-blur-md border-white/20">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings } from '@/hooks/useCompanionListings';
@@ -101,7 +102,13 @@ const Catalog = () => {
     }
   };
 
+  // Solo aplicar efecto borroso a companions premium/VIP si el usuario no tiene suscripción
   const shouldBlurCompanion = (companion: CompanionListing) => {
+    // Las companions básicas SIEMPRE son visibles
+    if (companion.promotion_plan === 'basic') {
+      return false;
+    }
+    // Solo borrar premium/VIP si no tiene suscripción
     if (companion.promotion_plan === 'premium' || companion.promotion_plan === 'vip') {
       return !hasSubscription;
     }
@@ -313,7 +320,7 @@ const Catalog = () => {
                       isBlurred ? 'relative' : ''
                     }`}
                   >
-                    {/* Overlay para efecto borroso */}
+                    {/* Overlay para efecto borroso - solo para premium/VIP sin suscripción */}
                     {isBlurred && (
                       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center">
                         <div className="text-center p-4">
@@ -395,10 +402,22 @@ const Catalog = () => {
                               📞 {companion.contact_number}
                             </p>
                           </div>
+                        ) : hasSubscription && companion.promotion_plan === 'basic' ? (
+                          <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
+                            <p className="text-green-300 font-medium text-sm">
+                              📞 {companion.contact_number}
+                            </p>
+                          </div>
                         ) : hasSubscription ? (
                           <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-md p-3">
                             <p className="text-yellow-300 text-sm">
                               Número disponible con suscripción Premium/VIP
+                            </p>
+                          </div>
+                        ) : companion.promotion_plan === 'basic' ? (
+                          <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
+                            <p className="text-green-300 font-medium text-sm">
+                              📞 {companion.contact_number}
                             </p>
                           </div>
                         ) : (
