@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings } from '@/hooks/useCompanionListings';
@@ -13,6 +12,7 @@ import { MapPin, Crown, Star, DollarSign, Heart, Users, LogIn, UserPlus } from '
 import { MEXICO_STATES, getMunicipalitiesByState } from '@/data/mexicoStates';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
+import CompanionCatalogView from '@/components/CompanionCatalogView';
 
 const Catalog = () => {
   const { user, profile } = useAuth();
@@ -22,6 +22,20 @@ const Catalog = () => {
     municipality: '',
     phoneNumber: ''
   });
+
+  // Si el usuario es companion, mostrar vista específica
+  if (user && profile?.user_role === 'girlfriend') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
+        <Navbar />
+        <div className="pt-24 pb-16 px-4">
+          <div className="max-w-7xl mx-auto">
+            <CompanionCatalogView />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Cargar todas las companions al inicio
   useEffect(() => {
@@ -207,7 +221,7 @@ const Catalog = () => {
           </Card>
 
           {/* Subscription CTA for non-subscribers */}
-          {user && !hasSubscription && (
+          {user && !hasSubscription && profile?.user_role === 'client' && (
             <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 mb-8">
               <CardContent className="p-6 text-center">
                 <h3 className="text-xl font-semibold text-white mb-2">
@@ -261,6 +275,8 @@ const Catalog = () => {
                   Debug: {listings.length} companions totales | {visibleCompanions.length} visibles | Loading: {loading.toString()}
                   <br />
                   Suscripción: {hasSubscription ? 'Activa' : 'No activa'} | Tipo: {profile?.subscription_type || 'ninguno'}
+                  <br />
+                  Rol de usuario: {profile?.user_role || 'no definido'}
                 </p>
               </CardContent>
             </Card>
