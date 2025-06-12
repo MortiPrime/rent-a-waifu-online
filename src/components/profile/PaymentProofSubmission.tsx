@@ -173,7 +173,7 @@ export const PaymentProofSubmission = () => {
                   Plan Básico
                   <ExternalLink className="w-3 h-3" />
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => openPaymentLink('premium')} className="w-full justify-between border-white/30 text-white bg-cyan-950 hover:bg-cyan-800">
+                <Button size="sm" variant="outline" onClick={() => openPaymentLink('premium')} className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 ">
                   Plan Premium
                   <ExternalLink className="w-3 h-3" />
                 </Button>
