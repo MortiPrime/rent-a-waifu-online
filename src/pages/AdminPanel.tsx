@@ -100,7 +100,16 @@ const AdminPanel = () => {
         .order('created_at', { ascending: false });
 
       if (proofsError) throw proofsError;
-      setPaymentProofs(proofsData || []);
+      
+      // Asegurar que los datos tengan la estructura correcta
+      const formattedProofs = proofsData?.map(proof => ({
+        ...proof,
+        profiles: Array.isArray(proof.profiles) && proof.profiles.length > 0 
+          ? proof.profiles[0] 
+          : { full_name: 'Sin nombre', username: 'Sin usuario' }
+      })) || [];
+      
+      setPaymentProofs(formattedProofs);
 
     } catch (error: any) {
       console.error('Error loading admin data:', error);
