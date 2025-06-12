@@ -375,6 +375,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_proofs: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          message: string | null
+          payment_method: string
+          payment_month: string
+          proof_image_url: string | null
+          status: string
+          subscription_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          payment_method: string
+          payment_month: string
+          proof_image_url?: string | null
+          status?: string
+          subscription_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          payment_method?: string
+          payment_month?: string
+          proof_image_url?: string | null
+          status?: string
+          subscription_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -465,6 +507,14 @@ export type Database = {
         Args: {
           companion_profile_id: string
           new_promotion_plan: string
+          reason?: string
+        }
+        Returns: Json
+      }
+      admin_update_subscription_expiry: {
+        Args: {
+          target_user_id: string
+          new_expires_at: string
           reason?: string
         }
         Returns: Json
