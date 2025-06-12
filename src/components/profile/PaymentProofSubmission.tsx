@@ -169,15 +169,15 @@ export const PaymentProofSubmission = () => {
             <div className="space-y-3">
               <h4 className="text-white font-medium">Liga de Cobro (MercadoPago)</h4>
               <div className="space-y-2">
-                <Button size="sm" variant="outline" onClick={() => openPaymentLink('basic')} className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 ">
+                <Button size="sm" variant="outline" onClick={() => openPaymentLink('basic')} className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-slate-50">
                   Plan Básico
                   <ExternalLink className="w-3 h-3" />
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => openPaymentLink('premium')} className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 ">
+                <Button size="sm" variant="outline" onClick={() => openPaymentLink('premium')} className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-slate-50">
                   Plan Premium
                   <ExternalLink className="w-3 h-3" />
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => openPaymentLink('vip')} className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:decoration-pink-700 ">
+                <Button size="sm" variant="outline" onClick={() => openPaymentLink('vip')} className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:decoration-pink-700 text-slate-50">
                   Plan VIP
                   <ExternalLink className="w-3 h-3" />
                 </Button>
