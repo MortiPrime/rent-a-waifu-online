@@ -38,28 +38,28 @@ export const RoleConverter = ({
   if (!isCompanion) {
     return <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-purple-950">
             <Users className="w-5 h-5" />
             ¿Quieres ser Companion?
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-white/80 mb-4">
+          <p className="mb-4 text-violet-950">
             Convierte tu cuenta en una cuenta de Companion y comienza a ofrecer tus servicios.
             Podrás gestionar tu perfil, fotos, precios y reglas de manera profesional.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-white/10 rounded-lg">
+            <div className="text-center p-4 rounded-lg bg-indigo-500">
               <Heart className="w-8 h-8 text-pink-400 mx-auto mb-2" />
               <h4 className="text-white font-semibold">Ingresos</h4>
               <p className="text-white/70 text-sm">Genera ingresos con tus servicios</p>
             </div>
-            <div className="text-center p-4 bg-white/10 rounded-lg">
+            <div className="text-center p-4 rounded-lg bg-indigo-500">
               <Camera className="w-8 h-8 text-purple-400 mx-auto mb-2" />
               <h4 className="text-white font-semibold">Fotos</h4>
               <p className="text-white/70 text-sm">Sube fotos profesionales</p>
             </div>
-            <div className="text-center p-4 bg-white/10 rounded-lg">
+            <div className="text-center p-4 rounded-lg bg-indigo-500">
               <Crown className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
               <h4 className="text-white font-semibold">Planes</h4>
               <p className="text-white/70 text-sm">Elige tu plan promocional</p>
