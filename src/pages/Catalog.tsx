@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings } from '@/hooks/useCompanionListings';
@@ -14,10 +13,17 @@ import { MEXICO_STATES, getMunicipalitiesByState } from '@/data/mexicoStates';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import CompanionCatalogView from '@/components/CompanionCatalogView';
-
 const Catalog = () => {
-  const { user, profile } = useAuth();
-  const { listings, loading, loadListings, loadAllListings } = useCompanionListings();
+  const {
+    user,
+    profile
+  } = useAuth();
+  const {
+    listings,
+    loading,
+    loadListings,
+    loadAllListings
+  } = useCompanionListings();
   const [searchFilters, setSearchFilters] = useState({
     state: '',
     municipality: '',
@@ -26,16 +32,14 @@ const Catalog = () => {
 
   // Si el usuario es companion, mostrar vista específica
   if (user && profile?.user_role === 'girlfriend') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
+    return <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
         <Navbar />
         <div className="pt-24 pb-16 px-4">
           <div className="max-w-7xl mx-auto">
             <CompanionCatalogView />
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Cargar todas las companions al inicio
@@ -54,24 +58,23 @@ const Catalog = () => {
       loadAllListings();
     }
   }, [searchFilters]);
-
   const handleFilterChange = (key: string, value: string) => {
     console.log('Cambiando filtro:', key, value);
     setSearchFilters(prev => ({
       ...prev,
       [key]: value,
       // Reset municipality when state changes
-      ...(key === 'state' && { municipality: '' })
+      ...(key === 'state' && {
+        municipality: ''
+      })
     }));
   };
-
   const handlePhoneNumberChange = (value: string) => {
     setSearchFilters(prev => ({
       ...prev,
       phoneNumber: value
     }));
   };
-
   const clearFilters = () => {
     setSearchFilters({
       state: '',
@@ -79,16 +82,9 @@ const Catalog = () => {
       phoneNumber: ''
     });
   };
-
-  const hasSubscription = profile?.subscription_type && 
-    profile?.subscription_expires_at && 
-    new Date(profile.subscription_expires_at) > new Date();
-
-  const isVipSubscription = hasSubscription && 
-    (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
-
+  const hasSubscription = profile?.subscription_type && profile?.subscription_expires_at && new Date(profile.subscription_expires_at) > new Date();
+  const isVipSubscription = hasSubscription && (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
   const visibleCompanions = listings || [];
-
   const getPlanBadge = (plan: string) => {
     switch (plan) {
       case 'basic':
@@ -114,13 +110,9 @@ const Catalog = () => {
     }
     return false;
   };
-
   const availableMunicipalities = searchFilters.state ? getMunicipalitiesByState(searchFilters.state) : [];
-
   console.log('Renderizando catálogo con', listings.length, 'companions totales y', visibleCompanions.length, 'visibles');
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
+  return <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
       <Navbar />
       
       <div className="pt-24 pb-16 px-4">
@@ -139,8 +131,7 @@ const Catalog = () => {
             </p>
             
             {/* Auth buttons for non-logged users */}
-            {!user && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            {!user && <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 <Link to="/auth">
                   <Button size="lg" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-lg px-8 py-4">
                     <LogIn className="w-5 h-5 mr-2" />
@@ -153,8 +144,7 @@ const Catalog = () => {
                     Registrarse
                   </Button>
                 </Link>
-              </div>
-            )}
+              </div>}
           </div>
 
           {/* Filters */}
@@ -169,34 +159,26 @@ const Catalog = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="state-filter" className="text-white font-medium">Estado</Label>
-                  <Select value={searchFilters.state} onValueChange={(value) => handleFilterChange('state', value === 'all' ? '' : value)}>
+                  <Select value={searchFilters.state} onValueChange={value => handleFilterChange('state', value === 'all' ? '' : value)}>
                     <SelectTrigger className="bg-white/10 border-white/30 text-white">
                       <SelectValue placeholder="Todos los estados" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
                       <SelectItem value="all" className="text-white">Todos los estados</SelectItem>
-                      {Object.keys(MEXICO_STATES).map(state => (
-                        <SelectItem key={state} value={state} className="text-white">{state}</SelectItem>
-                      ))}
+                      {Object.keys(MEXICO_STATES).map(state => <SelectItem key={state} value={state} className="text-white">{state}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
                   <Label htmlFor="municipality-filter" className="text-white font-medium">Municipio</Label>
-                  <Select 
-                    value={searchFilters.municipality} 
-                    onValueChange={(value) => handleFilterChange('municipality', value === 'all' ? '' : value)}
-                    disabled={!searchFilters.state}
-                  >
+                  <Select value={searchFilters.municipality} onValueChange={value => handleFilterChange('municipality', value === 'all' ? '' : value)} disabled={!searchFilters.state}>
                     <SelectTrigger className="bg-white/10 border-white/30 text-white">
                       <SelectValue placeholder="Todos los municipios" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700">
                       <SelectItem value="all" className="text-white">Todos los municipios</SelectItem>
-                      {availableMunicipalities.map(municipality => (
-                        <SelectItem key={municipality} value={municipality} className="text-white">{municipality}</SelectItem>
-                      ))}
+                      {availableMunicipalities.map(municipality => <SelectItem key={municipality} value={municipality} className="text-white">{municipality}</SelectItem>)}
                       <SelectItem value="Otro" className="text-white">Otro</SelectItem>
                     </SelectContent>
                   </Select>
@@ -204,22 +186,11 @@ const Catalog = () => {
 
                 <div>
                   <Label htmlFor="phone-filter" className="text-white font-medium">Número de Teléfono</Label>
-                  <Input
-                    id="phone-filter"
-                    type="text"
-                    placeholder="Buscar por teléfono..."
-                    value={searchFilters.phoneNumber}
-                    onChange={(e) => handlePhoneNumberChange(e.target.value)}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
+                  <Input id="phone-filter" type="text" placeholder="Buscar por teléfono..." value={searchFilters.phoneNumber} onChange={e => handlePhoneNumberChange(e.target.value)} className="bg-white/10 border-white/30 text-white placeholder:text-white/50" />
                 </div>
 
                 <div className="flex items-end">
-                  <Button 
-                    onClick={clearFilters}
-                    variant="outline"
-                    className="w-full border-white/30 text-white hover:bg-white/10"
-                  >
+                  <Button onClick={clearFilters} variant="outline" className="w-full border-white/30 text-white bg-blue-950 hover:bg-blue-800">
                     Limpiar Filtros
                   </Button>
                 </div>
@@ -228,28 +199,22 @@ const Catalog = () => {
           </Card>
 
           {/* Subscription CTA for non-subscribers */}
-          {user && !hasSubscription && profile?.user_role === 'client' && (
-            <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 mb-8">
-              <CardContent className="p-6 text-center">
+          {user && !hasSubscription && profile?.user_role === 'client' && <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 mb-8">
+              <CardContent className="p-6 text-center bg-fuchsia-900">
                 <h3 className="text-xl font-semibold text-white mb-2">
                   ¡Suscríbete para acceso completo!
                 </h3>
                 <p className="text-white/80 mb-4">
                   Con una suscripción Premium o VIP podrás ver companions premium/VIP sin restricciones y acceder a números de contacto.
                 </p>
-                <Button 
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                  onClick={() => window.location.href = '/subscription'}
-                >
+                <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700" onClick={() => window.location.href = '/subscription'}>
                   Ver Planes de Suscripción
                 </Button>
               </CardContent>
-            </Card>
-          )}
+            </Card>}
 
           {/* Registration CTA for non-logged users */}
-          {!user && (
-            <Card className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30 mb-8">
+          {!user && <Card className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-500/30 mb-8">
               <CardContent className="p-6 text-center">
                 <h3 className="text-xl font-semibold text-white mb-2">
                   ¿Quieres ser Companion?
@@ -271,12 +236,10 @@ const Catalog = () => {
                   </Link>
                 </div>
               </CardContent>
-            </Card>
-          )}
+            </Card>}
 
           {/* Debug info */}
-          {process.env.NODE_ENV === 'development' && (
-            <Card className="bg-blue-500/20 border-blue-500/30 mb-8">
+          {process.env.NODE_ENV === 'development' && <Card className="bg-blue-500/20 border-blue-500/30 mb-8">
               <CardContent className="p-4">
                 <p className="text-blue-300 text-sm">
                   Debug: {listings.length} companions totales | {visibleCompanions.length} visibles | Loading: {loading.toString()}
@@ -286,17 +249,13 @@ const Catalog = () => {
                   Rol de usuario: {profile?.user_role || 'no definido'}
                 </p>
               </CardContent>
-            </Card>
-          )}
+            </Card>}
 
           {/* Listings Grid */}
-          {loading ? (
-            <div className="text-center text-white">
+          {loading ? <div className="text-center text-white">
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500 mx-auto"></div>
               <p className="mt-4">Cargando companions...</p>
-            </div>
-          ) : visibleCompanions.length === 0 ? (
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            </div> : visibleCompanions.length === 0 ? <Card className="bg-white/10 backdrop-blur-md border-white/20">
               <CardContent className="p-12 text-center">
                 <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">No se encontraron companions</h3>
@@ -307,29 +266,18 @@ const Catalog = () => {
                   Si eres companion, asegúrate de que tu perfil esté activo y haya sido sincronizado.
                 </p>
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {visibleCompanions.map((companion) => {
-                const isBlurred = shouldBlurCompanion(companion);
-                
-                return (
-                  <Card 
-                    key={companion.id} 
-                    className={`bg-white/10 backdrop-blur-md border-white/20 overflow-hidden hover:bg-white/15 transition-all duration-300 ${
-                      isBlurred ? 'relative' : ''
-                    }`}
-                  >
+            </Card> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visibleCompanions.map(companion => {
+            const isBlurred = shouldBlurCompanion(companion);
+            return <Card key={companion.id} className={`bg-white/10 backdrop-blur-md border-white/20 overflow-hidden hover:bg-white/15 transition-all duration-300 ${isBlurred ? 'relative' : ''}`}>
                     {/* Overlay para efecto borroso - solo para premium/VIP sin suscripción */}
-                    {isBlurred && (
-                      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                    {isBlurred && <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center">
                         <div className="text-center p-4">
                           <Crown className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
                           <p className="text-white font-semibold">Contenido Premium</p>
                           <p className="text-white/80 text-sm">Suscríbete para ver</p>
                         </div>
-                      </div>
-                    )}
+                      </div>}
                     
                     <CardHeader className="pb-4">
                       <div className="flex justify-between items-start">
@@ -344,12 +292,10 @@ const Catalog = () => {
                         </div>
                         <div className="flex flex-col gap-2">
                           {getPlanBadge(companion.promotion_plan || 'basic')}
-                          {companion.is_featured && (
-                            <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+                          {companion.is_featured && <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
                               <Star className="w-3 h-3 mr-1" />
                               Destacado
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </div>
                     </CardHeader>
@@ -365,8 +311,7 @@ const Catalog = () => {
                       </div>
 
                       {/* Pricing */}
-                      {companion.pricing && (
-                        <div className="space-y-2">
+                      {companion.pricing && <div className="space-y-2">
                           <h4 className="text-white font-medium flex items-center gap-2">
                             <DollarSign className="w-4 h-4" />
                             Precios
@@ -382,95 +327,62 @@ const Catalog = () => {
                               Video Llamada: ${(companion.pricing as any).video_call} MXN
                             </div>
                           </div>
-                        </div>
-                      )}
+                        </div>}
 
                       {/* Contact */}
                       <div className="space-y-2">
                         <h4 className="text-white font-medium flex items-center gap-2">
                           Contacto
                         </h4>
-                        {!user ? (
-                          <div className="bg-pink-500/20 border border-pink-500/30 rounded-md p-3">
+                        {!user ? <div className="bg-pink-500/20 border border-pink-500/30 rounded-md p-3">
                             <p className="text-pink-300 text-sm">
                               Inicia sesión para ver información de contacto
                             </p>
-                          </div>
-                        ) : isVipSubscription ? (
-                          <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
+                          </div> : isVipSubscription ? <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
                             <p className="text-green-300 font-medium text-sm">
                               📞 {companion.contact_number}
                             </p>
-                          </div>
-                        ) : hasSubscription && companion.promotion_plan === 'basic' ? (
-                          <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
+                          </div> : hasSubscription && companion.promotion_plan === 'basic' ? <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
                             <p className="text-green-300 font-medium text-sm">
                               📞 {companion.contact_number}
                             </p>
-                          </div>
-                        ) : hasSubscription ? (
-                          <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-md p-3">
+                          </div> : hasSubscription ? <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-md p-3">
                             <p className="text-yellow-300 text-sm">
                               Número disponible con suscripción Premium/VIP
                             </p>
-                          </div>
-                        ) : companion.promotion_plan === 'basic' ? (
-                          <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
+                          </div> : companion.promotion_plan === 'basic' ? <div className="bg-green-500/20 border border-green-500/30 rounded-md p-3">
                             <p className="text-green-300 font-medium text-sm">
                               📞 {companion.contact_number}
                             </p>
-                          </div>
-                        ) : (
-                          <div className="bg-red-500/20 border border-red-500/30 rounded-md p-3">
+                          </div> : <div className="bg-red-500/20 border border-red-500/30 rounded-md p-3">
                             <p className="text-red-300 text-sm">
                               Suscríbete para ver el número de contacto
                             </p>
-                          </div>
-                        )}
+                          </div>}
                       </div>
 
                       <div className="flex gap-2 pt-2">
-                        {user ? (
-                          <>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="flex-1 border-white/30 text-white hover:bg-white/10"
-                              disabled={isBlurred}
-                            >
+                        {user ? <>
+                            <Button variant="outline" size="sm" className="flex-1 border-white/30 text-white hover:bg-white/10" disabled={isBlurred}>
                               <Heart className="w-4 h-4 mr-1" />
                               Me gusta
                             </Button>
-                            <Button 
-                              size="sm"
-                              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                              disabled={isBlurred}
-                            >
+                            <Button size="sm" className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700" disabled={isBlurred}>
                               Ver Perfil
                             </Button>
-                          </>
-                        ) : (
-                          <Link to="/auth" className="w-full">
-                            <Button 
-                              size="sm"
-                              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                            >
+                          </> : <Link to="/auth" className="w-full">
+                            <Button size="sm" className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
                               <LogIn className="w-4 h-4 mr-2" />
                               Iniciar Sesión para Contactar
                             </Button>
-                          </Link>
-                        )}
+                          </Link>}
                       </div>
                     </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                  </Card>;
+          })}
+            </div>}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Catalog;
