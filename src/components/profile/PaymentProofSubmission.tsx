@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, ExternalLink, Copy, CreditCard, Clock, Check, X } from 'lucide-react';
-
 interface PaymentProof {
   id: string;
   subscription_type: string;
@@ -22,21 +20,23 @@ interface PaymentProof {
   created_at: string;
   admin_notes: string;
 }
-
 export const PaymentProofSubmission = () => {
-  const { user, profile } = useAuth();
-  const { toast } = useToast();
+  const {
+    user,
+    profile
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const [loading, setLoading] = useState(false);
   const [paymentProofs, setPaymentProofs] = useState<PaymentProof[]>([]);
   const [loadingProofs, setLoadingProofs] = useState(true);
-  
   const [formData, setFormData] = useState({
     subscription_type: 'basic',
     payment_method: 'transferencia',
     payment_month: '',
     message: ''
   });
-
   const paymentInfo = {
     clave_interbancaria: '638180000192603131',
     banco: 'Nu Bank',
@@ -46,22 +46,20 @@ export const PaymentProofSubmission = () => {
       vip: 'https://mpago.la/2Eda28H'
     }
   };
-
   React.useEffect(() => {
     if (user && profile?.user_role === 'client') {
       loadPaymentProofs();
     }
   }, [user, profile]);
-
   const loadPaymentProofs = async () => {
     try {
       setLoadingProofs(true);
-      const { data, error } = await supabase
-        .from('payment_proofs')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('payment_proofs').select('*').eq('user_id', user?.id).order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
       setPaymentProofs(data || []);
     } catch (error: any) {
@@ -70,75 +68,63 @@ export const PaymentProofSubmission = () => {
       setLoadingProofs(false);
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.payment_month) {
       toast({
         title: "Error",
         description: "Por favor selecciona el mes de pago",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     try {
       setLoading(true);
-      
-      const { error } = await supabase
-        .from('payment_proofs')
-        .insert({
-          user_id: user?.id,
-          subscription_type: formData.subscription_type,
-          payment_method: formData.payment_method,
-          payment_month: formData.payment_month,
-          message: formData.message || null
-        });
-
+      const {
+        error
+      } = await supabase.from('payment_proofs').insert({
+        user_id: user?.id,
+        subscription_type: formData.subscription_type,
+        payment_method: formData.payment_method,
+        payment_month: formData.payment_month,
+        message: formData.message || null
+      });
       if (error) throw error;
-
       toast({
         title: "Comprobante enviado",
-        description: "Tu comprobante de pago ha sido enviado para revisión",
+        description: "Tu comprobante de pago ha sido enviado para revisión"
       });
-
       setFormData({
         subscription_type: 'basic',
         payment_method: 'transferencia',
         payment_month: '',
         message: ''
       });
-
       loadPaymentProofs();
-
     } catch (error: any) {
       console.error('Error submitting payment proof:', error);
       toast({
         title: "Error",
         description: "No se pudo enviar el comprobante",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
       title: "Copiado",
-      description: "Información copiada al portapapeles",
+      description: "Información copiada al portapapeles"
     });
   };
-
   const openPaymentLink = (plan: string) => {
     const link = paymentInfo.links[plan as keyof typeof paymentInfo.links];
     if (link) {
       window.open(link, '_blank');
     }
   };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -156,9 +142,7 @@ export const PaymentProofSubmission = () => {
   if (profile?.user_role !== 'client') {
     return null;
   }
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Información de Pago */}
       <Card className="bg-white/10 backdrop-blur-md border-white/20">
         <CardHeader>
@@ -175,12 +159,7 @@ export const PaymentProofSubmission = () => {
                 <p className="text-white/70 text-sm">Banco: {paymentInfo.banco}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-white font-mono text-sm">{paymentInfo.clave_interbancaria}</p>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyToClipboard(paymentInfo.clave_interbancaria)}
-                    className="h-6 w-6 p-0"
-                  >
+                  <Button size="sm" variant="ghost" onClick={() => copyToClipboard(paymentInfo.clave_interbancaria)} className="h-6 w-6 p-0">
                     <Copy className="w-3 h-3" />
                   </Button>
                 </div>
@@ -190,30 +169,15 @@ export const PaymentProofSubmission = () => {
             <div className="space-y-3">
               <h4 className="text-white font-medium">Liga de Cobro (MercadoPago)</h4>
               <div className="space-y-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => openPaymentLink('basic')}
-                  className="w-full justify-between border-white/30 text-white hover:bg-white/10"
-                >
+                <Button size="sm" variant="outline" onClick={() => openPaymentLink('basic')} className="w-full justify-between border-white/30 text-white bg-lime-950 hover:bg-lime-800">
                   Plan Básico
                   <ExternalLink className="w-3 h-3" />
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => openPaymentLink('premium')}
-                  className="w-full justify-between border-white/30 text-white hover:bg-white/10"
-                >
+                <Button size="sm" variant="outline" onClick={() => openPaymentLink('premium')} className="w-full justify-between border-white/30 text-white bg-cyan-950 hover:bg-cyan-800">
                   Plan Premium
                   <ExternalLink className="w-3 h-3" />
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => openPaymentLink('vip')}
-                  className="w-full justify-between border-white/30 text-white hover:bg-white/10"
-                >
+                <Button size="sm" variant="outline" onClick={() => openPaymentLink('vip')} className="w-full justify-between border-white/30 text-white bg-sky-950 hover:bg-sky-800">
                   Plan VIP
                   <ExternalLink className="w-3 h-3" />
                 </Button>
@@ -236,10 +200,10 @@ export const PaymentProofSubmission = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="subscription_type" className="text-white">Tipo de Suscripción</Label>
-                <Select
-                  value={formData.subscription_type}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, subscription_type: value }))}
-                >
+                <Select value={formData.subscription_type} onValueChange={value => setFormData(prev => ({
+                ...prev,
+                subscription_type: value
+              }))}>
                   <SelectTrigger className="bg-white/10 border-white/30 text-white">
                     <SelectValue />
                   </SelectTrigger>
@@ -253,10 +217,10 @@ export const PaymentProofSubmission = () => {
 
               <div>
                 <Label htmlFor="payment_method" className="text-white">Método de Pago</Label>
-                <Select
-                  value={formData.payment_method}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method: value }))}
-                >
+                <Select value={formData.payment_method} onValueChange={value => setFormData(prev => ({
+                ...prev,
+                payment_method: value
+              }))}>
                   <SelectTrigger className="bg-white/10 border-white/30 text-white">
                     <SelectValue />
                   </SelectTrigger>
@@ -270,32 +234,21 @@ export const PaymentProofSubmission = () => {
 
             <div>
               <Label htmlFor="payment_month" className="text-white">Mes de Pago</Label>
-              <Input
-                id="payment_month"
-                type="month"
-                value={formData.payment_month}
-                onChange={(e) => setFormData(prev => ({ ...prev, payment_month: e.target.value }))}
-                className="bg-white/10 border-white/30 text-white"
-                required
-              />
+              <Input id="payment_month" type="month" value={formData.payment_month} onChange={e => setFormData(prev => ({
+              ...prev,
+              payment_month: e.target.value
+            }))} className="bg-white/10 border-white/30 text-white" required />
             </div>
 
             <div>
               <Label htmlFor="message" className="text-white">Mensaje (Opcional)</Label>
-              <Textarea
-                id="message"
-                value={formData.message}
-                onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                placeholder="Puedes agregar información adicional sobre tu pago..."
-                className="bg-white/10 border-white/30 text-white"
-              />
+              <Textarea id="message" value={formData.message} onChange={e => setFormData(prev => ({
+              ...prev,
+              message: e.target.value
+            }))} placeholder="Puedes agregar información adicional sobre tu pago..." className="bg-white/10 border-white/30 text-white" />
             </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
-            >
+            <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700">
               {loading ? 'Enviando...' : 'Enviar Comprobante'}
             </Button>
           </form>
@@ -308,19 +261,13 @@ export const PaymentProofSubmission = () => {
           <CardTitle className="text-white">Mis Comprobantes</CardTitle>
         </CardHeader>
         <CardContent>
-          {loadingProofs ? (
-            <div className="text-center py-4">
+          {loadingProofs ? <div className="text-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mx-auto"></div>
-            </div>
-          ) : paymentProofs.length === 0 ? (
-            <div className="text-center py-8">
+            </div> : paymentProofs.length === 0 ? <div className="text-center py-8">
               <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <p className="text-white/70">No has enviado comprobantes aún</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {paymentProofs.map((proof) => (
-                <div key={proof.id} className="bg-white/5 p-4 rounded border border-white/10">
+            </div> : <div className="space-y-3">
+              {paymentProofs.map(proof => <div key={proof.id} className="bg-white/5 p-4 rounded border border-white/10">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <p className="text-white font-medium">
@@ -333,26 +280,19 @@ export const PaymentProofSubmission = () => {
                     {getStatusBadge(proof.status)}
                   </div>
                   
-                  {proof.message && (
-                    <p className="text-white/80 text-sm mb-2">{proof.message}</p>
-                  )}
+                  {proof.message && <p className="text-white/80 text-sm mb-2">{proof.message}</p>}
                   
-                  {proof.admin_notes && (
-                    <div className="bg-blue-500/10 border border-blue-500/30 p-2 rounded mt-2">
+                  {proof.admin_notes && <div className="bg-blue-500/10 border border-blue-500/30 p-2 rounded mt-2">
                       <p className="text-blue-300 text-sm font-medium">Notas del administrador:</p>
                       <p className="text-blue-200 text-sm">{proof.admin_notes}</p>
-                    </div>
-                  )}
+                    </div>}
                   
                   <p className="text-white/60 text-xs mt-2">
                     Enviado: {new Date(proof.created_at).toLocaleDateString()}
                   </p>
-                </div>
-              ))}
-            </div>
-          )}
+                </div>)}
+            </div>}
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
