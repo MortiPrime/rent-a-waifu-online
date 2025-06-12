@@ -2,14 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Crown, Users, Settings, Calendar, DollarSign, Mail, Clock } from 'lucide-react';
+import { Crown, Users, Settings, DollarSign, Clock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
 import { AdminCompanionManagement } from '@/components/admin/AdminCompanionManagement';
@@ -67,30 +62,18 @@ const AdminPanel = () => {
     try {
       setLoading(true);
       
-      // Cargar usuarios con emails
+      // Cargar usuarios (simplificado - sin emails por el momento)
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          email:id (
-            select auth.users.email 
-            from auth.users 
-            where auth.users.id = profiles.id
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (usersError) throw usersError;
 
-      // Obtener emails de auth.users
-      const userIds = usersData?.map(u => u.id) || [];
-      const { data: authUsers, error: authError } = await supabase
-        .rpc('get_user_emails', { user_ids: userIds });
-
-      // Combinar datos de perfil con emails
+      // Por ahora mostramos sin emails hasta resolver el tema de auth.users
       const usersWithEmails = usersData?.map(user => ({
         ...user,
-        email: authUsers?.find((au: any) => au.id === user.id)?.email || 'Sin email'
+        email: 'Email no disponible'
       })) || [];
 
       setUsers(usersWithEmails);
