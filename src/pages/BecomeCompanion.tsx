@@ -10,16 +10,16 @@ import Navbar from '@/components/Navbar';
 import CompanionProfileForm from '@/components/CompanionProfileForm';
 
 const BecomeCompanion = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, isGirlfriend } = useAuth();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
 
   // Verificar si el usuario es companion y mostrar formulario automáticamente
   useEffect(() => {
-    if (profile?.user_role === 'girlfriend') {
+    if (isGirlfriend) {
       setShowForm(true);
     }
-  }, [profile]);
+  }, [isGirlfriend]);
 
   const handleBecomeCompanion = async () => {
     if (!user) {
@@ -28,7 +28,7 @@ const BecomeCompanion = () => {
     }
 
     // Si ya es companion, mostrar formulario
-    if (profile?.user_role === 'girlfriend') {
+    if (isGirlfriend) {
       setShowForm(true);
       return;
     }
@@ -38,7 +38,7 @@ const BecomeCompanion = () => {
   };
 
   // Si ya es companion o debe mostrar el formulario, mostrarlo
-  if (profile?.user_role === 'girlfriend' || showForm) {
+  if (isGirlfriend || showForm) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
         <Navbar />
@@ -217,7 +217,7 @@ const BecomeCompanion = () => {
                   ¿Lista para comenzar tu nueva aventura?
                 </h3>
                 <p className="text-gray-300 mb-6">
-                  {profile?.user_role === 'girlfriend' 
+                  {isGirlfriend 
                     ? 'Completa tu perfil de companion para comenzar a recibir solicitudes.'
                     : 'Primero necesitas convertir tu cuenta a companion desde tu perfil.'}
                 </p>
@@ -227,7 +227,7 @@ const BecomeCompanion = () => {
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-8 py-4 text-lg transition-all duration-300"
                 >
                   <Star className="w-5 h-5 mr-2" />
-                  {profile?.user_role === 'girlfriend' 
+                  {isGirlfriend 
                     ? 'Completar Perfil' 
                     : 'Ir a Mi Perfil'}
                 </Button>
