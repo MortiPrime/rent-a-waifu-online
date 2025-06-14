@@ -4,11 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Crown, Users, Settings, DollarSign, Clock } from 'lucide-react';
+import { Crown, Users, Settings, DollarSign, Clock, CreditCard } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
 import { AdminCompanionManagement } from '@/components/admin/AdminCompanionManagement';
 import { AdminPaymentProofs } from '@/components/admin/AdminPaymentProofs';
+import { AdminMercadoPagoTransactions } from '@/components/admin/AdminMercadoPagoTransactions';
 
 interface User {
   id: string;
@@ -46,12 +47,32 @@ interface PaymentProof {
   };
 }
 
+interface MercadoPagoTransaction {
+  id: string;
+  user_id: string;
+  preference_id: string;
+  payment_id?: string;
+  external_reference?: string;
+  status: string;
+  amount: number;
+  currency: string;
+  subscription_type: string;
+  subscription_months: number;
+  created_at: string;
+  updated_at: string;
+  profiles?: {
+    full_name: string;
+    username: string;
+  };
+}
+
 const AdminPanel = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [companions, setCompanions] = useState<CompanionProfile[]>([]);
   const [paymentProofs, setPaymentProofs] = useState<PaymentProof[]>([]);
+  const [mercadoPagoTransactions, setMercadoPagoTransactions] = useState<MercadoPagoTransaction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -111,6 +132,30 @@ const AdminPanel = () => {
       
       setPaymentProofs(formattedProofs);
 
+      // Cargar transacciones de MercadoPago
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from('mercadopago_transactions')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            username
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (transactionsError) throw transactionsError;
+
+      // Formatear transacciones de MercadoPago
+      const formattedTransactions = transactionsData?.map(transaction => ({
+        ...transaction,
+        profiles: Array.isArray(transaction.profiles) && transaction.profiles.length > 0 
+          ? transaction.profiles[0] 
+          : { full_name: 'Sin nombre', username: 'Sin usuario' }
+      })) || [];
+
+      setMercadoPagoTransactions(formattedTransactions);
+
     } catch (error: any) {
       console.error('Error loading admin data:', error);
       toast({
@@ -145,12 +190,12 @@ const AdminPanel = () => {
               </span>
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Gestiona usuarios, suscripciones, companions y comprobantes de pago desde aquí.
+              Gestiona usuarios, suscripciones, companions y pagos desde aquí.
             </p>
           </div>
 
           {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
             <Card className="bg-white/10 backdrop-blur-md border-white/20">
               <CardContent className="p-6 text-center">
                 <Users className="w-8 h-8 text-blue-400 mx-auto mb-2" />
@@ -196,6 +241,16 @@ const AdminPanel = () => {
                 <p className="text-white/70">Comprobantes Pendientes</p>
               </CardContent>
             </Card>
+
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardContent className="p-6 text-center">
+                <CreditCard className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                <h3 className="text-2xl font-bold text-white">
+                  {mercadoPagoTransactions.filter(t => t.status === 'approved').length}
+                </h3>
+                <p className="text-white/70">Pagos MercadoPago</p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Gestión de Usuarios */}
@@ -203,6 +258,9 @@ const AdminPanel = () => {
 
           {/* Gestión de Companions */}
           <AdminCompanionManagement companions={companions} onDataChange={loadData} />
+
+          {/* Gestión de Transacciones MercadoPago */}
+          <AdminMercadoPagoTransactions transactions={mercadoPagoTransactions} onDataChange={loadData} />
 
           {/* Gestión de Comprobantes de Pago */}
           <AdminPaymentProofs paymentProofs={paymentProofs} onDataChange={loadData} />
