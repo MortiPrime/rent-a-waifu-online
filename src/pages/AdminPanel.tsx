@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Crown, Users, Settings, DollarSign, Clock, CreditCard } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
+import { AdminAuthUsersManagement } from '@/components/admin/AdminAuthUsersManagement';
 import { AdminCompanionManagement } from '@/components/admin/AdminCompanionManagement';
 import { AdminPaymentProofs } from '@/components/admin/AdminPaymentProofs';
 import { AdminMercadoPagoTransactions } from '@/components/admin/AdminMercadoPagoTransactions';
@@ -70,6 +70,7 @@ const AdminPanel = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
+  const [authUsersCount, setAuthUsersCount] = useState(0);
   const [companions, setCompanions] = useState<CompanionProfile[]>([]);
   const [paymentProofs, setPaymentProofs] = useState<PaymentProof[]>([]);
   const [mercadoPagoTransactions, setMercadoPagoTransactions] = useState<MercadoPagoTransaction[]>([]);
@@ -83,7 +84,7 @@ const AdminPanel = () => {
     try {
       setLoading(true);
       
-      // Cargar usuarios (simplificado - sin emails por el momento)
+      // Cargar usuarios de profiles
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
         .select('*')
@@ -91,13 +92,23 @@ const AdminPanel = () => {
 
       if (usersError) throw usersError;
 
-      // Por ahora mostramos sin emails hasta resolver el tema de auth.users
       const usersWithEmails = usersData?.map(user => ({
         ...user,
-        email: 'Email no disponible'
+        email: 'Disponible en Auth Users'
       })) || [];
 
       setUsers(usersWithEmails);
+
+      // Obtener conteo de usuarios reales de auth.users
+      try {
+        const { data: authUsersData, error: authError } = await supabase.rpc('admin_get_auth_users');
+        if (!authError && authUsersData) {
+          setAuthUsersCount(authUsersData.length);
+        }
+      } catch (authError) {
+        console.error('Error loading auth users count:', authError);
+        setAuthUsersCount(usersData?.length || 0);
+      }
 
       // Cargar companions
       const { data: companionsData, error: companionsError } = await supabase
@@ -199,8 +210,8 @@ const AdminPanel = () => {
             <Card className="bg-white/10 backdrop-blur-md border-white/20">
               <CardContent className="p-6 text-center">
                 <Users className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                <h3 className="text-2xl font-bold text-white">{users.length}</h3>
-                <p className="text-white/70">Usuarios Total</p>
+                <h3 className="text-2xl font-bold text-white">{authUsersCount}</h3>
+                <p className="text-white/70">Usuarios Auth</p>
               </CardContent>
             </Card>
             
@@ -253,7 +264,10 @@ const AdminPanel = () => {
             </Card>
           </div>
 
-          {/* Gestión de Usuarios */}
+          {/* Gestión de Auth Users */}
+          <AdminAuthUsersManagement onDataChange={loadData} />
+
+          {/* Gestión de Usuarios (Profiles) */}
           <AdminUserManagement users={users} onDataChange={loadData} />
 
           {/* Gestión de Companions */}

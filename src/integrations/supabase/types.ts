@@ -503,6 +503,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_auth_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          email_confirmed_at: string
+          created_at: string
+          updated_at: string
+          last_sign_in_at: string
+          raw_user_meta_data: Json
+          is_super_admin: boolean
+          phone: string
+          phone_confirmed_at: string
+          banned_until: string
+          deleted_at: string
+        }[]
+      }
+      admin_update_auth_user: {
+        Args: {
+          target_user_id: string
+          new_email?: string
+          new_email_confirmed?: boolean
+          new_banned_until?: string
+          reason?: string
+        }
+        Returns: Json
+      }
       admin_update_companion_plan: {
         Args: {
           companion_profile_id: string
