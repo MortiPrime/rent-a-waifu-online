@@ -1,13 +1,15 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { AlertCircle, User, Users, MessageCircle, DollarSign, Star, Crown, Settings, Calendar, CreditCard } from 'lucide-react';
-import { CompanionChatHistory } from './companion/CompanionChatHistory';
-import { CompanionPhotosManager } from './companion/CompanionPhotosManager';
-import { CompanionRulesManager } from './companion/CompanionRulesManager';
+import CompanionChatHistory from './CompanionChatHistory';
+import CompanionPhotosManager from './CompanionPhotosManager';
+import CompanionRulesManager from './CompanionRulesManager';
 
 interface Stats {
   totalClients: number;
@@ -186,15 +188,11 @@ const CompanionDashboard = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-white/70">Estado:</span>
-                  <Badge className={getStatusBadge(profileData?.status || 'pending').props.className}>
-                    {getStatusBadge(profileData?.status || 'pending').props.children}
-                  </Badge>
+                  {getStatusBadge(profileData?.status || 'pending')}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-white/70">Plan:</span>
-                  <Badge className={getPlanBadge(profileData?.promotion_plan || 'basic').props.className}>
-                    {getPlanBadge(profileData?.promotion_plan || 'basic').props.children}
-                  </Badge>
+                  {getPlanBadge(profileData?.promotion_plan || 'basic')}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-white/70">Visibilidad:</span>
@@ -222,7 +220,7 @@ const CompanionDashboard = () => {
                 <Link to="/profile" className="block">
                   <Button variant="outline" className="w-full bg-white/10 text-white border-white/20 hover:bg-white/20">
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Ver Planes de Suscripción
+                    Información de Pago
                   </Button>
                 </Link>
                 <Button variant="outline" className="w-full bg-white/10 text-white border-white/20 hover:bg-white/20">
