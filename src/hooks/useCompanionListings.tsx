@@ -47,9 +47,7 @@ export const useCompanionListings = () => {
       }
       
       console.log('Companion listings encontrados:', data?.length || 0);
-      console.log('Datos de listings:', data);
-      
-      setListings(data as CompanionListing[]);
+      setListings(data as CompanionListing[] || []);
     } catch (error: any) {
       console.error('Error loading listings:', error);
       toast({
@@ -57,6 +55,7 @@ export const useCompanionListings = () => {
         description: "No se pudieron cargar las companions",
         variant: "destructive",
       });
+      setListings([]);
     } finally {
       setLoading(false);
     }
@@ -76,7 +75,7 @@ export const useCompanionListings = () => {
       if (statesError) {
         console.error('Error cargando estados:', statesError);
       } else {
-        const uniqueStates = [...new Set(statesData.map(item => item.state).filter(Boolean))];
+        const uniqueStates = [...new Set(statesData?.map(item => item.state).filter(Boolean) || [])];
         console.log('Estados encontrados:', uniqueStates);
         setStates(uniqueStates);
       }
@@ -91,7 +90,7 @@ export const useCompanionListings = () => {
       if (municipalitiesError) {
         console.error('Error cargando municipios:', municipalitiesError);
       } else {
-        const uniqueMunicipalities = [...new Set(municipalitiesData.map(item => item.municipality).filter(Boolean))];
+        const uniqueMunicipalities = [...new Set(municipalitiesData?.map(item => item.municipality).filter(Boolean) || [])];
         console.log('Municipios encontrados:', uniqueMunicipalities);
         setMunicipalities(uniqueMunicipalities);
       }
@@ -110,7 +109,7 @@ export const useCompanionListings = () => {
         .from('companion_profiles')
         .select('id, stage_name, status, is_active')
         .eq('is_active', true)
-        .in('status', ['approved', 'Activa']); // Asegurar que incluye ambos estados
+        .in('status', ['approved', 'Activa']);
       
       console.log('Companion_profiles activos encontrados:', profilesCheck?.length || 0);
       
@@ -131,51 +130,55 @@ export const useCompanionListings = () => {
           for (const profile of missingProfiles) {
             console.log('Creando listing para perfil:', profile.id);
             
-            // Obtener datos completos del perfil
-            const { data: fullProfile } = await supabase
-              .from('companion_profiles')
-              .select('*')
-              .eq('id', profile.id)
-              .single();
-            
-            if (fullProfile) {
-              const listingData = {
-                companion_id: fullProfile.id,
-                user_id: fullProfile.user_id,
-                stage_name: fullProfile.stage_name,
-                description: fullProfile.description,
-                age: fullProfile.age,
-                state: fullProfile.state,
-                city: fullProfile.city,
-                municipality: fullProfile.municipality,
-                contact_number: fullProfile.contact_number,
-                pricing: fullProfile.pricing,
-                promotion_plan: fullProfile.promotion_plan || 'basic', // Asegurar plan básico por defecto
-                is_active: fullProfile.is_active,
-                updated_at: new Date().toISOString()
-              };
+            try {
+              // Obtener datos completos del perfil
+              const { data: fullProfile } = await supabase
+                .from('companion_profiles')
+                .select('*')
+                .eq('id', profile.id)
+                .single();
               
-              const { error: insertError } = await supabase
-                .from('companion_listings')
-                .insert(listingData);
-              
-              if (insertError) {
-                console.error('Error creando listing:', insertError);
-              } else {
-                console.log('Listing creado exitosamente para perfil:', profile.id);
+              if (fullProfile) {
+                const listingData = {
+                  companion_id: fullProfile.id,
+                  user_id: fullProfile.user_id,
+                  stage_name: fullProfile.stage_name,
+                  description: fullProfile.description,
+                  age: fullProfile.age,
+                  state: fullProfile.state,
+                  city: fullProfile.city,
+                  municipality: fullProfile.municipality,
+                  contact_number: fullProfile.contact_number,
+                  pricing: fullProfile.pricing,
+                  promotion_plan: fullProfile.promotion_plan || 'basic',
+                  is_active: fullProfile.is_active,
+                  updated_at: new Date().toISOString()
+                };
+                
+                const { error: insertError } = await supabase
+                  .from('companion_listings')
+                  .insert(listingData);
+                
+                if (insertError) {
+                  console.error('Error creando listing:', insertError);
+                } else {
+                  console.log('Listing creado exitosamente para perfil:', profile.id);
+                }
               }
+            } catch (profileError) {
+              console.error('Error obteniendo perfil completo:', profileError);
             }
           }
         }
       }
       
-      // Cargar TODAS las listings activas, sin filtrar por plan de promoción
+      // Cargar TODAS las listings activas
       const { data, error } = await supabase
         .from('companion_listings')
         .select('*')
         .eq('is_active', true)
         .order('is_featured', { ascending: false })
-        .order('promotion_plan', { ascending: true }) // Mostrar básicas primero
+        .order('promotion_plan', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -184,9 +187,7 @@ export const useCompanionListings = () => {
       }
       
       console.log('Todas las listings cargadas:', data?.length || 0);
-      console.log('Sample listings data:', data?.slice(0, 2));
-      console.log('Planes encontrados:', [...new Set(data?.map(item => item.promotion_plan))]);
-      setListings(data as CompanionListing[]);
+      setListings(data as CompanionListing[] || []);
     } catch (error: any) {
       console.error('Error loading all listings:', error);
       toast({
@@ -194,6 +195,7 @@ export const useCompanionListings = () => {
         description: "No se pudieron cargar las companions",
         variant: "destructive",
       });
+      setListings([]);
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings } from '@/hooks/useCompanionListings';
@@ -25,7 +26,7 @@ const CompanionCatalogView = () => {
   useEffect(() => {
     console.log('Companion viewing catalog...');
     loadAllListings();
-  }, []);
+  }, [loadAllListings]);
 
   useEffect(() => {
     if (searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber) {
@@ -34,7 +35,7 @@ const CompanionCatalogView = () => {
     } else {
       loadAllListings();
     }
-  }, [searchFilters]);
+  }, [searchFilters, loadListings, loadAllListings]);
 
   const handleFilterChange = (key: string, value: string) => {
     setSearchFilters(prev => ({

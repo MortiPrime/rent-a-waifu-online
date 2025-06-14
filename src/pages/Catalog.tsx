@@ -42,7 +42,7 @@ const Catalog = () => {
   useEffect(() => {
     console.log('Componente montado, cargando companions...');
     loadAllListings();
-  }, []);
+  }, [loadAllListings]);
 
   // Aplicar filtros cuando cambien
   useEffect(() => {
@@ -53,7 +53,7 @@ const Catalog = () => {
       console.log('Sin filtros, cargando todas las companions...');
       loadAllListings();
     }
-  }, [searchFilters]);
+  }, [searchFilters, loadListings, loadAllListings]);
 
   const handleFilterChange = (key: string, value: string) => {
     console.log('Cambiando filtro:', key, value);
@@ -103,7 +103,7 @@ const Catalog = () => {
     }
   };
 
-  // Simplificar lógica de contacto: Solo mostrar si tiene suscripción premium/VIP
+  // Lógica de contacto: Solo mostrar si tiene suscripción premium/VIP
   const canSeeContactInfo = (companion: CompanionListing) => {
     if (!user) return false;
     return isPremiumOrVip;
