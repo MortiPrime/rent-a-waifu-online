@@ -12,7 +12,7 @@ export const useCompanionListings = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadListings();
+    loadAllListings();
     loadLocations();
   }, []);
 
@@ -105,11 +105,12 @@ export const useCompanionListings = () => {
       setLoading(true);
       console.log('Cargando todas las listings...');
       
-      // Verificar si hay companion_profiles que necesitan sincronización
+      // Verificar y sincronizar companion_profiles con companion_listings
       const { data: profilesCheck } = await supabase
         .from('companion_profiles')
         .select('id, stage_name, status, is_active')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .in('status', ['approved', 'Activa']); // Asegurar que incluye ambos estados
       
       console.log('Companion_profiles activos encontrados:', profilesCheck?.length || 0);
       
@@ -149,7 +150,7 @@ export const useCompanionListings = () => {
                 municipality: fullProfile.municipality,
                 contact_number: fullProfile.contact_number,
                 pricing: fullProfile.pricing,
-                promotion_plan: fullProfile.promotion_plan,
+                promotion_plan: fullProfile.promotion_plan || 'basic', // Asegurar plan básico por defecto
                 is_active: fullProfile.is_active,
                 updated_at: new Date().toISOString()
               };
@@ -168,12 +169,13 @@ export const useCompanionListings = () => {
         }
       }
       
-      // Cargar todas las listings
+      // Cargar TODAS las listings activas, sin filtrar por plan de promoción
       const { data, error } = await supabase
         .from('companion_listings')
         .select('*')
         .eq('is_active', true)
         .order('is_featured', { ascending: false })
+        .order('promotion_plan', { ascending: true }) // Mostrar básicas primero
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -183,6 +185,7 @@ export const useCompanionListings = () => {
       
       console.log('Todas las listings cargadas:', data?.length || 0);
       console.log('Sample listings data:', data?.slice(0, 2));
+      console.log('Planes encontrados:', [...new Set(data?.map(item => item.promotion_plan))]);
       setListings(data as CompanionListing[]);
     } catch (error: any) {
       console.error('Error loading all listings:', error);

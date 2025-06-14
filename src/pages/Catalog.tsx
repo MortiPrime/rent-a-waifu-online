@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings } from '@/hooks/useCompanionListings';
@@ -86,6 +87,7 @@ const Catalog = () => {
   const isPremiumOrVip = hasSubscription && 
     (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
 
+  // MOSTRAR TODAS LAS COMPANIONS SIN RESTRICCIÓN
   const visibleCompanions = listings || [];
 
   const getPlanBadge = (plan: string) => {
@@ -97,20 +99,14 @@ const Catalog = () => {
       case 'vip':
         return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30"><Crown className="w-3 h-3 mr-1" />VIP</Badge>;
       default:
-        return null;
+        return <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">Básico</Badge>;
     }
   };
 
-  // NUEVA LÓGICA: Solo mostrar números de contacto según suscripción
+  // Simplificar lógica de contacto: Solo mostrar si tiene suscripción premium/VIP
   const canSeeContactInfo = (companion: CompanionListing) => {
-    // Si no está logueado, no puede ver nada
     if (!user) return false;
-    
-    // Si tiene suscripción premium/VIP, puede ver todos los números
-    if (isPremiumOrVip) return true;
-    
-    // Si no tiene suscripción o solo básica, no puede ver números
-    return false;
+    return isPremiumOrVip;
   };
 
   const availableMunicipalities = searchFilters.state ? getMunicipalitiesByState(searchFilters.state) : [];
@@ -225,22 +221,27 @@ const Catalog = () => {
             </CardContent>
           </Card>
 
-          {/* Subscription CTA for non-subscribers */}
-          {user && !isPremiumOrVip && profile?.user_role === 'client' && (
-            <Card className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/30 mb-8">
+          {/* Subscription info for logged users */}
+          {user && profile?.user_role === 'client' && (
+            <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30 mb-8">
               <CardContent className="p-6 text-center">
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  ¡Suscríbete para acceso completo!
+                  {isPremiumOrVip ? '¡Tienes acceso completo!' : 'Puedes ver todos los perfiles'}
                 </h3>
                 <p className="text-white/80 mb-4">
-                  Con una suscripción Premium o VIP podrás ver números de contacto de todas las companions.
+                  {isPremiumOrVip 
+                    ? 'Con tu suscripción puedes ver números de contacto de todas las companions.'
+                    : 'Con una suscripción Premium o VIP podrás ver números de contacto.'
+                  }
                 </p>
-                <Button 
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                  onClick={() => window.location.href = '/subscription'}
-                >
-                  Ver Planes de Suscripción
-                </Button>
+                {!isPremiumOrVip && (
+                  <Button 
+                    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                    onClick={() => window.location.href = '/profile'}
+                  >
+                    Ver Planes de Suscripción
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
@@ -349,7 +350,7 @@ const Catalog = () => {
                       </div>
                     )}
 
-                    {/* Contact - NUEVA LÓGICA SIMPLIFICADA */}
+                    {/* Contact info */}
                     <div className="space-y-2">
                       <h4 className="text-white font-medium flex items-center gap-2">
                         Contacto
