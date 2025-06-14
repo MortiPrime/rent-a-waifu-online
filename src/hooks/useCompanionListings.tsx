@@ -12,6 +12,8 @@ export const useCompanionListings = () => {
   const { toast } = useToast();
 
   const loadListings = useCallback(async (filters?: LocationFilter) => {
+    if (loading) return; // Prevent multiple simultaneous requests
+    
     try {
       setLoading(true);
       console.log('Cargando listings con filtros:', filters);
@@ -42,7 +44,10 @@ export const useCompanionListings = () => {
       }
       
       console.log('Companion listings encontrados:', data?.length || 0);
-      setListings(data as CompanionListing[] || []);
+      
+      // Ensure we always set an array, even if data is null
+      const companionListings = data || [];
+      setListings(companionListings as CompanionListing[]);
     } catch (error: any) {
       console.error('Error loading listings:', error);
       toast({
@@ -50,11 +55,12 @@ export const useCompanionListings = () => {
         description: "No se pudieron cargar las companions",
         variant: "destructive",
       });
+      // Set empty array on error to prevent UI issues
       setListings([]);
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, loading]);
 
   const loadLocations = useCallback(async () => {
     try {
@@ -95,6 +101,8 @@ export const useCompanionListings = () => {
   }, []);
 
   const loadAllListings = useCallback(async () => {
+    if (loading) return; // Prevent multiple simultaneous requests
+    
     try {
       setLoading(true);
       console.log('Cargando todas las listings...');
@@ -114,7 +122,10 @@ export const useCompanionListings = () => {
       }
       
       console.log('Todas las listings cargadas:', data?.length || 0);
-      setListings(data as CompanionListing[] || []);
+      
+      // Ensure we always set an array, even if data is null
+      const companionListings = data || [];
+      setListings(companionListings as CompanionListing[]);
     } catch (error: any) {
       console.error('Error loading all listings:', error);
       toast({
@@ -122,11 +133,12 @@ export const useCompanionListings = () => {
         description: "No se pudieron cargar las companions",
         variant: "destructive",
       });
+      // Set empty array on error to prevent UI issues
       setListings([]);
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, loading]);
 
   return {
     listings,
