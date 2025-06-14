@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Check, X, Clock } from 'lucide-react';
+import { FileText, Check, X, Clock, Download } from 'lucide-react';
 
 interface PaymentProof {
   id: string;
@@ -17,6 +17,8 @@ interface PaymentProof {
   message: string;
   status: string;
   created_at: string;
+  file_url?: string;
+  file_name?: string;
   profiles?: {
     full_name: string;
     username: string;
@@ -65,6 +67,37 @@ export const AdminPaymentProofs = ({ paymentProofs, onDataChange }: AdminPayment
       });
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const downloadFile = async (fileUrl: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('payment-proofs')
+        .download(fileUrl);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Descarga iniciada",
+        description: `Descargando ${fileName}`,
+      });
+    } catch (error: any) {
+      console.error('Error downloading file:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo descargar el archivo",
+        variant: "destructive"
+      });
     }
   };
 
@@ -154,6 +187,21 @@ export const AdminPaymentProofs = ({ paymentProofs, onDataChange }: AdminPayment
                       <p className="text-white/90 text-sm bg-white/5 p-2 rounded mt-1">
                         {proof.message}
                       </p>
+                    </div>
+                  )}
+
+                  {proof.file_url && proof.file_name && (
+                    <div className="mt-4">
+                      <p className="text-white/70 text-sm mb-2">Comprobante:</p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => downloadFile(proof.file_url!, proof.file_name!)}
+                        className="border-white/30 text-white hover:bg-white/10"
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        Descargar {proof.file_name}
+                      </Button>
                     </div>
                   )}
                   
