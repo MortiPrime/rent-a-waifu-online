@@ -5,6 +5,7 @@ import { RoleConverter } from './profile/RoleConverter';
 import { ProfileInfo } from './profile/ProfileInfo';
 import { ProfileStats } from './profile/ProfileStats';
 import { PaymentProofSubmission } from './profile/PaymentProofSubmission';
+import { SubscriptionInfo } from './profile/SubscriptionInfo';
 
 const UserProfile = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -14,8 +15,10 @@ const UserProfile = () => {
       <ProfileHeader user={user} profile={profile} updateProfile={updateProfile} />
       <RoleConverter profile={profile} updateProfile={updateProfile} />
       <ProfileInfo user={user} profile={profile} updateProfile={updateProfile} />
-      {/* Ocultamos temporalmente la sección de suscripciones */}
-      {/* <SubscriptionInfo profile={profile} /> */}
+      
+      {/* Información de suscripciones y planes */}
+      <SubscriptionInfo profile={profile} />
+      
       <ProfileStats profile={profile} />
       
       {/* Componente de comprobantes de pago solo para clientes */}
