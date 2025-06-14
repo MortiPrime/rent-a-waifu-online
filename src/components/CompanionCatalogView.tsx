@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings } from '@/hooks/useCompanionListings';
 import { useCompanionProfile } from '@/hooks/useCompanionProfile';
-import { CompanionListing } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,16 +25,22 @@ const CompanionCatalogView = () => {
   useEffect(() => {
     console.log('Companion viewing catalog...');
     loadAllListings();
-  }, [loadAllListings]);
+  }, []);
 
   useEffect(() => {
-    if (searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber) {
+    const hasFilters = searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber;
+    
+    if (hasFilters) {
       console.log('Aplicando filtros como companion:', searchFilters);
-      loadListings(searchFilters);
+      const timeoutId = setTimeout(() => {
+        loadListings(searchFilters);
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     } else {
       loadAllListings();
     }
-  }, [searchFilters, loadListings, loadAllListings]);
+  }, [searchFilters.state, searchFilters.municipality, searchFilters.phoneNumber]);
 
   const handleFilterChange = (key: string, value: string) => {
     setSearchFilters(prev => ({
@@ -172,7 +177,7 @@ const CompanionCatalogView = () => {
                 <SelectTrigger className="bg-white/10 border-white/30 text-white">
                   <SelectValue placeholder="Todos los estados" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-gray-900 border-gray-700 z-50">
                   <SelectItem value="all" className="text-white">Todos los estados</SelectItem>
                   {Object.keys(MEXICO_STATES).map(state => (
                     <SelectItem key={state} value={state} className="text-white">{state}</SelectItem>
@@ -191,7 +196,7 @@ const CompanionCatalogView = () => {
                 <SelectTrigger className="bg-white/10 border-white/30 text-white">
                   <SelectValue placeholder="Todos los municipios" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-gray-900 border-gray-700 z-50">
                   <SelectItem value="all" className="text-white">Todos los municipios</SelectItem>
                   {availableMunicipalities.map(municipality => (
                     <SelectItem key={municipality} value={municipality} className="text-white">{municipality}</SelectItem>

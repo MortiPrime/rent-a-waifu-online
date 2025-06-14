@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanionListing, LocationFilter } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -11,12 +11,7 @@ export const useCompanionListings = () => {
   const [municipalities, setMunicipalities] = useState<string[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadAllListings();
-    loadLocations();
-  }, []);
-
-  const loadListings = async (filters?: LocationFilter) => {
+  const loadListings = useCallback(async (filters?: LocationFilter) => {
     try {
       setLoading(true);
       console.log('Cargando listings con filtros:', filters);
@@ -59,9 +54,9 @@ export const useCompanionListings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const loadLocations = async () => {
+  const loadLocations = useCallback(async () => {
     try {
       console.log('Cargando ubicaciones...');
       
@@ -97,82 +92,14 @@ export const useCompanionListings = () => {
     } catch (error: any) {
       console.error('Error loading locations:', error);
     }
-  };
+  }, []);
 
-  const loadAllListings = async () => {
+  const loadAllListings = useCallback(async () => {
     try {
       setLoading(true);
       console.log('Cargando todas las listings...');
       
-      // Verificar y sincronizar companion_profiles con companion_listings
-      const { data: profilesCheck } = await supabase
-        .from('companion_profiles')
-        .select('id, stage_name, status, is_active')
-        .eq('is_active', true)
-        .in('status', ['approved', 'Activa']);
-      
-      console.log('Companion_profiles activos encontrados:', profilesCheck?.length || 0);
-      
-      if (profilesCheck && profilesCheck.length > 0) {
-        // Verificar cuáles no tienen listing
-        const { data: existingListings } = await supabase
-          .from('companion_listings')
-          .select('companion_id')
-          .in('companion_id', profilesCheck.map(p => p.id));
-        
-        const existingIds = existingListings?.map(l => l.companion_id) || [];
-        const missingProfiles = profilesCheck.filter(p => !existingIds.includes(p.id));
-        
-        if (missingProfiles.length > 0) {
-          console.log('Perfiles sin listing encontrados:', missingProfiles.length);
-          
-          // Crear listings faltantes
-          for (const profile of missingProfiles) {
-            console.log('Creando listing para perfil:', profile.id);
-            
-            try {
-              // Obtener datos completos del perfil
-              const { data: fullProfile } = await supabase
-                .from('companion_profiles')
-                .select('*')
-                .eq('id', profile.id)
-                .single();
-              
-              if (fullProfile) {
-                const listingData = {
-                  companion_id: fullProfile.id,
-                  user_id: fullProfile.user_id,
-                  stage_name: fullProfile.stage_name,
-                  description: fullProfile.description,
-                  age: fullProfile.age,
-                  state: fullProfile.state,
-                  city: fullProfile.city,
-                  municipality: fullProfile.municipality,
-                  contact_number: fullProfile.contact_number,
-                  pricing: fullProfile.pricing,
-                  promotion_plan: fullProfile.promotion_plan || 'basic',
-                  is_active: fullProfile.is_active,
-                  updated_at: new Date().toISOString()
-                };
-                
-                const { error: insertError } = await supabase
-                  .from('companion_listings')
-                  .insert(listingData);
-                
-                if (insertError) {
-                  console.error('Error creando listing:', insertError);
-                } else {
-                  console.log('Listing creado exitosamente para perfil:', profile.id);
-                }
-              }
-            } catch (profileError) {
-              console.error('Error obteniendo perfil completo:', profileError);
-            }
-          }
-        }
-      }
-      
-      // Cargar TODAS las listings activas
+      // Cargar TODAS las listings activas directamente
       const { data, error } = await supabase
         .from('companion_listings')
         .select('*')
@@ -199,7 +126,7 @@ export const useCompanionListings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   return {
     listings,

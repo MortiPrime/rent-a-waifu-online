@@ -38,22 +38,28 @@ const Catalog = () => {
     );
   }
 
-  // Cargar todas las companions al inicio
+  // Cargar companions al montar el componente
   useEffect(() => {
     console.log('Componente montado, cargando companions...');
     loadAllListings();
-  }, [loadAllListings]);
+  }, []);
 
-  // Aplicar filtros cuando cambien
+  // Aplicar filtros cuando cambien (con debounce para evitar muchas llamadas)
   useEffect(() => {
-    if (searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber) {
+    const hasFilters = searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber;
+    
+    if (hasFilters) {
       console.log('Aplicando filtros:', searchFilters);
-      loadListings(searchFilters);
+      const timeoutId = setTimeout(() => {
+        loadListings(searchFilters);
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     } else {
-      console.log('Sin filtros, cargando todas las companions...');
+      console.log('Sin filtros, mostrando todas las companions');
       loadAllListings();
     }
-  }, [searchFilters, loadListings, loadAllListings]);
+  }, [searchFilters.state, searchFilters.municipality, searchFilters.phoneNumber]);
 
   const handleFilterChange = (key: string, value: string) => {
     console.log('Cambiando filtro:', key, value);
@@ -87,7 +93,6 @@ const Catalog = () => {
   const isPremiumOrVip = hasSubscription && 
     (profile?.subscription_type === 'premium' || profile?.subscription_type === 'vip');
 
-  // MOSTRAR TODAS LAS COMPANIONS SIN RESTRICCIÓN
   const visibleCompanions = listings || [];
 
   const getPlanBadge = (plan: string) => {
@@ -103,7 +108,6 @@ const Catalog = () => {
     }
   };
 
-  // Lógica de contacto: Solo mostrar si tiene suscripción premium/VIP
   const canSeeContactInfo = (companion: CompanionListing) => {
     if (!user) return false;
     return isPremiumOrVip;
@@ -167,7 +171,7 @@ const Catalog = () => {
                     <SelectTrigger className="bg-white/10 border-white/30 text-white">
                       <SelectValue placeholder="Todos los estados" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-700">
+                    <SelectContent className="bg-gray-900 border-gray-700 z-50">
                       <SelectItem value="all" className="text-white">Todos los estados</SelectItem>
                       {Object.keys(MEXICO_STATES).map(state => (
                         <SelectItem key={state} value={state} className="text-white">{state}</SelectItem>
@@ -186,7 +190,7 @@ const Catalog = () => {
                     <SelectTrigger className="bg-white/10 border-white/30 text-white">
                       <SelectValue placeholder="Todos los municipios" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-700">
+                    <SelectContent className="bg-gray-900 border-gray-700 z-50">
                       <SelectItem value="all" className="text-white">Todos los municipios</SelectItem>
                       {availableMunicipalities.map(municipality => (
                         <SelectItem key={municipality} value={municipality} className="text-white">{municipality}</SelectItem>
@@ -273,7 +277,7 @@ const Catalog = () => {
             </Card>
           )}
 
-          {/* Listings Grid - TODAS LAS COMPANIONS VISIBLES */}
+          {/* Listings Grid */}
           {loading ? (
             <div className="text-center text-white">
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500 mx-auto"></div>
