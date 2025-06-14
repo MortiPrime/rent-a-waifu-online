@@ -27,9 +27,10 @@ import {
 import { Link } from 'react-router-dom';
 
 const Index = () => {
+  // Ejecutar todos los hooks PRIMERO, antes de cualquier retorno condicional
   const { user, profile, isGirlfriend } = useAuth();
 
-  // Si es una companion/girlfriend, mostrar su dashboard
+  // Ahora podemos hacer retornos condicionales después de que todos los hooks se hayan ejecutado
   if (isGirlfriend) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
