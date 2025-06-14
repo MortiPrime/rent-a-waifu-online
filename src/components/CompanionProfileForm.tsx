@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,124 +7,72 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useCompanionProfile } from '@/hooks/useCompanionProfile';
 import { useToast } from '@/hooks/use-toast';
-import { User, Heart, DollarSign, Save, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Heart, DollarSign, Save, Loader2, CheckCircle } from 'lucide-react';
 
 const CompanionProfileForm = () => {
   const { profile, updateProfile, loading } = useCompanionProfile();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
-    stage_name: profile?.stage_name || '',
-    real_name: profile?.real_name || '',
-    age: profile?.age || '',
-    description: profile?.description || '',
+    stage_name: '',
+    real_name: '',
+    age: '',
+    description: '',
     pricing: {
-      basic_chat: profile?.pricing?.basic_chat || 0,
-      premium_chat: profile?.pricing?.premium_chat || 0,
-      video_call: profile?.pricing?.video_call || 0,
-      date_cost: profile?.pricing?.date_cost || 0,
-      date_packages: profile?.pricing?.date_packages || {
-        coffee_date: {
-          price: 500,
-          duration: '2 horas',
-          includes: ['Café o bebida', 'Conversación agradable', 'Compañía en café']
-        },
-        dinner_date: {
-          price: 1200,
-          duration: '3 horas',
-          includes: ['Cena en restaurante', 'Conversación', 'Acompañamiento a restaurante']
-        },
-        event_companion: {
-          price: 2000,
-          duration: '4-6 horas',
-          includes: ['Acompañamiento a eventos', 'Vestimenta apropiada', 'Conversación inteligente']
-        },
-        weekend_companion: {
-          price: 5000,
-          duration: '24 horas',
-          includes: ['Compañía de fin de semana', 'Actividades variadas', 'Experiencia completa']
-        }
-      }
+      basic_chat: 150,
+      premium_chat: 300,
+      video_call: 500,
+      date_cost: 500
     }
   });
+
+  // Actualizar formData cuando cambie el profile
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        stage_name: profile.stage_name || '',
+        real_name: profile.real_name || '',
+        age: profile.age?.toString() || '',
+        description: profile.description || '',
+        pricing: {
+          basic_chat: profile.pricing?.basic_chat || 150,
+          premium_chat: profile.pricing?.premium_chat || 300,
+          video_call: profile.pricing?.video_call || 500,
+          date_cost: profile.pricing?.date_cost || 500
+        }
+      });
+    }
+  }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     try {
-      console.log('Actualizando perfil con datos:', formData);
+      console.log('Enviando datos del formulario:', formData);
       
       await updateProfile({
         stage_name: formData.stage_name,
         real_name: formData.real_name,
         age: parseInt(formData.age.toString()),
         description: formData.description,
-        pricing: {
-          basic_chat: formData.pricing.basic_chat,
-          premium_chat: formData.pricing.premium_chat,
-          video_call: formData.pricing.video_call,
-          date_cost: formData.pricing.date_cost,
-          date_packages: formData.pricing.date_packages
-        }
+        pricing: formData.pricing
       });
       
-      toast({
-        title: "✅ Perfil actualizado",
-        description: "Tu información ha sido guardada y sincronizada exitosamente.",
-      });
+      // Mostrar mensaje de éxito y redirigir después de un momento
+      setTimeout(() => {
+        navigate('/catalog');
+      }, 2000);
+      
     } catch (error) {
       console.error('Error actualizando perfil:', error);
-      toast({
-        title: "❌ Error",
-        description: "No se pudo actualizar el perfil. Por favor intenta de nuevo.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Actualizar formData cuando cambie el profile
-  useState(() => {
-    if (profile) {
-      setFormData({
-        stage_name: profile.stage_name || '',
-        real_name: profile.real_name || '',
-        age: profile.age || '',
-        description: profile.description || '',
-        pricing: {
-          basic_chat: profile.pricing?.basic_chat || 0,
-          premium_chat: profile.pricing?.premium_chat || 0,
-          video_call: profile.pricing?.video_call || 0,
-          date_cost: profile.pricing?.date_cost || 0,
-          date_packages: profile.pricing?.date_packages || {
-            coffee_date: {
-              price: 500,
-              duration: '2 horas',
-              includes: ['Café o bebida', 'Conversación agradable', 'Compañía en café']
-            },
-            dinner_date: {
-              price: 1200,
-              duration: '3 horas',
-              includes: ['Cena en restaurante', 'Conversación', 'Acompañamiento a restaurante']
-            },
-            event_companion: {
-              price: 2000,
-              duration: '4-6 horas',
-              includes: ['Acompañamiento a eventos', 'Vestimenta apropiada', 'Conversación inteligente']
-            },
-            weekend_companion: {
-              price: 5000,
-              duration: '24 horas',
-              includes: ['Compañía de fin de semana', 'Actividades variadas', 'Experiencia completa']
-            }
-          }
-        }
-      });
-    }
-  });
 
   if (loading) {
     return (
@@ -186,6 +134,75 @@ const CompanionProfileForm = () => {
             className="bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-pink-400 focus:ring-pink-400/20 resize-none"
           />
         </div>
+
+        {/* Sección de precios */}
+        <Card className="bg-white/5 border-white/20">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              Precios de Servicios (MXN)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Chat Básico (por hora)</Label>
+                <Input
+                  type="number"
+                  min="50"
+                  value={formData.pricing.basic_chat}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, basic_chat: parseInt(e.target.value) || 0 }
+                  }))}
+                  className="bg-white/10 border-white/30 text-white"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Chat Premium (por hora)</Label>
+                <Input
+                  type="number"
+                  min="100"
+                  value={formData.pricing.premium_chat}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, premium_chat: parseInt(e.target.value) || 0 }
+                  }))}
+                  className="bg-white/10 border-white/30 text-white"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Video Llamada (por hora)</Label>
+                <Input
+                  type="number"
+                  min="200"
+                  value={formData.pricing.video_call}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, video_call: parseInt(e.target.value) || 0 }
+                  }))}
+                  className="bg-white/10 border-white/30 text-white"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Cita Presencial (costo base)</Label>
+                <Input
+                  type="number"
+                  min="300"
+                  value={formData.pricing.date_cost}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    pricing: { ...prev.pricing, date_cost: parseInt(e.target.value) || 0 }
+                  }))}
+                  className="bg-white/10 border-white/30 text-white"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
         <Button 
           type="submit" 
@@ -200,7 +217,7 @@ const CompanionProfileForm = () => {
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Guardar y Sincronizar
+              {profile ? 'Actualizar Perfil' : 'Crear Perfil'}
             </>
           )}
         </Button>
@@ -208,30 +225,35 @@ const CompanionProfileForm = () => {
 
       {/* Estado del perfil */}
       {profile && (
-        <div className="bg-white/5 border border-white/20 rounded-lg p-4">
-          <h4 className="text-white font-semibold mb-2">Estado del Perfil</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-white/70">Estado:</span>
-              <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                profile.status === 'approved' ? 'bg-green-500/20 text-green-300' :
-                profile.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
-                'bg-red-500/20 text-red-300'
-              }`}>
-                {profile.status === 'approved' ? 'Aprobado' : 
-                 profile.status === 'pending' ? 'Pendiente' : 'Rechazado'}
-              </span>
+        <Card className="bg-white/5 border-white/20">
+          <CardContent className="p-4">
+            <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              Estado del Perfil
+            </h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-white/70">Estado:</span>
+                <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                  profile.status === 'approved' ? 'bg-green-500/20 text-green-300' :
+                  profile.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
+                  'bg-red-500/20 text-red-300'
+                }`}>
+                  {profile.status === 'approved' ? 'Aprobado' : 
+                   profile.status === 'pending' ? 'Pendiente' : 'Rechazado'}
+                </span>
+              </div>
+              <div>
+                <span className="text-white/70">Activo:</span>
+                <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                  profile.is_active ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
+                }`}>
+                  {profile.is_active ? 'Sí' : 'No'}
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="text-white/70">Activo:</span>
-              <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                profile.is_active ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
-              }`}>
-                {profile.is_active ? 'Sí' : 'No'}
-              </span>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

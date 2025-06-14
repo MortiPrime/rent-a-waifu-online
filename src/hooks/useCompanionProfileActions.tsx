@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { CompanionProfile } from '@/types';
 
 export const useCompanionProfileActions = (
@@ -8,11 +9,14 @@ export const useCompanionProfileActions = (
   setProfile: (profile: CompanionProfile) => void
 ) => {
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const updateProfile = async (profileData: Partial<CompanionProfile>) => {
     if (!user) throw new Error('Usuario no autenticado');
 
     try {
+      console.log('Actualizando perfil de companion:', profileData);
+
       if (profile) {
         // Actualizar perfil existente
         const updateData = {
@@ -50,8 +54,14 @@ export const useCompanionProfileActions = (
         };
         setProfile(typedProfile);
 
-        // Sincronizar con companion_listings inmediatamente
+        // Sincronizar con companion_listings
         await syncCompanionListing(typedProfile);
+
+        toast({
+          title: "Perfil actualizado",
+          description: "Los cambios se han guardado correctamente.",
+        });
+
       } else {
         // Crear nuevo perfil - auto-aprobar para companions
         const newProfileData = {
@@ -60,18 +70,28 @@ export const useCompanionProfileActions = (
           real_name: profileData.real_name || '',
           age: profileData.age || 18,
           description: profileData.description || '',
-          status: 'approved' as const, // Auto-aprobar companions
+          status: 'approved' as const,
           is_active: true,
           promotion_plan: profileData.promotion_plan || 'basic',
           state: profileData.state,
           city: profileData.city,
           municipality: profileData.municipality,
           contact_number: profileData.contact_number,
-          pricing: profileData.pricing,
-          availability: profileData.availability,
+          pricing: profileData.pricing || {
+            basic_chat: 150,
+            premium_chat: 300,
+            video_call: 500,
+            date_cost: 500
+          },
+          availability: profileData.availability || {
+            days: [],
+            hours: "flexible"
+          },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
+
+        console.log('Creando nuevo perfil de companion:', newProfileData);
 
         const { data, error } = await supabase
           .from('companion_profiles')
@@ -79,7 +99,10 @@ export const useCompanionProfileActions = (
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error al crear perfil:', error);
+          throw error;
+        }
         
         const typedProfile: CompanionProfile = {
           ...data,
@@ -102,17 +125,23 @@ export const useCompanionProfileActions = (
         };
         setProfile(typedProfile);
 
-        // Crear listing inmediatamente
+        // Crear listing
         await syncCompanionListing(typedProfile);
 
-        // Actualizar el rol del usuario
-        await supabase
-          .from('profiles')
-          .update({ user_role: 'girlfriend' })
-          .eq('id', user.id);
+        toast({
+          title: "¡Perfil creado!",
+          description: "Tu perfil de companion ha sido creado y está activo.",
+        });
+
+        console.log('Perfil de companion creado exitosamente:', typedProfile);
       }
     } catch (error: any) {
       console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar el perfil",
+        variant: "destructive",
+      });
       throw error;
     }
   };
@@ -121,7 +150,6 @@ export const useCompanionProfileActions = (
     try {
       console.log('Sincronizando companion_listing para perfil:', profileData.id);
       
-      // Crear o actualizar el listing
       const listingData = {
         companion_id: profileData.id,
         user_id: profileData.user_id,
@@ -153,7 +181,7 @@ export const useCompanionProfileActions = (
       console.log('Listing sincronizado exitosamente');
     } catch (error: any) {
       console.error('Error en syncCompanionListing:', error);
-      throw error;
+      // No re-throw para no interrumpir el flujo principal
     }
   };
 

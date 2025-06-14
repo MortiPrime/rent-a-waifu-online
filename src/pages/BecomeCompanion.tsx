@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -14,10 +13,12 @@ const BecomeCompanion = () => {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
 
-  // Si ya es companion, mostrar el formulario directamente
-  if (profile?.user_role === 'girlfriend') {
-    return <CompanionProfileForm />;
-  }
+  // Verificar si el usuario es companion y mostrar formulario automáticamente
+  useEffect(() => {
+    if (profile?.user_role === 'girlfriend') {
+      setShowForm(true);
+    }
+  }, [profile]);
 
   const handleBecomeCompanion = async () => {
     if (!user) {
@@ -25,11 +26,48 @@ const BecomeCompanion = () => {
       return;
     }
 
-    setShowForm(true);
+    // Si ya es companion, mostrar formulario
+    if (profile?.user_role === 'girlfriend') {
+      setShowForm(true);
+      return;
+    }
+
+    // Si no es companion, redirigir al perfil para convertirse
+    navigate('/profile');
   };
 
-  if (showForm) {
-    return <CompanionProfileForm />;
+  // Si ya es companion o debe mostrar el formulario, mostrarlo
+  if (profile?.user_role === 'girlfriend' || showForm) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
+        <Navbar />
+        
+        <div className="pt-24 pb-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl md:text-6xl font-playfair font-bold text-white mb-6">
+                Completa tu
+                <span className="block bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+                  Perfil de Companion
+                </span>
+              </h1>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Configura tu perfil profesional y comienza a recibir solicitudes de clientes.
+              </p>
+            </div>
+
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white">Información del Perfil</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CompanionProfileForm />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -178,7 +216,9 @@ const BecomeCompanion = () => {
                   ¿Lista para comenzar tu nueva aventura?
                 </h3>
                 <p className="text-gray-300 mb-6">
-                  Únete a nuestra comunidad de companions exitosas y comienza a generar ingresos hoy mismo.
+                  {profile?.user_role === 'girlfriend' 
+                    ? 'Completa tu perfil de companion para comenzar a recibir solicitudes.'
+                    : 'Primero necesitas convertir tu cuenta a companion desde tu perfil.'}
                 </p>
                 <Button 
                   onClick={handleBecomeCompanion}
@@ -186,7 +226,9 @@ const BecomeCompanion = () => {
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-8 py-4 text-lg transition-all duration-300"
                 >
                   <Star className="w-5 h-5 mr-2" />
-                  Convertirme en Companion
+                  {profile?.user_role === 'girlfriend' 
+                    ? 'Completar Perfil' 
+                    : 'Ir a Mi Perfil'}
                 </Button>
               </CardContent>
             </Card>
