@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -18,12 +17,6 @@ interface CompanionProfile {
   created_at: string;
 }
 
-interface AdminResponse {
-  success?: boolean;
-  error?: string;
-  message?: string;
-}
-
 interface AdminCompanionManagementProps {
   companions: CompanionProfile[];
   onDataChange: () => void;
@@ -36,29 +29,20 @@ export const AdminCompanionManagement = ({ companions, onDataChange }: AdminComp
   const updateCompanionPlan = async (companionId: string, promotionPlan: string) => {
     try {
       setUpdating(companionId);
-      
-      const { data, error } = await supabase
-        .rpc('admin_update_companion_plan', {
-          companion_profile_id: companionId,
-          new_promotion_plan: promotionPlan,
-          reason: 'Actualización manual por admin'
-        });
+
+      const { error } = await supabase
+        .from('companion_profiles')
+        .update({ promotion_plan: promotionPlan })
+        .eq('id', companionId);
 
       if (error) throw error;
-      
-      const response = data as AdminResponse;
-      
-      if (response?.error) {
-        throw new Error(response.error);
-      }
 
       toast({
         title: "Plan actualizado",
-        description: response?.message || "El plan se actualizó correctamente",
+        description: "El plan se actualizó correctamente",
       });
 
       onDataChange();
-
     } catch (error: any) {
       console.error('Error updating plan:', error);
       toast({
