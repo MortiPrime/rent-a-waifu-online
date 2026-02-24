@@ -70,7 +70,6 @@ const AdminPanel = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
-  const [authUsersCount, setAuthUsersCount] = useState(0);
   const [companions, setCompanions] = useState<CompanionProfile[]>([]);
   const [paymentProofs, setPaymentProofs] = useState<PaymentProof[]>([]);
   const [mercadoPagoTransactions, setMercadoPagoTransactions] = useState<MercadoPagoTransaction[]>([]);
@@ -94,21 +93,10 @@ const AdminPanel = () => {
 
       const usersWithEmails = usersData?.map(user => ({
         ...user,
-        email: 'Disponible en Auth Users'
+        email: 'Ver en perfil'
       })) || [];
 
       setUsers(usersWithEmails);
-
-      // Obtener conteo de usuarios reales de auth.users
-      try {
-        const { data: authUsersData, error: authError } = await supabase.rpc('admin_get_auth_users');
-        if (!authError && authUsersData) {
-          setAuthUsersCount(authUsersData.length);
-        }
-      } catch (authError) {
-        console.error('Error loading auth users count:', authError);
-        setAuthUsersCount(usersData?.length || 0);
-      }
 
       // Cargar companions
       const { data: companionsData, error: companionsError } = await supabase
@@ -122,23 +110,14 @@ const AdminPanel = () => {
       // Cargar comprobantes de pago
       const { data: proofsData, error: proofsError } = await supabase
         .from('payment_proofs')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            username
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (proofsError) throw proofsError;
       
-      // Asegurar que los datos tengan la estructura correcta
       const formattedProofs = proofsData?.map(proof => ({
         ...proof,
-        profiles: Array.isArray(proof.profiles) && proof.profiles.length > 0 
-          ? proof.profiles[0] 
-          : { full_name: 'Sin nombre', username: 'Sin usuario' }
+        profiles: { full_name: 'Sin nombre', username: 'Sin usuario' }
       })) || [];
       
       setPaymentProofs(formattedProofs);
@@ -146,23 +125,14 @@ const AdminPanel = () => {
       // Cargar transacciones de MercadoPago
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('mercadopago_transactions')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            username
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (transactionsError) throw transactionsError;
 
-      // Formatear transacciones de MercadoPago
       const formattedTransactions = transactionsData?.map(transaction => ({
         ...transaction,
-        profiles: Array.isArray(transaction.profiles) && transaction.profiles.length > 0 
-          ? transaction.profiles[0] 
-          : { full_name: 'Sin nombre', username: 'Sin usuario' }
+        profiles: { full_name: 'Sin nombre', username: 'Sin usuario' }
       })) || [];
 
       setMercadoPagoTransactions(formattedTransactions);
@@ -200,18 +170,15 @@ const AdminPanel = () => {
                 Administración
               </span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Gestiona usuarios, suscripciones, companions y pagos desde aquí.
-            </p>
           </div>
 
           {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <Card className="bg-white/10 backdrop-blur-md border-white/20">
               <CardContent className="p-6 text-center">
                 <Users className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                <h3 className="text-2xl font-bold text-white">{authUsersCount}</h3>
-                <p className="text-white/70">Usuarios Auth</p>
+                <h3 className="text-2xl font-bold text-white">{users.length}</h3>
+                <p className="text-white/70">Usuarios</p>
               </CardContent>
             </Card>
             
@@ -227,19 +194,9 @@ const AdminPanel = () => {
               <CardContent className="p-6 text-center">
                 <DollarSign className="w-8 h-8 text-green-400 mx-auto mb-2" />
                 <h3 className="text-2xl font-bold text-white">
-                  {users.filter(u => u.subscription_type !== 'basic').length}
+                  {users.filter(u => u.subscription_type && u.subscription_type !== 'basic').length}
                 </h3>
                 <p className="text-white/70">Suscripciones Premium</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardContent className="p-6 text-center">
-                <Settings className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                <h3 className="text-2xl font-bold text-white">
-                  {companions.filter(c => c.status === 'approved').length}
-                </h3>
-                <p className="text-white/70">Companions Activas</p>
               </CardContent>
             </Card>
 
@@ -264,19 +221,10 @@ const AdminPanel = () => {
             </Card>
           </div>
 
-          {/* Gestión de Auth Users */}
           <AdminAuthUsersManagement onDataChange={loadData} />
-
-          {/* Gestión de Usuarios (Profiles) */}
           <AdminUserManagement users={users} onDataChange={loadData} />
-
-          {/* Gestión de Companions */}
           <AdminCompanionManagement companions={companions} onDataChange={loadData} />
-
-          {/* Gestión de Transacciones MercadoPago */}
           <AdminMercadoPagoTransactions transactions={mercadoPagoTransactions} onDataChange={loadData} />
-
-          {/* Gestión de Comprobantes de Pago */}
           <AdminPaymentProofs paymentProofs={paymentProofs} onDataChange={loadData} />
         </div>
       </div>
