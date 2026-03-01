@@ -25,25 +25,13 @@ const Catalog = () => {
     phoneNumber: ''
   });
 
-  // Si el usuario es companion, mostrar vista específica
-  if (user && profile?.user_role === 'girlfriend') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
-        <Navbar />
-        <div className="pt-24 pb-16 px-4">
-          <div className="max-w-7xl mx-auto">
-            <CompanionCatalogView />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Cargar companions al montar el componente
   useEffect(() => {
-    console.log('Componente montado, cargando companions...');
-    loadAllListings();
-  }, []);
+    if (!(user && profile?.user_role === 'girlfriend')) {
+      console.log('Componente montado, cargando companions...');
+      loadAllListings();
+    }
+  }, [user, profile]);
 
   // Aplicar filtros cuando cambien (con debounce para evitar muchas llamadas)
   useEffect(() => {
@@ -61,6 +49,20 @@ const Catalog = () => {
       loadAllListings();
     }
   }, [searchFilters.state, searchFilters.municipality, searchFilters.phoneNumber]);
+
+  // Si el usuario es companion, mostrar vista específica
+  if (user && profile?.user_role === 'girlfriend') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
+        <Navbar />
+        <div className="pt-24 pb-16 px-4">
+          <div className="max-w-7xl mx-auto">
+            <CompanionCatalogView />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleFilterChange = (key: string, value: string) => {
     console.log('Cambiando filtro:', key, value);

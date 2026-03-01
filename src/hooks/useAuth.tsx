@@ -27,13 +27,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [hasAdminRole, setHasAdminRole] = useState(false);
   const { toast } = useToast();
 
   // Compute user role and permissions
   const userRole: UserRole = profile?.user_role || 'client';
   const isClient = userRole === 'client';
   const isGirlfriend = userRole === 'girlfriend';
-  const isAdmin = userRole === 'admin';
+  const isAdmin = hasAdminRole || userRole === 'admin';
 
   useEffect(() => {
     // Set up auth state listener
@@ -44,12 +45,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile after authentication
           setTimeout(() => {
             fetchUserProfile(session.user.id);
+            checkAdminRole(session.user.id);
           }, 0);
         } else {
           setProfile(null);
+          setHasAdminRole(false);
         }
         
         setLoading(false);
@@ -62,12 +64,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserProfile(session.user.id);
+        checkAdminRole(session.user.id);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminRole = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+      
+      setHasAdminRole(!!data);
+    } catch (error) {
+      console.error('Error checking admin role:', error);
+    }
+  };
 
   const fetchUserProfile = async (userId: string) => {
     try {
