@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Heart, Menu, X, User, LogOut, Crown, Settings, Home } from 'lucide-react';
+import { Heart, Menu, X, User, LogOut, Crown, Settings, Home, Gift } from 'lucide-react';
 
 const Navbar = () => {
   const { user, signOut, isGirlfriend, isAdmin } = useAuth();
@@ -44,9 +44,12 @@ const Navbar = () => {
                 </Link>
                 {!isGirlfriend && (
                   <Link to="/subscription" className="text-white hover:text-pink-400 transition-colors">
-                    Suscripción
+                    Planes
                   </Link>
                 )}
+                <Link to="/donations" className="text-white hover:text-yellow-400 transition-colors">
+                  💛 Donar
+                </Link>
                 {isAdmin && (
                   <Link to="/admin" className="text-white hover:text-pink-400 transition-colors flex items-center gap-1">
                     <Settings className="w-4 h-4" />
@@ -67,6 +70,9 @@ const Navbar = () => {
               <>
                 <Link to="/become-companion" className="text-white hover:text-pink-400 transition-colors">
                   Ser Companion
+                </Link>
+                <Link to="/donations" className="text-white hover:text-yellow-400 transition-colors">
+                  💛 Donar
                 </Link>
                 <Link to="/auth">
                   <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">

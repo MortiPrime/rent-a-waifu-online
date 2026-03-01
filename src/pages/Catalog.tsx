@@ -14,6 +14,7 @@ import { MEXICO_STATES, getMunicipalitiesByState } from '@/data/mexicoStates';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import CompanionCatalogView from '@/components/CompanionCatalogView';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 
 const Catalog = () => {
   const { user, profile } = useAuth();
@@ -108,9 +109,9 @@ const Catalog = () => {
     }
   };
 
-  const canSeeContactInfo = (companion: CompanionListing) => {
+          const canSeeContactInfo = (companion: CompanionListing) => {
     if (!user) return false;
-    return isPremiumOrVip;
+    return true; // Todo es gratis por ahora
   };
 
   const availableMunicipalities = searchFilters.state ? getMunicipalitiesByState(searchFilters.state) : [];
@@ -154,6 +155,8 @@ const Catalog = () => {
               </div>
             )}
           </div>
+
+          <AnnouncementBanner location="catalog" />
 
           {/* Filters */}
           <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">

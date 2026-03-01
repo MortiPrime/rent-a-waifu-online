@@ -12,6 +12,7 @@ import BecomeCompanion from '@/pages/BecomeCompanion';
 import GirlfriendRegistration from '@/pages/GirlfriendRegistration';
 import Subscription from '@/pages/Subscription';
 import AdminPanel from '@/pages/AdminPanel';
+import Donations from '@/pages/Donations';
 import NotFound from '@/pages/NotFound';
 import { Component, ErrorInfo, ReactNode } from 'react';
 import './App.css';
@@ -102,6 +103,7 @@ function App() {
                     </ProtectedRoute>
                   } 
                 />
+                <Route path="/donations" element={<Donations />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <Toaster />

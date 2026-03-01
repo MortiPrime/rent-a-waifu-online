@@ -10,6 +10,7 @@ import { AdminAuthUsersManagement } from '@/components/admin/AdminAuthUsersManag
 import { AdminCompanionManagement } from '@/components/admin/AdminCompanionManagement';
 import { AdminPaymentProofs } from '@/components/admin/AdminPaymentProofs';
 import { AdminMercadoPagoTransactions } from '@/components/admin/AdminMercadoPagoTransactions';
+import { AdminAnnouncements } from '@/components/admin/AdminAnnouncements';
 
 interface User {
   id: string;
@@ -221,6 +222,7 @@ const AdminPanel = () => {
             </Card>
           </div>
 
+          <AdminAnnouncements />
           <AdminAuthUsersManagement onDataChange={loadData} />
           <AdminUserManagement users={users} onDataChange={loadData} />
           <AdminCompanionManagement companions={companions} onDataChange={loadData} />
