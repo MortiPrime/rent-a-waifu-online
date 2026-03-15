@@ -230,27 +230,16 @@ const Catalog = () => {
             </CardContent>
           </Card>
 
-          {/* Subscription info for logged users */}
+          {/* Info for logged users */}
           {user && profile?.user_role === 'client' && (
-            <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30 mb-8">
+            <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30 mb-8">
               <CardContent className="p-6 text-center">
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  {isPremiumOrVip ? '¡Tienes acceso completo!' : 'Puedes ver todos los perfiles'}
+                  🎉 ¡Acceso completo y gratuito!
                 </h3>
-                <p className="text-white/80 mb-4">
-                  {isPremiumOrVip 
-                    ? 'Con tu suscripción puedes ver números de contacto de todas las companions.'
-                    : 'Con una suscripción Premium o VIP podrás ver números de contacto.'
-                  }
+                <p className="text-white/80">
+                  Puedes ver todos los perfiles y la información de contacto de todas las companions sin costo alguno.
                 </p>
-                {!isPremiumOrVip && (
-                  <Button 
-                    className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                    onClick={() => window.location.href = '/profile'}
-                  >
-                    Ver Planes de Suscripción
-                  </Button>
-                )}
               </CardContent>
             </Card>
           )}
