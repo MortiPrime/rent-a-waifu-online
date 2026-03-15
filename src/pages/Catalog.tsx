@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useCompanionListings } from '@/hooks/useCompanionListings';
+import { useCompanionListings, CompanionListingWithPhotos } from '@/hooks/useCompanionListings';
 import { CompanionListing } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -294,6 +294,27 @@ const Catalog = () => {
                   key={companion.id} 
                   className="bg-white/10 backdrop-blur-md border-white/20 overflow-hidden hover:bg-white/15 transition-all duration-300"
                 >
+                  {/* Photo */}
+                  {companion.primary_photo_url ? (
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={companion.primary_photo_url} 
+                        alt={companion.stage_name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                      {companion.photos && companion.photos.length > 1 && (
+                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                          📷 {companion.photos.length} fotos
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="h-32 bg-gradient-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center">
+                      <Heart className="w-12 h-12 text-pink-400/40" />
+                    </div>
+                  )}
+
                   <CardHeader className="pb-4">
                     <div className="flex justify-between items-start">
                       <div>
