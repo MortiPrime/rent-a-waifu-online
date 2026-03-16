@@ -436,6 +436,13 @@ const Catalog = () => {
           )}
         </div>
       </div>
+
+      <CompanionProfileModal
+        companion={selectedCompanion}
+        open={profileModalOpen}
+        onOpenChange={setProfileModalOpen}
+        canSeeContact={!!user}
+      />
     </div>
   );
 };
