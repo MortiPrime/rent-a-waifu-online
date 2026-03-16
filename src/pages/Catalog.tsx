@@ -412,6 +412,7 @@ const Catalog = () => {
                           <Button 
                             size="sm" 
                             className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                            onClick={() => { setSelectedCompanion(companion); setProfileModalOpen(true); }}
                           >
                             Ver Perfil
                           </Button>
