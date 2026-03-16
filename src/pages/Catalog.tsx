@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import CompanionCatalogView from '@/components/CompanionCatalogView';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import CompanionProfileModal from '@/components/CompanionProfileModal';
 
 const Catalog = () => {
   const { user, profile } = useAuth();
