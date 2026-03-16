@@ -15,10 +15,13 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import CompanionCatalogView from '@/components/CompanionCatalogView';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import CompanionProfileModal from '@/components/CompanionProfileModal';
 
 const Catalog = () => {
   const { user, profile } = useAuth();
   const { listings, loading, loadListings, loadAllListings } = useCompanionListings();
+  const [selectedCompanion, setSelectedCompanion] = useState<CompanionListingWithPhotos | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     state: '',
     municipality: '',
@@ -409,6 +412,7 @@ const Catalog = () => {
                           <Button 
                             size="sm" 
                             className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                            onClick={() => { setSelectedCompanion(companion); setProfileModalOpen(true); }}
                           >
                             Ver Perfil
                           </Button>
@@ -432,6 +436,13 @@ const Catalog = () => {
           )}
         </div>
       </div>
+
+      <CompanionProfileModal
+        companion={selectedCompanion}
+        open={profileModalOpen}
+        onOpenChange={setProfileModalOpen}
+        canSeeContact={!!user}
+      />
     </div>
   );
 };
