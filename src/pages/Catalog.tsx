@@ -20,6 +20,8 @@ import CompanionProfileModal from '@/components/CompanionProfileModal';
 const Catalog = () => {
   const { user, profile } = useAuth();
   const { listings, loading, loadListings, loadAllListings } = useCompanionListings();
+  const [selectedCompanion, setSelectedCompanion] = useState<CompanionListingWithPhotos | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     state: '',
     municipality: '',
