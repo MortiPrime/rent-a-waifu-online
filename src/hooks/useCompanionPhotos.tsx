@@ -63,7 +63,6 @@ export const useCompanionPhotos = (
     try {
       const photo = photos.find(p => p.id === photoId);
       
-      // Try to delete from storage if it's a storage URL
       if (photo?.photo_url?.includes('companion-photos')) {
         const urlParts = photo.photo_url.split('companion-photos/');
         if (urlParts[1]) {
@@ -77,12 +76,60 @@ export const useCompanionPhotos = (
         .eq('id', photoId);
 
       if (error) throw error;
-      setPhotos(photos.filter(photo => photo.id !== photoId));
+      setPhotos(photos.filter(p => p.id !== photoId));
     } catch (error: any) {
       console.error('Error removing photo:', error);
       throw error;
     }
   };
 
-  return { addPhoto, removePhoto, uploadToStorage };
+  const setPrimaryPhoto = async (photoId: string) => {
+    if (!profile) throw new Error('Perfil no encontrado');
+
+    try {
+      // Remove primary from all photos of this companion
+      const { error: resetError } = await supabase
+        .from('companion_photos')
+        .update({ is_primary: false })
+        .eq('companion_id', profile.id);
+
+      if (resetError) throw resetError;
+
+      // Set the selected photo as primary
+      const { error: setError } = await supabase
+        .from('companion_photos')
+        .update({ is_primary: true })
+        .eq('id', photoId);
+
+      if (setError) throw setError;
+
+      setPhotos(
+        photos.map(p => ({ ...p, is_primary: p.id === photoId }))
+      );
+    } catch (error: any) {
+      console.error('Error setting primary photo:', error);
+      throw error;
+    }
+  };
+
+  const reorderPhotos = async (reorderedPhotos: CompanionPhoto[]) => {
+    try {
+      // Update display_order for each photo
+      const updates = reorderedPhotos.map((photo, index) =>
+        supabase
+          .from('companion_photos')
+          .update({ display_order: index })
+          .eq('id', photo.id)
+      );
+
+      await Promise.all(updates);
+
+      setPhotos(reorderedPhotos.map((p, i) => ({ ...p, display_order: i })));
+    } catch (error: any) {
+      console.error('Error reordering photos:', error);
+      throw error;
+    }
+  };
+
+  return { addPhoto, removePhoto, uploadToStorage, setPrimaryPhoto, reorderPhotos };
 };
