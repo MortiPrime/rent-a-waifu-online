@@ -55,7 +55,7 @@ const CompanionDashboard = () => {
         .from('companion_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error("Error fetching companion profile:", profileError);

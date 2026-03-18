@@ -64,7 +64,7 @@ const CompanionProfileForm = () => {
       
       // Mostrar mensaje de éxito y redirigir después de un momento
       setTimeout(() => {
-        navigate('/catalog');
+        navigate('/profile');
       }, 2000);
       
     } catch (error) {
