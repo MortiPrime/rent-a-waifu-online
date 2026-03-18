@@ -18,7 +18,7 @@ export const useCompanionProfile = () => {
   } = useCompanionProfileData();
 
   const { updateProfile } = useCompanionProfileActions(profile, setProfile);
-  const { addPhoto, removePhoto } = useCompanionPhotos(profile, photos, setPhotos);
+  const { addPhoto, removePhoto, setPrimaryPhoto, reorderPhotos } = useCompanionPhotos(profile, photos, setPhotos);
   const { addRule, removeRule } = useCompanionRules(profile, rules, setRules);
 
   return {
@@ -30,6 +30,8 @@ export const useCompanionProfile = () => {
     updateProfile,
     addPhoto,
     removePhoto,
+    setPrimaryPhoto,
+    reorderPhotos,
     addRule,
     removeRule,
     loadCompanionProfile,
