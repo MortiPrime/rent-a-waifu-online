@@ -30,6 +30,8 @@ export const useCompanionProfile = () => {
     updateProfile,
     addPhoto,
     removePhoto,
+    setPrimaryPhoto,
+    reorderPhotos,
     addRule,
     removeRule,
     loadCompanionProfile,
