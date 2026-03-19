@@ -208,6 +208,9 @@ const CompanionProfileModal = ({ companion, open, onOpenChange, canSeeContact }:
                 <p className="text-pink-300 text-sm">Inicia sesión para ver información de contacto</p>
               </div>
             )}
+
+            {/* Reviews Section */}
+            <ReviewSection companionListingId={companion.id} />
           </div>
         </DialogContent>
       </Dialog>
