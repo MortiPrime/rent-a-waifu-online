@@ -22,6 +22,7 @@ import StarRating from '@/components/reviews/StarRating';
 const Catalog = () => {
   const { user, profile } = useAuth();
   const { listings, loading, loadListings, loadAllListings } = useCompanionListings();
+  const { ratings, fetchRatings } = useListingRatings();
   const [selectedCompanion, setSelectedCompanion] = useState<CompanionListingWithPhotos | null>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
