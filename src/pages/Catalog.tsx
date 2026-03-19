@@ -338,7 +338,14 @@ const Catalog = () => {
                           <MapPin className="w-4 h-4" />
                           {companion.municipality}, {companion.state}
                         </div>
-                      </div>
+                        {ratings.get(companion.id) && (
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <StarRating rating={Math.round(ratings.get(companion.id)!.average)} size="sm" />
+                            <span className="text-white/50 text-xs">
+                              ({ratings.get(companion.id)!.count})
+                            </span>
+                          </div>
+                        )}
                       <div className="flex flex-col gap-2">
                         {getPlanBadge(companion.promotion_plan || 'basic')}
                         {companion.is_featured && (
