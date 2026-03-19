@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings, CompanionListingWithPhotos } from '@/hooks/useCompanionListings';
+import { useListingRatings } from '@/hooks/useReviews';
 import { CompanionListing } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,7 @@ import Navbar from '@/components/Navbar';
 import CompanionCatalogView from '@/components/CompanionCatalogView';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import CompanionProfileModal from '@/components/CompanionProfileModal';
+import StarRating from '@/components/reviews/StarRating';
 
 const Catalog = () => {
   const { user, profile } = useAuth();
