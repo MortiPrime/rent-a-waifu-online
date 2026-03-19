@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Crown, Star, DollarSign, Heart, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { CompanionListingWithPhotos } from '@/hooks/useCompanionListings';
+import ReviewSection from '@/components/reviews/ReviewSection';
 
 interface CompanionProfileModalProps {
   companion: CompanionListingWithPhotos | null;
@@ -207,6 +208,9 @@ const CompanionProfileModal = ({ companion, open, onOpenChange, canSeeContact }:
                 <p className="text-pink-300 text-sm">Inicia sesión para ver información de contacto</p>
               </div>
             )}
+
+            {/* Reviews Section */}
+            <ReviewSection companionListingId={companion.id} />
           </div>
         </DialogContent>
       </Dialog>

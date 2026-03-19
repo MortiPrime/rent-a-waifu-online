@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanionListings, CompanionListingWithPhotos } from '@/hooks/useCompanionListings';
+import { useListingRatings } from '@/hooks/useReviews';
 import { CompanionListing } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,10 +17,12 @@ import Navbar from '@/components/Navbar';
 import CompanionCatalogView from '@/components/CompanionCatalogView';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import CompanionProfileModal from '@/components/CompanionProfileModal';
+import StarRating from '@/components/reviews/StarRating';
 
 const Catalog = () => {
   const { user, profile } = useAuth();
   const { listings, loading, loadListings, loadAllListings } = useCompanionListings();
+  const { ratings, fetchRatings } = useListingRatings();
   const [selectedCompanion, setSelectedCompanion] = useState<CompanionListingWithPhotos | null>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
@@ -35,6 +38,13 @@ const Catalog = () => {
       loadAllListings();
     }
   }, [user, profile]);
+
+  // Fetch ratings when listings change
+  useEffect(() => {
+    if (listings.length > 0) {
+      fetchRatings(listings.map(l => l.id));
+    }
+  }, [listings]);
 
   // Aplicar filtros cuando cambien (con debounce para evitar muchas llamadas)
   useEffect(() => {
@@ -328,6 +338,14 @@ const Catalog = () => {
                           <MapPin className="w-4 h-4" />
                           {companion.municipality}, {companion.state}
                         </div>
+                        {ratings.get(companion.id) && (
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <StarRating rating={Math.round(ratings.get(companion.id)!.average)} size="sm" />
+                            <span className="text-white/50 text-xs">
+                              ({ratings.get(companion.id)!.count})
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex flex-col gap-2">
                         {getPlanBadge(companion.promotion_plan || 'basic')}
