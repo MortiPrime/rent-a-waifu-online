@@ -39,6 +39,13 @@ const Catalog = () => {
     }
   }, [user, profile]);
 
+  // Fetch ratings when listings change
+  useEffect(() => {
+    if (listings.length > 0) {
+      fetchRatings(listings.map(l => l.id));
+    }
+  }, [listings]);
+
   // Aplicar filtros cuando cambien (con debounce para evitar muchas llamadas)
   useEffect(() => {
     const hasFilters = searchFilters.state || searchFilters.municipality || searchFilters.phoneNumber;
