@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Crown, Star, DollarSign, Heart, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { CompanionListingWithPhotos } from '@/hooks/useCompanionListings';
+import ReviewSection from '@/components/reviews/ReviewSection';
 
 interface CompanionProfileModalProps {
   companion: CompanionListingWithPhotos | null;
