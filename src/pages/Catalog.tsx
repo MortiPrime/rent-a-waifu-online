@@ -346,6 +346,7 @@ const Catalog = () => {
                             </span>
                           </div>
                         )}
+                      </div>
                       <div className="flex flex-col gap-2">
                         {getPlanBadge(companion.promotion_plan || 'basic')}
                         {companion.is_featured && (
