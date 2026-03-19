@@ -494,6 +494,47 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          companion_listing_id: string
+          created_at: string
+          id: string
+          rating: number
+          reviewer_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          companion_listing_id: string
+          created_at?: string
+          id?: string
+          rating: number
+          reviewer_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          companion_listing_id?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewer_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_companion_listing_id_fkey"
+            columns: ["companion_listing_id"]
+            isOneToOne: false
+            referencedRelation: "companion_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_history: {
         Row: {
           amount: number
