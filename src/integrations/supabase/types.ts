@@ -577,6 +577,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_favorites: {
+        Row: {
+          companion_listing_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          companion_listing_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          companion_listing_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_companion_listing_id_fkey"
+            columns: ["companion_listing_id"]
+            isOneToOne: false
+            referencedRelation: "companion_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
