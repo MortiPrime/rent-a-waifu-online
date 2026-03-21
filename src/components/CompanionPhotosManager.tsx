@@ -278,7 +278,7 @@ const CompanionPhotosManager = () => {
       <Card className="bg-white/10 backdrop-blur-md border-white/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
-            <Camera className="w-5 h-5 text-pink-400" />Mis Fotos ({photos.length})
+            <Camera className="w-5 h-5 text-pink-400" />Mis Fotos ({photos.length}/{MAX_PHOTOS})
           </CardTitle>
           {photos.length > 1 && (
             <p className="text-white/60 text-sm mt-1">
