@@ -177,6 +177,10 @@ const CompanionPhotosManager = () => {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!canAddMore) {
+      toast({ title: "Límite alcanzado", description: `Máximo ${MAX_PHOTOS} fotos permitidas`, variant: "destructive" });
+      return;
+    }
     if (!file.type.startsWith('image/')) {
       toast({ title: "Error", description: "Por favor selecciona solo archivos de imagen", variant: "destructive" });
       return;
