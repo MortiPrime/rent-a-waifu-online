@@ -7,6 +7,7 @@ import { ProfileStats } from './profile/ProfileStats';
 import { PaymentProofSubmission } from './profile/PaymentProofSubmission';
 import { SubscriptionInfo } from './profile/SubscriptionInfo';
 import CompanionDashboard from './CompanionDashboard';
+import FavoritesSection from './FavoritesSection';
 
 const UserProfile = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -17,15 +18,15 @@ const UserProfile = () => {
       <RoleConverter profile={profile} updateProfile={updateProfile} />
       <ProfileInfo user={user} profile={profile} updateProfile={updateProfile} />
       
-      {/* Información de suscripciones y planes */}
       <SubscriptionInfo profile={profile} />
+      
+      {/* Favoritas del cliente */}
+      {profile?.user_role === 'client' && <FavoritesSection />}
       
       <ProfileStats profile={profile} />
       
-      {/* Dashboard de companion con fotos, reglas, etc. */}
       {profile?.user_role === 'girlfriend' && <CompanionDashboard />}
       
-      {/* Componente de comprobantes de pago solo para clientes */}
       {profile?.user_role === 'client' && <PaymentProofSubmission />}
     </div>
   );

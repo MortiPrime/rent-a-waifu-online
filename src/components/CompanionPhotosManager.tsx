@@ -154,9 +154,16 @@ const CompanionPhotosManager = () => {
     }
   };
 
+  const MAX_PHOTOS = 10;
+  const canAddMore = photos.length < MAX_PHOTOS;
+
   const handleAddPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPhotoUrl.trim()) return;
+    if (!canAddMore) {
+      toast({ title: "Límite alcanzado", description: `Máximo ${MAX_PHOTOS} fotos permitidas`, variant: "destructive" });
+      return;
+    }
     try {
       await addPhoto(newPhotoUrl, caption, photos.length === 0);
       setNewPhotoUrl('');
@@ -170,6 +177,10 @@ const CompanionPhotosManager = () => {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!canAddMore) {
+      toast({ title: "Límite alcanzado", description: `Máximo ${MAX_PHOTOS} fotos permitidas`, variant: "destructive" });
+      return;
+    }
     if (!file.type.startsWith('image/')) {
       toast({ title: "Error", description: "Por favor selecciona solo archivos de imagen", variant: "destructive" });
       return;
@@ -267,7 +278,7 @@ const CompanionPhotosManager = () => {
       <Card className="bg-white/10 backdrop-blur-md border-white/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
-            <Camera className="w-5 h-5 text-pink-400" />Mis Fotos ({photos.length})
+            <Camera className="w-5 h-5 text-pink-400" />Mis Fotos ({photos.length}/{MAX_PHOTOS})
           </CardTitle>
           {photos.length > 1 && (
             <p className="text-white/60 text-sm mt-1">
