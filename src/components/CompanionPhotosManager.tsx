@@ -154,9 +154,16 @@ const CompanionPhotosManager = () => {
     }
   };
 
+  const MAX_PHOTOS = 10;
+  const canAddMore = photos.length < MAX_PHOTOS;
+
   const handleAddPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPhotoUrl.trim()) return;
+    if (!canAddMore) {
+      toast({ title: "Límite alcanzado", description: `Máximo ${MAX_PHOTOS} fotos permitidas`, variant: "destructive" });
+      return;
+    }
     try {
       await addPhoto(newPhotoUrl, caption, photos.length === 0);
       setNewPhotoUrl('');

@@ -136,6 +136,14 @@ const Navbar = () => {
                       Suscripción
                     </Link>
                   )}
+                  <Link 
+                    to="/donations" 
+                    className="text-white hover:text-yellow-400 transition-colors px-3 py-2 flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Gift className="w-4 h-4" />
+                    💛 Donar
+                  </Link>
                   {isAdmin && (
                     <Link 
                       to="/admin" 
