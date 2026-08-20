@@ -1,67 +1,43 @@
+# Pulido general de la plataforma
 
-
-# Mejoras Generales para la Plataforma
-
-Tras analizar todo el código, estas son las mejoras mas impactantes que se pueden implementar:
+Mantenemos la identidad actual (rosa/púrpura oscuro con tarjetas de vidrio) y la hacemos consistente en toda la app, con mejoras en catálogo, perfiles de companions y panel de administración.
 
 ---
 
-## 1. Sistema de Favoritos
-- Tabla `user_favorites` con RLS
-- Botón de corazón funcional en cada card del catálogo (actualmente es decorativo)
-- Sección "Mis Favoritas" en el perfil del cliente
+## 1. Diseño visual general
 
-## 2. Filtros Avanzados en el Catálogo
-- Filtro por rango de edad (slider)
-- Filtro por tipo de plan (Básico/Premium/VIP)
-- Búsqueda por nombre de companion
-- Ordenar por: más recientes, mejor valoradas
+- Consolidar la paleta actual en tokens semánticos (fondo, superficie de vidrio, acento rosa, acento oro para donaciones) en lugar de repetir `bg-white/10`, `text-white`, etc. en cada componente.
+- Componente reutilizable de fondo de página (gradiente + halos difusos) para que Catálogo, Inicio, Perfil, Suscripción, Donaciones y Admin luzcan iguales.
+- Encabezados de sección unificados (título, subtítulo, espaciado) y estilo consistente de tarjetas, badges y botones.
+- Navbar: estado activo del enlace actual, mejor contraste al hacer scroll.
 
-## 3. Skeleton Loaders y UX
-- Reemplazar el spinner genérico del catálogo con skeleton cards
-- Animaciones de entrada para las cards (staggered fade-in)
-- Paginación o infinite scroll para muchos listings
+## 2. Catálogo y descubrimiento
 
-## 4. Footer
-- No existe footer en ninguna página
-- Agregar footer con links: Términos, Privacidad, Contacto, Redes Sociales
+- Tarjetas rediseñadas: foto con relación fija, gradiente inferior legible, badges de plan/verificación bien jerarquizados y corazón de favorito visible.
+- Barra de filtros compacta y ordenada: búsqueda, estado, edad, plan y orden en una sola fila colapsable en móvil, con chips de filtros activos y botón "Limpiar".
+- Estado vacío con ilustración y sugerencia de quitar filtros; skeletons ya existentes aplicados de forma consistente.
+- Aparición escalonada de tarjetas y "Cargar más" para listados largos.
 
-## 5. Página 404 Mejorada
-- Revisar y mejorar la página NotFound con navegación de regreso
+## 3. Perfiles de companions
 
-## 6. Límite de Fotos con Contador Visual
-- Limitar a 10 fotos por companion
-- Mostrar contador "3/10 fotos" en el manager
+- Modal de perfil reorganizado: galería a la izquierda, datos y contacto a la derecha en escritorio; apilado y con scroll correcto en móvil.
+- Bloques claros de: descripción, reglas y precios, disponibilidad, reseñas y contacto (contacto sólo para sesión iniciada).
+- Botones de acción fijos (favorito, contactar) y navegación por teclado en la galería.
+- Panel del companion: contador de fotos, guía rápida de "perfil completo" con pasos pendientes.
 
-## 7. Responsive y Mobile
-- El menú móvil no incluye el link de "Donar"
-- Revisar que el modal de perfil se vea bien en móvil
+## 4. Panel de administración
 
-## 8. SEO y Meta Tags
-- Agregar meta tags dinámicos (title, description, og:image)
-- Mejorar el `index.html` con información relevante
+- Cabecera con tarjetas de métricas más legibles (usuarios, companions activas, pendientes, anuncios activos).
+- Reorganizar las secciones en pestañas (Usuarios, Cuentas de acceso, Companions, Pagos, Anuncios) en vez de una página larga.
+- Tablas con búsqueda, filtro por estado y estados de carga/vacío consistentes.
 
 ---
 
-## Orden de Implementación Sugerido
+## Detalle técnico
 
-| Prioridad | Mejora | Impacto |
-|-----------|--------|---------|
-| 1 | Sistema de Favoritos | Alto - funcionalidad core |
-| 2 | Filtros Avanzados | Alto - mejora descubrimiento |
-| 3 | Skeleton Loaders | Medio - mejor percepción de velocidad |
-| 4 | Footer | Medio - profesionalismo |
-| 5 | Límite de Fotos | Medio - control de contenido |
-| 6 | Mobile fixes | Medio - accesibilidad |
-| 7 | SEO/Meta tags | Bajo-medio - visibilidad |
-| 8 | 404 mejorada | Bajo |
-
----
-
-## Detalle Técnico
-
-- **Favoritos**: Nueva tabla con FK a `auth.users` (via profiles) y `companion_listings`. Hook `useFavorites` con toggle y lista. RLS para que cada usuario solo vea/modifique sus propios favoritos.
-- **Filtros**: Extender `useCompanionListings` con parámetros adicionales de query. UI con Slider de shadcn para edad y chips para plan.
-- **Skeletons**: Usar el componente `Skeleton` ya existente en `src/components/ui/skeleton.tsx` para crear `CatalogCardSkeleton`.
-- **Footer**: Componente reutilizable `Footer.tsx` agregado en las páginas principales.
-
+- Tokens y gradientes nuevos en `src/index.css` y `tailwind.config.ts`; los componentes dejan de usar utilidades de color crudas donde se toquen.
+- Nuevos componentes: `PageShell` (fondo + contenedor), `SectionHeading`, `CatalogFilters`, `EmptyState`.
+- `src/pages/Catalog.tsx` se reduce extrayendo la barra de filtros y la grilla a componentes; la lógica de datos de `useCompanionListings` no cambia.
+- `src/components/CompanionProfileModal.tsx` se reestructura en dos columnas con subcomponentes de galería e información.
+- `src/pages/AdminPanel.tsx` pasa a usar `Tabs` de shadcn; los componentes admin existentes se reutilizan tal cual, sólo se ajusta su presentación.
+- Sin cambios de base de datos ni de reglas de negocio.
