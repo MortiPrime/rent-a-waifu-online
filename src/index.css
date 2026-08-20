@@ -35,6 +35,25 @@
 
     --radius: 0.5rem;
 
+    /* App shell (dark rosa/púrpura) */
+    --app-from: 322 60% 20%;
+    --app-via: 271 55% 22%;
+    --app-to: 243 55% 25%;
+
+    /* Superficies de vidrio sobre el fondo oscuro */
+    --surface: 0 0% 100%;
+    --surface-foreground: 0 0% 100%;
+    --surface-muted: 0 0% 100%;
+    --surface-border: 0 0% 100%;
+
+    /* Acentos de marca */
+    --brand: 330 81% 60%;
+    --brand-glow: 271 81% 56%;
+    --brand-foreground: 0 0% 100%;
+    --gold: 45 93% 58%;
+    --success: 152 69% 45%;
+    --info: 217 91% 60%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -44,6 +63,7 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
 
   .dark {
     --background: 222.2 84% 4.9%;
