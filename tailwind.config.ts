@@ -111,6 +111,7 @@ export default {
         float: "float 6s ease-in-out infinite",
         "float-delayed": "float 6s ease-in-out 2s infinite",
         "glow": "glow 2s ease-in-out infinite alternate",
+        "fade-up": "fade-up 0.5s ease-out both",
       },
       keyframes: {
         float: {
@@ -121,7 +122,12 @@ export default {
           "0%": { boxShadow: "0 0 20px rgba(240, 147, 251, 0.5)" },
           "100%": { boxShadow: "0 0 30px rgba(240, 147, 251, 0.8)" },
         },
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
+
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
