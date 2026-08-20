@@ -35,6 +35,25 @@
 
     --radius: 0.5rem;
 
+    /* App shell (dark rosa/púrpura) */
+    --app-from: 322 60% 20%;
+    --app-via: 271 55% 22%;
+    --app-to: 243 55% 25%;
+
+    /* Superficies de vidrio sobre el fondo oscuro */
+    --surface: 0 0% 100%;
+    --surface-foreground: 0 0% 100%;
+    --surface-muted: 0 0% 100%;
+    --surface-border: 0 0% 100%;
+
+    /* Acentos de marca */
+    --brand: 330 81% 60%;
+    --brand-glow: 271 81% 56%;
+    --brand-foreground: 0 0% 100%;
+    --gold: 45 93% 58%;
+    --success: 152 69% 45%;
+    --info: 217 91% 60%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -44,6 +63,7 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
 
   .dark {
     --background: 222.2 84% 4.9%;
@@ -137,4 +157,26 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-primary-600;
+}
+
+@layer components {
+  .surface-card {
+    @apply bg-surface/10 backdrop-blur-md border border-surface-border/20;
+  }
+
+  .surface-card-hover {
+    @apply transition-all duration-300 hover:bg-surface/[0.15] hover:border-surface-border/30 hover:-translate-y-1;
+  }
+
+  .brand-gradient-text {
+    @apply bg-gradient-to-r from-brand to-brand-glow bg-clip-text text-transparent;
+  }
+
+  .brand-button {
+    @apply bg-gradient-to-r from-brand to-brand-glow text-brand-foreground hover:opacity-90;
+  }
+
+  .field-dark {
+    @apply bg-surface/10 border-surface-border/30 text-surface-foreground placeholder:text-surface-foreground/50;
+  }
 }
