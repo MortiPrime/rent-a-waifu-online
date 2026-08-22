@@ -1,14 +1,27 @@
-
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Heart, Menu, X, User, LogOut, Crown, Settings, Home, Gift } from 'lucide-react';
 
 const Navbar = () => {
   const { user, signOut, isGirlfriend, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   const handleSignOut = async () => {
     try {
@@ -19,167 +32,141 @@ const Navbar = () => {
     }
   };
 
+  const isActive = (path: string) => location.pathname === path;
+
+  const linkClass = (path: string, accent: 'brand' | 'gold' = 'brand') =>
+    cn(
+      'relative text-surface-foreground/80 transition-colors',
+      accent === 'brand' ? 'hover:text-brand' : 'hover:text-gold',
+      isActive(path) &&
+        cn(
+          'font-medium text-surface-foreground after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:rounded-full',
+          accent === 'brand' ? 'after:bg-brand' : 'after:bg-gold',
+        ),
+    );
+
+  const mobileLinkClass = (path: string) =>
+    cn(
+      'flex items-center gap-2 rounded-md px-3 py-2 transition-colors',
+      isActive(path)
+        ? 'bg-surface/10 font-medium text-surface-foreground'
+        : 'text-surface-foreground/80 hover:bg-surface/5 hover:text-brand',
+    );
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+    <nav
+      className={cn(
+        'fixed inset-x-0 top-0 z-50 border-b transition-all duration-300',
+        scrolled
+          ? 'border-surface-border/15 bg-black/55 backdrop-blur-xl shadow-glass'
+          : 'border-surface-border/10 bg-black/20 backdrop-blur-md',
+      )}
+    >
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <Heart className="w-8 h-8 text-pink-500" />
-            <span className="text-xl font-bold text-white">AnimeDating</span>
+            <Heart className="h-8 w-8 text-brand" />
+            <span className="font-playfair text-xl font-bold text-surface-foreground">AnimeDating</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-white hover:text-pink-400 transition-colors">
-              Catálogo
-            </Link>
-            <Link to="/home" className="text-white hover:text-pink-400 transition-colors">
-              Inicio
-            </Link>
+          {/* Desktop */}
+          <div className="hidden items-center space-x-6 md:flex">
+            <Link to="/" className={linkClass('/')}>Catálogo</Link>
+            <Link to="/home" className={linkClass('/home')}>Inicio</Link>
             {user ? (
               <>
-                <Link to="/profile" className="text-white hover:text-pink-400 transition-colors">
-                  Mi Perfil
-                </Link>
+                <Link to="/profile" className={linkClass('/profile')}>Mi Perfil</Link>
                 {!isGirlfriend && (
-                  <Link to="/subscription" className="text-white hover:text-pink-400 transition-colors">
-                    Planes
-                  </Link>
+                  <Link to="/subscription" className={linkClass('/subscription')}>Planes</Link>
                 )}
-                <Link to="/donations" className="text-white hover:text-yellow-400 transition-colors">
-                  💛 Donar
-                </Link>
+                <Link to="/donations" className={linkClass('/donations', 'gold')}>💛 Donar</Link>
                 {isAdmin && (
-                  <Link to="/admin" className="text-white hover:text-pink-400 transition-colors flex items-center gap-1">
-                    <Settings className="w-4 h-4" />
-                    Admin
+                  <Link to="/admin" className={cn(linkClass('/admin'), 'flex items-center gap-1')}>
+                    <Settings className="h-4 w-4" />Admin
                   </Link>
                 )}
                 <Button
                   onClick={handleSignOut}
                   variant="outline"
                   size="sm"
-                  className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+                  className="border-surface-border/20 bg-surface/10 text-surface-foreground hover:bg-surface/20"
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Salir
+                  <LogOut className="mr-2 h-4 w-4" />Salir
                 </Button>
               </>
             ) : (
               <>
-                <Link to="/become-companion" className="text-white hover:text-pink-400 transition-colors">
-                  Ser Companion
-                </Link>
-                <Link to="/donations" className="text-white hover:text-yellow-400 transition-colors">
-                  💛 Donar
-                </Link>
+                <Link to="/become-companion" className={linkClass('/become-companion')}>Ser Companion</Link>
+                <Link to="/donations" className={linkClass('/donations', 'gold')}>💛 Donar</Link>
                 <Link to="/auth">
-                  <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
-                    Iniciar Sesión
-                  </Button>
+                  <Button className="brand-button">Iniciar Sesión</Button>
                 </Link>
               </>
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile button */}
           <div className="md:hidden">
             <Button
               variant="ghost"
               size="sm"
+              aria-label="Abrir menú"
+              aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white"
+              className="text-surface-foreground"
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-white/10">
-            <div className="flex flex-col space-y-3">
-              <Link 
-                to="/" 
-                className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Heart className="w-4 h-4" />
-                Catálogo
+          <div className="border-t border-surface-border/10 py-4 md:hidden">
+            <div className="flex flex-col space-y-1">
+              <Link to="/" className={mobileLinkClass('/')}>
+                <Heart className="h-4 w-4" />Catálogo
               </Link>
-              <Link 
-                to="/home" 
-                className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Home className="w-4 h-4" />
-                Inicio
+              <Link to="/home" className={mobileLinkClass('/home')}>
+                <Home className="h-4 w-4" />Inicio
               </Link>
               {user ? (
                 <>
-                  <Link 
-                    to="/profile" 
-                    className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="w-4 h-4" />
-                    Mi Perfil
+                  <Link to="/profile" className={mobileLinkClass('/profile')}>
+                    <User className="h-4 w-4" />Mi Perfil
                   </Link>
                   {!isGirlfriend && (
-                    <Link 
-                      to="/subscription" 
-                      className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Crown className="w-4 h-4" />
-                      Suscripción
+                    <Link to="/subscription" className={mobileLinkClass('/subscription')}>
+                      <Crown className="h-4 w-4" />Suscripción
                     </Link>
                   )}
-                  <Link 
-                    to="/donations" 
-                    className="text-white hover:text-yellow-400 transition-colors px-3 py-2 flex items-center gap-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Gift className="w-4 h-4" />
-                    💛 Donar
+                  <Link to="/donations" className={mobileLinkClass('/donations')}>
+                    <Gift className="h-4 w-4" />💛 Donar
                   </Link>
                   {isAdmin && (
-                    <Link 
-                      to="/admin" 
-                      className="text-white hover:text-pink-400 transition-colors px-3 py-2 flex items-center gap-2"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Settings className="w-4 h-4" />
-                      Panel Admin
+                    <Link to="/admin" className={mobileLinkClass('/admin')}>
+                      <Settings className="h-4 w-4" />Panel Admin
                     </Link>
                   )}
                   <Button
-                    onClick={() => {
-                      handleSignOut();
-                      setIsMenuOpen(false);
-                    }}
+                    onClick={handleSignOut}
                     variant="outline"
                     size="sm"
-                    className="bg-white/10 text-white border-white/20 hover:bg-white/20 mx-3"
+                    className="mx-3 mt-2 border-surface-border/20 bg-surface/10 text-surface-foreground hover:bg-surface/20"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Salir
+                    <LogOut className="mr-2 h-4 w-4" />Salir
                   </Button>
                 </>
               ) : (
                 <>
-                  <Link 
-                    to="/become-companion" 
-                    className="text-white hover:text-pink-400 transition-colors px-3 py-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Ser Companion
+                  <Link to="/become-companion" className={mobileLinkClass('/become-companion')}>
+                    <Star className="h-4 w-4" />Ser Companion
                   </Link>
-                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 mx-3">
-                      Iniciar Sesión
-                    </Button>
+                  <Link to="/donations" className={mobileLinkClass('/donations')}>
+                    <Gift className="h-4 w-4" />💛 Donar
+                  </Link>
+                  <Link to="/auth" className="px-3 pt-2">
+                    <Button className="brand-button w-full">Iniciar Sesión</Button>
                   </Link>
                 </>
               )}
