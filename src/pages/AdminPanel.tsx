@@ -150,88 +150,86 @@ const AdminPanel = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500"></div>
-      </div>
-    );
-  }
+  const stats = [
+    { icon: Users, tone: 'text-info', value: users.length, label: 'Usuarios' },
+    { icon: Crown, tone: 'text-brand', value: companions.length, label: 'Companions' },
+    {
+      icon: DollarSign,
+      tone: 'text-success',
+      value: users.filter((u) => u.subscription_type && u.subscription_type !== 'basic').length,
+      label: 'Suscripciones Premium',
+    },
+    {
+      icon: Clock,
+      tone: 'text-gold',
+      value: paymentProofs.filter((p) => p.status === 'pending').length,
+      label: 'Comprobantes Pendientes',
+    },
+    {
+      icon: CreditCard,
+      tone: 'text-success',
+      value: mercadoPagoTransactions.filter((t) => t.status === 'approved').length,
+      label: 'Pagos MercadoPago',
+    },
+  ];
+
+  const tabTrigger =
+    'data-[state=active]:bg-surface/15 data-[state=active]:text-surface-foreground text-surface-foreground/70 rounded-md px-3 py-2 text-sm transition-colors';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
-      <Navbar />
-      
-      <div className="pt-24 pb-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-playfair font-bold text-white mb-6">
-              Panel de
-              <span className="block bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-                Administración
-              </span>
-            </h1>
-          </div>
+    <PageShell maxWidth="max-w-7xl">
+      <SectionHeading title="Panel de" highlight="Administración" align="left" />
 
-          {/* Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardContent className="p-6 text-center">
-                <Users className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                <h3 className="text-2xl font-bold text-white">{users.length}</h3>
-                <p className="text-white/70">Usuarios</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardContent className="p-6 text-center">
-                <Crown className="w-8 h-8 text-pink-400 mx-auto mb-2" />
-                <h3 className="text-2xl font-bold text-white">{companions.length}</h3>
-                <p className="text-white/70">Companions</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardContent className="p-6 text-center">
-                <DollarSign className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <h3 className="text-2xl font-bold text-white">
-                  {users.filter(u => u.subscription_type && u.subscription_type !== 'basic').length}
-                </h3>
-                <p className="text-white/70">Suscripciones Premium</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardContent className="p-6 text-center">
-                <Clock className="w-8 h-8 text-orange-400 mx-auto mb-2" />
-                <h3 className="text-2xl font-bold text-white">
-                  {paymentProofs.filter(p => p.status === 'pending').length}
-                </h3>
-                <p className="text-white/70">Comprobantes Pendientes</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardContent className="p-6 text-center">
-                <CreditCard className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                <h3 className="text-2xl font-bold text-white">
-                  {mercadoPagoTransactions.filter(t => t.status === 'approved').length}
-                </h3>
-                <p className="text-white/70">Pagos MercadoPago</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <AdminAnnouncements />
-          <AdminAuthUsersManagement onDataChange={loadData} />
-          <AdminUserManagement users={users} onDataChange={loadData} />
-          <AdminCompanionManagement companions={companions} onDataChange={loadData} />
-          <AdminMercadoPagoTransactions transactions={mercadoPagoTransactions} onDataChange={loadData} />
-          <AdminPaymentProofs paymentProofs={paymentProofs} onDataChange={loadData} />
+      {loading ? (
+        <div className="flex justify-center py-24">
+          <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-brand" />
         </div>
-      </div>
-    </div>
+      ) : (
+        <>
+          {/* Estadísticas */}
+          <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+            {stats.map(({ icon: Icon, tone, value, label }) => (
+              <Card key={label} className="surface-card">
+                <CardContent className="p-5 text-center">
+                  <Icon className={`mx-auto mb-2 h-7 w-7 ${tone}`} />
+                  <h3 className="text-2xl font-bold text-surface-foreground">{value}</h3>
+                  <p className="text-xs text-surface-foreground/65">{label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Tabs defaultValue="announcements" className="space-y-6">
+            <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 border border-surface-border/20 bg-surface/5 p-1">
+              <TabsTrigger value="announcements" className={tabTrigger}>Anuncios</TabsTrigger>
+              <TabsTrigger value="auth" className={tabTrigger}>Cuentas</TabsTrigger>
+              <TabsTrigger value="users" className={tabTrigger}>Usuarios</TabsTrigger>
+              <TabsTrigger value="companions" className={tabTrigger}>Companions</TabsTrigger>
+              <TabsTrigger value="payments" className={tabTrigger}>Pagos</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="announcements">
+              <AdminAnnouncements />
+            </TabsContent>
+            <TabsContent value="auth">
+              <AdminAuthUsersManagement onDataChange={loadData} />
+            </TabsContent>
+            <TabsContent value="users">
+              <AdminUserManagement users={users} onDataChange={loadData} />
+            </TabsContent>
+            <TabsContent value="companions">
+              <AdminCompanionManagement companions={companions} onDataChange={loadData} />
+            </TabsContent>
+            <TabsContent value="payments" className="space-y-6">
+              <AdminMercadoPagoTransactions transactions={mercadoPagoTransactions} onDataChange={loadData} />
+              <AdminPaymentProofs paymentProofs={paymentProofs} onDataChange={loadData} />
+            </TabsContent>
+          </Tabs>
+        </>
+      )}
+    </PageShell>
   );
 };
+
 
 export default AdminPanel;
