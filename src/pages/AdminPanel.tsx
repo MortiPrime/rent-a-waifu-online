@@ -180,7 +180,7 @@ const AdminPanel = () => {
     'data-[state=active]:bg-surface/15 data-[state=active]:text-surface-foreground text-surface-foreground/70 rounded-md px-3 py-2 text-sm transition-colors';
 
   return (
-    <PageShell maxWidth="max-w-7xl">
+    <PageShell>
       <SectionHeading title="Panel de" highlight="Administración" align="left" />
 
       {loading ? (
