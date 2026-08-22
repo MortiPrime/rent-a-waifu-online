@@ -4,7 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Crown, Users, Settings, DollarSign, Clock, CreditCard } from 'lucide-react';
-import Navbar from '@/components/Navbar';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import PageShell from '@/components/layout/PageShell';
+import SectionHeading from '@/components/layout/SectionHeading';
+
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
 import { AdminAuthUsersManagement } from '@/components/admin/AdminAuthUsersManagement';
 import { AdminCompanionManagement } from '@/components/admin/AdminCompanionManagement';
