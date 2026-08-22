@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Heart, Menu, X, User, LogOut, Crown, Settings, Home, Gift } from 'lucide-react';
+import { Heart, Menu, X, User, LogOut, Crown, Settings, Home, Gift, Star } from 'lucide-react';
 
 const Navbar = () => {
   const { user, signOut, isGirlfriend, isAdmin } = useAuth();
