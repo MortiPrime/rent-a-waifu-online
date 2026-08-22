@@ -119,7 +119,7 @@ const CompanionProfileModal = ({ companion, open, onOpenChange, canSeeContact }:
       )}
 
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[92vh] max-w-5xl overflow-y-auto border-surface-border/20 bg-gradient-app/95 p-0 text-surface-foreground backdrop-blur-xl">
+        <DialogContent className="max-h-[92vh] max-w-5xl overflow-y-auto border-surface-border/20 bg-gradient-app p-0 text-surface-foreground backdrop-blur-xl">
           <div className="grid grid-cols-1 gap-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             {/* Columna galería */}
             <div className="bg-black/30 p-4 md:sticky md:top-0 md:self-start">
