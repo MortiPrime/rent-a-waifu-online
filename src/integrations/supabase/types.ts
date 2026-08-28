@@ -368,6 +368,39 @@ export type Database = {
         }
         Relationships: []
       }
+      donation_settings: {
+        Row: {
+          account_holder: string | null
+          bank_name: string
+          clabe: string
+          created_at: string
+          extra_note: string | null
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          account_holder?: string | null
+          bank_name?: string
+          clabe?: string
+          created_at?: string
+          extra_note?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          account_holder?: string | null
+          bank_name?: string
+          clabe?: string
+          created_at?: string
+          extra_note?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mercadopago_transactions: {
         Row: {
           amount: number
