@@ -135,23 +135,25 @@ const CompanionCard = ({
 
         <div className="mt-auto space-y-3">
           {isAuthenticated ? (
-            <>
-              <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/15 p-2.5">
-                <Phone className="h-4 w-4 text-success" />
-                <span className="text-sm font-medium text-surface-foreground">{companion.contact_number}</span>
-              </div>
-              <Button className="brand-button w-full" onClick={() => onViewProfile(companion)}>
-                Ver Perfil
-              </Button>
-            </>
+            <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/15 p-2.5">
+              <Phone className="h-4 w-4 text-success" />
+              <span className="text-sm font-medium text-surface-foreground">{companion.contact_number}</span>
+            </div>
           ) : (
             <Link to="/auth" className="block">
-              <Button className="brand-button w-full">
+              <Button
+                variant="outline"
+                className="w-full border-surface-border/30 bg-surface/5 text-surface-foreground hover:bg-surface/15"
+              >
                 <LogIn className="mr-2 h-4 w-4" />Iniciar sesión para contactar
               </Button>
             </Link>
           )}
+          <Button className="brand-button w-full" onClick={() => onViewProfile(companion)}>
+            Ver Perfil
+          </Button>
         </div>
+
       </CardContent>
     </Card>
   );
