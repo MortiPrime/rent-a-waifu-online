@@ -161,11 +161,11 @@
 
 @layer components {
   .surface-card {
-    @apply bg-surface/10 backdrop-blur-md border border-surface-border/20;
+    @apply !bg-surface/10 !text-surface-foreground backdrop-blur-md !border !border-surface-border/20;
   }
 
   .surface-card-hover {
-    @apply transition-all duration-300 hover:bg-surface/[0.15] hover:border-surface-border/30 hover:-translate-y-1;
+    @apply transition-all duration-300 hover:!bg-surface/[0.15] hover:!border-surface-border/30 hover:-translate-y-1;
   }
 
   .brand-gradient-text {
@@ -173,10 +173,11 @@
   }
 
   .brand-button {
-    @apply bg-gradient-to-r from-brand to-brand-glow text-brand-foreground hover:opacity-90;
+    @apply !bg-gradient-to-r from-brand to-brand-glow !text-brand-foreground hover:opacity-90;
   }
 
   .field-dark {
-    @apply bg-surface/10 border-surface-border/30 text-surface-foreground placeholder:text-surface-foreground/50;
+    @apply !bg-surface/10 !border-surface-border/30 !text-surface-foreground placeholder:!text-surface-foreground/50;
   }
 }
+
