@@ -171,7 +171,7 @@ const Catalog = () => {
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button variant="outline" className="border-surface-border/30 text-surface-foreground hover:bg-surface/10">
+                <Button variant="outline" className="border-surface-border/30 bg-surface/5 text-surface-foreground hover:bg-surface/15">
                   Crear Cuenta
                 </Button>
               </Link>
@@ -191,7 +191,7 @@ const Catalog = () => {
           <Button
             onClick={clearFilters}
             variant="outline"
-            className="border-surface-border/30 text-surface-foreground hover:bg-surface/10"
+            className="border-surface-border/30 bg-surface/5 text-surface-foreground hover:bg-surface/15"
           >
             Limpiar filtros
           </Button>

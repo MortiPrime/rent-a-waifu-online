@@ -259,7 +259,7 @@ const CompanionProfileModal = ({ companion, open, onOpenChange, canSeeContact }:
                     <Button
                       variant="outline"
                       onClick={() => toggleFavorite(companion.id)}
-                      className={`flex-1 border-surface-border/30 hover:bg-surface/10 ${
+                      className={`flex-1 border-surface-border/30 bg-surface/5 hover:bg-surface/15 ${
                         favorite ? 'border-brand/50 bg-brand/10 text-brand' : 'text-surface-foreground'
                       }`}
                     >

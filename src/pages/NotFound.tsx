@@ -2,6 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";
+import PageShell from "@/components/layout/PageShell";
 
 const NotFound = () => {
   const location = useLocation();
@@ -11,25 +12,29 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
-      <div className="text-center px-4">
-        <h1 className="text-8xl font-bold text-white/20 font-playfair mb-2">404</h1>
-        <h2 className="text-2xl font-bold text-white mb-4">Página no encontrada</h2>
-        <p className="text-white/60 mb-8 max-w-md mx-auto">
+    <PageShell className="flex items-center justify-center">
+      <div className="px-4 text-center">
+        <h1 className="mb-2 font-playfair text-8xl font-bold text-surface-foreground/20">404</h1>
+        <h2 className="mb-4 text-2xl font-bold text-surface-foreground">Página no encontrada</h2>
+        <p className="mx-auto mb-8 max-w-md text-surface-foreground/60">
           La página que buscas no existe o ha sido movida.
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <Link to="/">
-            <Button className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
-              <Home className="w-4 h-4 mr-2" />Ir al Catálogo
+            <Button className="brand-button">
+              <Home className="mr-2 h-4 w-4" />Ir al Catálogo
             </Button>
           </Link>
-          <Button variant="outline" className="border-white/30 text-white hover:bg-white/10" onClick={() => window.history.back()}>
-            <ArrowLeft className="w-4 h-4 mr-2" />Volver
+          <Button
+            variant="outline"
+            className="border-surface-border/30 text-surface-foreground hover:bg-surface/10"
+            onClick={() => window.history.back()}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />Volver
           </Button>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 };
 
