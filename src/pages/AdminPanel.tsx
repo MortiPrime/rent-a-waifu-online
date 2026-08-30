@@ -209,6 +209,7 @@ const AdminPanel = () => {
               <TabsTrigger value="users" className={tabTrigger}>Usuarios</TabsTrigger>
               <TabsTrigger value="companions" className={tabTrigger}>Companions</TabsTrigger>
               <TabsTrigger value="payments" className={tabTrigger}>Pagos</TabsTrigger>
+              <TabsTrigger value="donations" className={tabTrigger}>Donaciones</TabsTrigger>
             </TabsList>
 
             <TabsContent value="announcements">
