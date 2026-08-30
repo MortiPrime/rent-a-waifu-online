@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Navbar from '@/components/Navbar';
+import PageShell from '@/components/layout/PageShell';
+import SectionHeading from '@/components/layout/SectionHeading';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 
 interface DonationInfo {
@@ -39,83 +40,68 @@ const Donations = () => {
   };
 
   const donationOptions = [
-    { amount: 50, icon: Coffee, label: 'Un café', color: 'from-amber-400 to-amber-600' },
-    { amount: 100, icon: Heart, label: 'Apoyo básico', color: 'from-pink-400 to-pink-600' },
-    { amount: 250, icon: Star, label: 'Apoyo premium', color: 'from-purple-400 to-purple-600' },
-    { amount: 500, icon: Gift, label: 'Super apoyo', color: 'from-yellow-400 to-orange-500' },
+    { amount: 50, icon: Coffee, label: 'Un café' },
+    { amount: 100, icon: Heart, label: 'Apoyo básico' },
+    { amount: 250, icon: Star, label: 'Apoyo premium' },
+    { amount: 500, icon: Gift, label: 'Super apoyo' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900">
-      <Navbar />
-      <div className="pt-24 pb-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Apoya la
-              <span className="block bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-                Plataforma
-              </span>
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Esta plataforma es completamente gratuita. Si te gusta lo que hacemos, 
-              considera apoyarnos con una donación voluntaria para seguir mejorando.
-            </p>
-          </div>
+    <PageShell width="narrow">
+      <SectionHeading
+        title="Apoya la"
+        highlight="Plataforma"
+        subtitle="Esta plataforma es completamente gratuita. Si te gusta lo que hacemos, considera apoyarnos con una donación voluntaria para seguir mejorando."
+      />
 
-          <AnnouncementBanner location="donations" />
+      <AnnouncementBanner location="donations" />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
-            {donationOptions.map((option) => {
-              const Icon = option.icon;
-              return (
-                <Card key={option.amount} className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/15 transition-all">
-                  <CardHeader className="text-center pb-2">
-                    <div className={`w-14 h-14 bg-gradient-to-r ${option.color} rounded-full flex items-center justify-center mx-auto mb-3`}>
-                      <Icon className="w-7 h-7 text-white" />
-                    </div>
-                    <CardTitle className="text-white text-lg">{option.label}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center">
-                    <p className="text-3xl font-bold text-white mb-4">${option.amount} MXN</p>
-                    <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
-                      Donar ${option.amount}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Transfer info */}
-          {donationInfo && (
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
-              <CardHeader>
-                <CardTitle className="text-white text-center">Donación por Transferencia</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-3">
-                <p className="text-white/80">
-                  También puedes apoyarnos directamente por transferencia bancaria:
-                </p>
-                <div className="bg-white/5 rounded-lg p-4 inline-block">
-                  <p className="text-white font-mono text-lg">{donationInfo.bank_name}</p>
-                  <p className="text-white/80 text-sm">CLABE: {donationInfo.clabe}</p>
-                  {donationInfo.account_holder && (
-                    <p className="text-white/60 text-sm">Titular: {donationInfo.account_holder}</p>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={copyClabe} className="mt-2 text-white hover:bg-white/10">
-                    <Copy className="w-4 h-4 mr-2" /> Copiar CLABE
-                  </Button>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-10">
+        {donationOptions.map((option) => {
+          const Icon = option.icon;
+          return (
+            <Card key={option.amount} className="surface-card surface-card-hover rounded-2xl">
+              <CardHeader className="text-center pb-2">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-r from-brand to-brand-glow flex items-center justify-center mx-auto mb-3">
+                  <Icon className="w-7 h-7 text-brand-foreground" />
                 </div>
-                <p className="text-white/60 text-sm">
-                  {donationInfo.extra_note || '¡Cada aportación nos ayuda a mantener la plataforma gratuita para todos!'}
-                </p>
+                <CardTitle className="text-surface-foreground text-lg">{option.label}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-3xl font-bold text-surface-foreground mb-4">${option.amount} MXN</p>
+                <Button className="w-full brand-button">Donar ${option.amount}</Button>
               </CardContent>
             </Card>
-          )}
-        </div>
+          );
+        })}
       </div>
-    </div>
+
+      {donationInfo && (
+        <Card className="surface-card rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-surface-foreground text-center">Donación por transferencia</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-surface-foreground/70">
+              También puedes apoyarnos directamente por transferencia bancaria:
+            </p>
+            <div className="surface-card rounded-xl p-5 inline-block text-left">
+              <p className="text-surface-foreground font-semibold text-lg">{donationInfo.bank_name}</p>
+              <p className="text-surface-foreground/80 text-sm font-mono mt-1">CLABE: {donationInfo.clabe}</p>
+              {donationInfo.account_holder && (
+                <p className="text-surface-foreground/60 text-sm mt-1">Titular: {donationInfo.account_holder}</p>
+              )}
+              <Button variant="ghost" size="sm" onClick={copyClabe} className="mt-3 text-surface-foreground hover:!bg-surface/20">
+                <Copy className="w-4 h-4 mr-2" /> Copiar CLABE
+              </Button>
+            </div>
+            <p className="text-surface-foreground/60 text-sm">
+              {donationInfo.extra_note || '¡Cada aportación nos ayuda a mantener la plataforma gratuita para todos!'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </PageShell>
   );
 };
 
