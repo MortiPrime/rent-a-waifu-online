@@ -14,6 +14,7 @@ import { AdminCompanionManagement } from '@/components/admin/AdminCompanionManag
 import { AdminPaymentProofs } from '@/components/admin/AdminPaymentProofs';
 import { AdminMercadoPagoTransactions } from '@/components/admin/AdminMercadoPagoTransactions';
 import { AdminAnnouncements } from '@/components/admin/AdminAnnouncements';
+import { AdminDonationSettings } from '@/components/admin/AdminDonationSettings';
 
 interface User {
   id: string;
