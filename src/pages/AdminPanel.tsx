@@ -228,6 +228,9 @@ const AdminPanel = () => {
               <AdminMercadoPagoTransactions transactions={mercadoPagoTransactions} onDataChange={loadData} />
               <AdminPaymentProofs paymentProofs={paymentProofs} onDataChange={loadData} />
             </TabsContent>
+            <TabsContent value="donations">
+              <AdminDonationSettings />
+            </TabsContent>
           </Tabs>
         </>
       )}
