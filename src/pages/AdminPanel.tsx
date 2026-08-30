@@ -14,6 +14,7 @@ import { AdminCompanionManagement } from '@/components/admin/AdminCompanionManag
 import { AdminPaymentProofs } from '@/components/admin/AdminPaymentProofs';
 import { AdminMercadoPagoTransactions } from '@/components/admin/AdminMercadoPagoTransactions';
 import { AdminAnnouncements } from '@/components/admin/AdminAnnouncements';
+import { AdminDonationSettings } from '@/components/admin/AdminDonationSettings';
 
 interface User {
   id: string;
@@ -209,6 +210,7 @@ const AdminPanel = () => {
               <TabsTrigger value="users" className={tabTrigger}>Usuarios</TabsTrigger>
               <TabsTrigger value="companions" className={tabTrigger}>Companions</TabsTrigger>
               <TabsTrigger value="payments" className={tabTrigger}>Pagos</TabsTrigger>
+              <TabsTrigger value="donations" className={tabTrigger}>Donaciones</TabsTrigger>
             </TabsList>
 
             <TabsContent value="announcements">
@@ -226,6 +228,9 @@ const AdminPanel = () => {
             <TabsContent value="payments" className="space-y-6">
               <AdminMercadoPagoTransactions transactions={mercadoPagoTransactions} onDataChange={loadData} />
               <AdminPaymentProofs paymentProofs={paymentProofs} onDataChange={loadData} />
+            </TabsContent>
+            <TabsContent value="donations">
+              <AdminDonationSettings />
             </TabsContent>
           </Tabs>
         </>

@@ -1,11 +1,43 @@
-
-import { Heart, Coffee, Star, Gift } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Heart, Coffee, Star, Gift, Copy } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Navbar from '@/components/Navbar';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 
+interface DonationInfo {
+  bank_name: string;
+  clabe: string;
+  account_holder: string | null;
+  extra_note: string | null;
+}
+
 const Donations = () => {
+  const { toast } = useToast();
+  const [donationInfo, setDonationInfo] = useState<DonationInfo | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from('donation_settings')
+        .select('bank_name, clabe, account_holder, extra_note')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (data) setDonationInfo(data);
+    };
+    load();
+  }, []);
+
+  const copyClabe = async () => {
+    if (!donationInfo?.clabe) return;
+    await navigator.clipboard.writeText(donationInfo.clabe);
+    toast({ title: 'CLABE copiada', description: 'Ya puedes pegarla en tu app bancaria.' });
+  };
+
   const donationOptions = [
     { amount: 50, icon: Coffee, label: 'Un café', color: 'from-amber-400 to-amber-600' },
     { amount: 100, icon: Heart, label: 'Apoyo básico', color: 'from-pink-400 to-pink-600' },
@@ -56,23 +88,31 @@ const Donations = () => {
           </div>
 
           {/* Transfer info */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20">
-            <CardHeader>
-              <CardTitle className="text-white text-center">Donación por Transferencia</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center space-y-3">
-              <p className="text-white/80">
-                También puedes apoyarnos directamente por transferencia bancaria:
-              </p>
-              <div className="bg-white/5 rounded-lg p-4 inline-block">
-                <p className="text-white font-mono text-lg">Nu Bank</p>
-                <p className="text-white/80 text-sm">CLABE: 638180000192603131</p>
-              </div>
-              <p className="text-white/60 text-sm">
-                ¡Cada aportación nos ayuda a mantener la plataforma gratuita para todos!
-              </p>
-            </CardContent>
-          </Card>
+          {donationInfo && (
+            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+              <CardHeader>
+                <CardTitle className="text-white text-center">Donación por Transferencia</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center space-y-3">
+                <p className="text-white/80">
+                  También puedes apoyarnos directamente por transferencia bancaria:
+                </p>
+                <div className="bg-white/5 rounded-lg p-4 inline-block">
+                  <p className="text-white font-mono text-lg">{donationInfo.bank_name}</p>
+                  <p className="text-white/80 text-sm">CLABE: {donationInfo.clabe}</p>
+                  {donationInfo.account_holder && (
+                    <p className="text-white/60 text-sm">Titular: {donationInfo.account_holder}</p>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={copyClabe} className="mt-2 text-white hover:bg-white/10">
+                    <Copy className="w-4 h-4 mr-2" /> Copiar CLABE
+                  </Button>
+                </div>
+                <p className="text-white/60 text-sm">
+                  {donationInfo.extra_note || '¡Cada aportación nos ayuda a mantener la plataforma gratuita para todos!'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
