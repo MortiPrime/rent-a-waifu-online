@@ -82,8 +82,8 @@ const Index = () => {
             Acceso gratuito por tiempo limitado
           </Badge>
           <h1 className="text-5xl md:text-7xl font-playfair font-bold text-surface-foreground mb-6">
-            Rent a Waifu
-            <span className="block brand-gradient-text">Online</span>
+            Encuentra tu
+            <span className="block brand-gradient-text">Companion Perfecta</span>
           </h1>
           <p className="text-xl text-surface-foreground/70 mb-8 max-w-3xl mx-auto">
             La plataforma más exclusiva para conectar con companions verificadas. Conversaciones reales, citas y
