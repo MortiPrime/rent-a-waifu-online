@@ -79,7 +79,7 @@ const Navbar = () => {
                 {!isGirlfriend && (
                   <Link to="/subscription" className={linkClass('/subscription')}>Planes</Link>
                 )}
-                <Link to="/donations" className={linkClass('/donations', 'gold')}>💛 Donar</Link>
+                <Link to="/donations" className={linkClass('/donations', 'gold')}><Gift className="h-4 w-4 inline mr-1" />Donar</Link>
                 {isAdmin && (
                   <Link to="/admin" className={cn(linkClass('/admin'), 'flex items-center gap-1')}>
                     <Settings className="h-4 w-4" />Admin
@@ -97,7 +97,7 @@ const Navbar = () => {
             ) : (
               <>
                 <Link to="/become-companion" className={linkClass('/become-companion')}>Ser Companion</Link>
-                <Link to="/donations" className={linkClass('/donations', 'gold')}>💛 Donar</Link>
+                <Link to="/donations" className={linkClass('/donations', 'gold')}><Gift className="h-4 w-4 inline mr-1" />Donar</Link>
                 <Link to="/auth">
                   <Button className="brand-button">Iniciar Sesión</Button>
                 </Link>
@@ -141,7 +141,7 @@ const Navbar = () => {
                     </Link>
                   )}
                   <Link to="/donations" className={mobileLinkClass('/donations')}>
-                    <Gift className="h-4 w-4" />💛 Donar
+                    <Gift className="h-4 w-4" />Donar
                   </Link>
                   {isAdmin && (
                     <Link to="/admin" className={mobileLinkClass('/admin')}>
@@ -163,7 +163,7 @@ const Navbar = () => {
                     <Star className="h-4 w-4" />Ser Companion
                   </Link>
                   <Link to="/donations" className={mobileLinkClass('/donations')}>
-                    <Gift className="h-4 w-4" />💛 Donar
+                    <Gift className="h-4 w-4" />Donar
                   </Link>
                   <Link to="/auth" className="px-3 pt-2">
                     <Button className="brand-button w-full">Iniciar Sesión</Button>
