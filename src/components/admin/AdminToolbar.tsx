@@ -39,13 +39,13 @@ const AdminToolbar = ({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={searchPlaceholder}
-          className="surface-input pl-9"
+          className="field-dark pl-9"
         />
       </div>
 
       {filters.map((filter) => (
         <Select key={filter.placeholder} value={filter.value} onValueChange={filter.onChange}>
-          <SelectTrigger className={`surface-input ${filter.width ?? 'w-full sm:w-44'}`}>
+          <SelectTrigger className={`field-dark ${filter.width ?? 'w-full sm:w-44'}`}>
             <SelectValue placeholder={filter.placeholder} />
           </SelectTrigger>
           <SelectContent className="z-50 bg-popover">
