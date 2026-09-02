@@ -1,252 +1,191 @@
-
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Check, X, Clock, Download } from 'lucide-react';
+import { Check, ExternalLink, FileText, X } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
+import AdminToolbar from './AdminToolbar';
+import { PlanBadge, StatusBadge } from './AdminBadges';
+import type { AdminPaymentProof } from '@/hooks/useAdminData';
 
-interface PaymentProof {
-  id: string;
-  user_id: string;
-  subscription_type: string;
-  payment_method: string;
-  payment_month: string;
-  message: string;
-  status: string;
-  created_at: string;
-  file_url?: string;
-  file_name?: string;
-  profiles?: {
-    full_name: string;
-    username: string;
-  };
-}
-
-interface AdminPaymentProofsProps {
-  paymentProofs: PaymentProof[];
+interface Props {
+  paymentProofs: AdminPaymentProof[];
   onDataChange: () => void;
+  nameFor: (userId: string) => string;
 }
 
-export const AdminPaymentProofs = ({ paymentProofs, onDataChange }: AdminPaymentProofsProps) => {
+export const AdminPaymentProofs = ({ paymentProofs, onDataChange, nameFor }: Props) => {
   const { toast } = useToast();
   const [updating, setUpdating] = useState<string | null>(null);
-  const [adminNotes, setAdminNotes] = useState<{ [key: string]: string }>({});
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('pending');
 
-  const updateProofStatus = async (proofId: string, status: 'approved' | 'rejected') => {
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return paymentProofs.filter((proof) => {
+      const matchesTerm =
+        !term ||
+        nameFor(proof.user_id).toLowerCase().includes(term) ||
+        (proof.payment_month || '').toLowerCase().includes(term);
+      const pStatus = proof.status || 'pending';
+      return matchesTerm && (status === 'all' || pStatus === status);
+    });
+  }, [paymentProofs, search, status, nameFor]);
+
+  const updateStatus = async (proofId: string, newStatus: 'approved' | 'rejected') => {
     try {
       setUpdating(proofId);
-      
       const { error } = await supabase
         .from('payment_proofs')
-        .update({ 
-          status, 
-          admin_notes: adminNotes[proofId] || null,
-          updated_at: new Date().toISOString()
+        .update({
+          status: newStatus,
+          admin_notes: notes[proofId] || null,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', proofId);
-
       if (error) throw error;
-
       toast({
-        title: status === 'approved' ? "Comprobante aprobado" : "Comprobante rechazado",
-        description: `El comprobante ha sido ${status === 'approved' ? 'aprobado' : 'rechazado'} correctamente`,
+        title: newStatus === 'approved' ? 'Comprobante aprobado' : 'Comprobante rechazado',
+        description: 'El estado se actualizó correctamente.',
       });
-
-      setAdminNotes(prev => ({ ...prev, [proofId]: '' }));
+      setNotes((prev) => ({ ...prev, [proofId]: '' }));
       onDataChange();
-
     } catch (error: any) {
-      console.error('Error updating proof status:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar el estado del comprobante",
-        variant: "destructive",
-      });
+      toast({ title: 'Error', description: error?.message || 'No se pudo actualizar', variant: 'destructive' });
     } finally {
       setUpdating(null);
     }
   };
 
-  const downloadFile = async (fileUrl: string, fileName: string) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from('payment-proofs')
-        .download(fileUrl);
-
-      if (error) throw error;
-
-      const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "Descarga iniciada",
-        description: `Descargando ${fileName}`,
-      });
-    } catch (error: any) {
-      console.error('Error downloading file:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo descargar el archivo",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30"><Clock className="w-3 h-3 mr-1" />Pendiente</Badge>;
-      case 'approved':
-        return <Badge className="bg-green-500/20 text-green-300 border-green-500/30"><Check className="w-3 h-3 mr-1" />Aprobado</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-500/20 text-red-300 border-red-500/30"><X className="w-3 h-3 mr-1" />Rechazado</Badge>;
-      default:
-        return <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30">{status}</Badge>;
-    }
-  };
-
-  const getSubscriptionBadge = (type: string) => {
-    switch (type) {
-      case 'basic':
-        return <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30">Básico</Badge>;
-      case 'premium':
-        return <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">Premium</Badge>;
-      case 'vip':
-        return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">VIP</Badge>;
-      default:
-        return <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30">{type}</Badge>;
-    }
-  };
-
   return (
-    <Card className="bg-white/10 backdrop-blur-md border-white/20">
+    <Card className="surface-card">
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          Comprobantes de Pago
+        <CardTitle className="flex items-center gap-2 text-surface-foreground">
+          <FileText className="h-5 w-5 text-gold" />
+          Comprobantes manuales
         </CardTitle>
+        <CardDescription className="text-surface-foreground/60">
+          Transferencias y depósitos enviados por los usuarios para validación manual.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {paymentProofs.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-white/70">No hay comprobantes de pago</p>
-            </div>
-          ) : (
-            paymentProofs.map((proof) => (
-              <Card key={proof.id} className="bg-white/5 border-white/10">
-                <CardContent className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-white/70 text-sm">Usuario</p>
-                      <p className="text-white font-medium">
-                        {proof.profiles?.full_name || 'Sin nombre'}
+        <AdminToolbar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Buscar por usuario o mes"
+          count={filtered.length}
+          total={paymentProofs.length}
+          filters={[
+            {
+              value: status,
+              onChange: setStatus,
+              placeholder: 'Estado',
+              options: [
+                { value: 'pending', label: 'Pendientes' },
+                { value: 'approved', label: 'Aprobados' },
+                { value: 'rejected', label: 'Rechazados' },
+                { value: 'all', label: 'Todos' },
+              ],
+            },
+          ]}
+        />
+
+        {filtered.length === 0 ? (
+          <EmptyState
+            icon={FileText}
+            title="Sin comprobantes"
+            description="No hay comprobantes que coincidan con este filtro."
+          />
+        ) : (
+          <div className="space-y-4">
+            {filtered.map((proof) => (
+              <div key={proof.id} className="rounded-xl border border-surface-border/15 bg-surface/5 p-4">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-surface-foreground/50">Usuario</p>
+                    <p className="font-medium text-surface-foreground">{nameFor(proof.user_id)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-surface-foreground/50">Plan y método</p>
+                    <div className="mt-1 space-y-1">
+                      <PlanBadge plan={proof.subscription_type} />
+                      <p className="text-sm capitalize text-surface-foreground/75">
+                        {(proof.payment_method || '').replace('_', ' ')}
                       </p>
-                      <p className="text-white/60 text-xs">
-                        {proof.profiles?.username}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-white/70 text-sm">Plan y Método</p>
-                      <div className="space-y-1">
-                        {getSubscriptionBadge(proof.subscription_type)}
-                        <p className="text-white/80 text-sm capitalize">
-                          {proof.payment_method.replace('_', ' ')}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <p className="text-white/70 text-sm">Mes de Pago</p>
-                      <p className="text-white">{proof.payment_month}</p>
-                      <p className="text-white/60 text-xs">
-                        {new Date(proof.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-white/70 text-sm">Estado</p>
-                      {getStatusBadge(proof.status)}
                     </div>
                   </div>
-                  
-                  {proof.message && (
-                    <div className="mt-4">
-                      <p className="text-white/70 text-sm">Mensaje del usuario:</p>
-                      <p className="text-white/90 text-sm bg-white/5 p-2 rounded mt-1">
-                        {proof.message}
-                      </p>
-                    </div>
-                  )}
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-surface-foreground/50">Mes de pago</p>
+                    <p className="text-surface-foreground">{proof.payment_month}</p>
+                    <p className="text-xs text-surface-foreground/55">
+                      {new Date(proof.created_at).toLocaleDateString('es-MX')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-surface-foreground/50">Estado</p>
+                    <div className="mt-1"><StatusBadge status={proof.status} /></div>
+                  </div>
+                </div>
 
-                  {proof.file_url && proof.file_name && (
-                    <div className="mt-4">
-                      <p className="text-white/70 text-sm mb-2">Comprobante:</p>
+                {proof.message && (
+                  <p className="mt-3 rounded-lg bg-surface/5 p-3 text-sm text-surface-foreground/85">{proof.message}</p>
+                )}
+
+                {proof.proof_image_url && (
+                  <a
+                    href={proof.proof_image_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex items-center gap-1 text-sm text-brand hover:underline"
+                  >
+                    <ExternalLink className="h-4 w-4" />Ver comprobante
+                  </a>
+                )}
+
+                {proof.admin_notes && (
+                  <p className="mt-3 text-sm text-surface-foreground/60">Nota: {proof.admin_notes}</p>
+                )}
+
+                {(proof.status || 'pending') === 'pending' && (
+                  <div className="mt-4 space-y-3">
+                    <Textarea
+                      value={notes[proof.id] || ''}
+                      onChange={(e) => setNotes((prev) => ({ ...prev, [proof.id]: e.target.value }))}
+                      placeholder="Nota interna (opcional)"
+                      className="field-dark"
+                      disabled={updating === proof.id}
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        disabled={updating === proof.id}
+                        onClick={() => updateStatus(proof.id, 'approved')}
+                        className="border border-success/30 bg-success/20 text-success hover:bg-success/30"
+                      >
+                        <Check className="mr-1 h-4 w-4" />Aprobar
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => downloadFile(proof.file_url!, proof.file_name!)}
-                        className="border-white/30 text-white hover:bg-white/10"
+                        disabled={updating === proof.id}
+                        onClick={() => updateStatus(proof.id, 'rejected')}
+                        className="border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20"
                       >
-                        <Download className="w-3 h-3 mr-1" />
-                        Descargar {proof.file_name}
+                        <X className="mr-1 h-4 w-4" />Rechazar
                       </Button>
                     </div>
-                  )}
-                  
-                  {proof.status === 'pending' && (
-                    <div className="mt-4 space-y-3">
-                      <div>
-                        <label className="text-white/70 text-sm">Notas del administrador (opcional):</label>
-                        <Textarea
-                          value={adminNotes[proof.id] || ''}
-                          onChange={(e) => setAdminNotes(prev => ({ ...prev, [proof.id]: e.target.value }))}
-                          placeholder="Agregar notas sobre este comprobante..."
-                          className="bg-white/10 border-white/30 text-white mt-1"
-                          disabled={updating === proof.id}
-                        />
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => updateProofStatus(proof.id, 'approved')}
-                          disabled={updating === proof.id}
-                          className="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30"
-                        >
-                          <Check className="w-4 h-4 mr-1" />
-                          Aprobar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateProofStatus(proof.id, 'rejected')}
-                          disabled={updating === proof.id}
-                          className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30"
-                        >
-                          <X className="w-4 h-4 mr-1" />
-                          Rechazar
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 };
+
+export default AdminPaymentProofs;
