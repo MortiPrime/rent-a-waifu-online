@@ -1,141 +1,180 @@
-
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Crown } from 'lucide-react';
+import { Check, Crown, X } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
+import AdminToolbar from './AdminToolbar';
+import { PlanBadge, StatusBadge } from './AdminBadges';
+import type { AdminCompanion } from '@/hooks/useAdminData';
 
-interface CompanionProfile {
-  id: string;
-  user_id: string;
-  stage_name: string;
-  real_name: string;
-  promotion_plan: string;
-  status: string;
-  created_at: string;
-}
-
-interface AdminCompanionManagementProps {
-  companions: CompanionProfile[];
+interface Props {
+  companions: AdminCompanion[];
   onDataChange: () => void;
 }
 
-export const AdminCompanionManagement = ({ companions, onDataChange }: AdminCompanionManagementProps) => {
+export const AdminCompanionManagement = ({ companions, onDataChange }: Props) => {
   const { toast } = useToast();
   const [updating, setUpdating] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('all');
+  const [plan, setPlan] = useState('all');
 
-  const updateCompanionPlan = async (companionId: string, promotionPlan: string) => {
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return companions.filter((c) => {
+      const matchesTerm =
+        !term ||
+        c.stage_name.toLowerCase().includes(term) ||
+        (c.real_name || '').toLowerCase().includes(term) ||
+        (c.city || '').toLowerCase().includes(term);
+      const cStatus = c.status || 'pending';
+      const cPlan = c.promotion_plan || 'basic';
+      return matchesTerm && (status === 'all' || cStatus === status) && (plan === 'all' || cPlan === plan);
+    });
+  }, [companions, search, status, plan]);
+
+  const patch = async (id: string, values: Record<string, unknown>, message: string) => {
     try {
-      setUpdating(companionId);
-
-      const { error } = await supabase
-        .from('companion_profiles')
-        .update({ promotion_plan: promotionPlan })
-        .eq('id', companionId);
-
+      setUpdating(id);
+      const { error } = await supabase.from('companion_profiles').update(values).eq('id', id);
       if (error) throw error;
-
-      toast({
-        title: "Plan actualizado",
-        description: "El plan se actualizó correctamente",
-      });
-
+      toast({ title: 'Listo', description: message });
       onDataChange();
     } catch (error: any) {
-      console.error('Error updating plan:', error);
-      toast({
-        title: "Error",
-        description: error.message || "No se pudo actualizar el plan",
-        variant: "destructive",
-      });
+      toast({ title: 'Error', description: error?.message || 'No se pudo actualizar', variant: 'destructive' });
     } finally {
       setUpdating(null);
     }
   };
 
-  const getPlanBadge = (plan: string) => {
-    switch (plan) {
-      case 'basic':
-        return <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">Básico</Badge>;
-      case 'premium':
-        return <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">Premium</Badge>;
-      case 'vip':
-        return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30"><Crown className="w-3 h-3 mr-1" />VIP</Badge>;
-      default:
-        return <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30">{plan}</Badge>;
-    }
-  };
-
   return (
-    <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">
+    <Card className="surface-card">
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <Crown className="w-5 h-5" />
-          Gestión de Companions
+        <CardTitle className="flex items-center gap-2 text-surface-foreground">
+          <Crown className="h-5 w-5 text-brand" />
+          Companions
         </CardTitle>
+        <CardDescription className="text-surface-foreground/60">
+          Aprueba perfiles y define el plan de promoción con el que aparecen en el catálogo.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-white">
-            <thead>
-              <tr className="border-b border-white/20">
-                <th className="text-left p-3">Companion</th>
-                <th className="text-left p-3">Nombre Real</th>
-                <th className="text-left p-3">Plan</th>
-                <th className="text-left p-3">Estado</th>
-                <th className="text-left p-3">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {companions.map((companion) => (
-                <tr key={companion.id} className="border-b border-white/10">
-                  <td className="p-3">
-                    <div>
-                      <p className="font-medium">{companion.stage_name}</p>
-                      <p className="text-sm text-white/70">{companion.user_id}</p>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <p className="text-sm">{companion.real_name}</p>
-                  </td>
-                  <td className="p-3">
-                    {getPlanBadge(companion.promotion_plan)}
-                  </td>
-                  <td className="p-3">
-                    <Badge className={`${
-                      companion.status === 'approved' 
-                        ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                        : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-                    }`}>
-                      {companion.status}
-                    </Badge>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex gap-2">
-                      <Select
-                        value={companion.promotion_plan}
-                        onValueChange={(value) => updateCompanionPlan(companion.id, value)}
-                        disabled={updating === companion.id}
-                      >
-                        <SelectTrigger className="w-32 bg-white/10 border-white/30 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-gray-900 border-gray-700">
-                          <SelectItem value="basic" className="text-white">Básico</SelectItem>
-                          <SelectItem value="premium" className="text-white">Premium</SelectItem>
-                          <SelectItem value="vip" className="text-white">VIP</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AdminToolbar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Buscar por nombre o ciudad"
+          count={filtered.length}
+          total={companions.length}
+          filters={[
+            {
+              value: status,
+              onChange: setStatus,
+              placeholder: 'Estado',
+              options: [
+                { value: 'all', label: 'Todos los estados' },
+                { value: 'pending', label: 'Pendientes' },
+                { value: 'approved', label: 'Aprobadas' },
+                { value: 'rejected', label: 'Rechazadas' },
+              ],
+            },
+            {
+              value: plan,
+              onChange: setPlan,
+              placeholder: 'Plan',
+              options: [
+                { value: 'all', label: 'Todos los planes' },
+                { value: 'basic', label: 'Básico' },
+                { value: 'premium', label: 'Premium' },
+                { value: 'vip', label: 'VIP' },
+              ],
+            },
+          ]}
+        />
+
+        {filtered.length === 0 ? (
+          <EmptyState icon={Crown} title="Sin companions" description="No hay perfiles que coincidan con los filtros." />
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-surface-border/20 hover:bg-transparent">
+                  <TableHead className="text-surface-foreground/70">Companion</TableHead>
+                  <TableHead className="text-surface-foreground/70">Ubicación</TableHead>
+                  <TableHead className="text-surface-foreground/70">Estado</TableHead>
+                  <TableHead className="text-surface-foreground/70">Plan</TableHead>
+                  <TableHead className="text-right text-surface-foreground/70">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((companion) => {
+                  const cStatus = companion.status || 'pending';
+                  return (
+                    <TableRow key={companion.id} className="border-surface-border/10">
+                      <TableCell>
+                        <p className="font-medium text-surface-foreground">{companion.stage_name}</p>
+                        <p className="text-xs text-surface-foreground/60">{companion.real_name}</p>
+                      </TableCell>
+                      <TableCell className="text-sm text-surface-foreground/70">
+                        {[companion.city, companion.state].filter(Boolean).join(', ') || '—'}
+                      </TableCell>
+                      <TableCell><StatusBadge status={cStatus} /></TableCell>
+                      <TableCell><PlanBadge plan={companion.promotion_plan} /></TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap items-center justify-end gap-2">
+                          <Select
+                            value={companion.promotion_plan || 'basic'}
+                            onValueChange={(value) =>
+                              patch(companion.id, { promotion_plan: value }, 'Plan actualizado')
+                            }
+                            disabled={updating === companion.id}
+                          >
+                            <SelectTrigger className="field-dark w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="z-50 bg-popover">
+                              <SelectItem value="basic">Básico</SelectItem>
+                              <SelectItem value="premium">Premium</SelectItem>
+                              <SelectItem value="vip">VIP</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          {cStatus !== 'approved' && (
+                            <Button
+                              size="sm"
+                              disabled={updating === companion.id}
+                              onClick={() => patch(companion.id, { status: 'approved' }, 'Companion aprobada')}
+                              className="bg-success/20 text-success hover:bg-success/30 border border-success/30"
+                            >
+                              <Check className="mr-1 h-4 w-4" />Aprobar
+                            </Button>
+                          )}
+                          {cStatus !== 'rejected' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={updating === companion.id}
+                              onClick={() => patch(companion.id, { status: 'rejected' }, 'Companion rechazada')}
+                              className="border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20"
+                            >
+                              <X className="mr-1 h-4 w-4" />Rechazar
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 };
+
+export default AdminCompanionManagement;

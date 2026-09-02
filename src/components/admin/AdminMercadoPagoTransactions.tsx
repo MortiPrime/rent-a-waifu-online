@@ -1,155 +1,117 @@
+import { useMemo, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { CreditCard } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
+import AdminToolbar from './AdminToolbar';
+import { PlanBadge, StatusBadge } from './AdminBadges';
+import type { AdminTransaction } from '@/hooks/useAdminData';
 
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Check, X, Clock, DollarSign } from 'lucide-react';
-
-interface MercadoPagoTransaction {
-  id: string;
-  user_id: string;
-  preference_id: string;
-  payment_id?: string;
-  external_reference?: string;
-  status: string;
-  amount: number;
-  currency: string;
-  subscription_type: string;
-  subscription_months: number;
-  created_at: string;
-  updated_at: string;
-  profiles?: {
-    full_name: string;
-    username: string;
-  };
+interface Props {
+  transactions: AdminTransaction[];
+  nameFor: (userId: string) => string;
 }
 
-interface AdminMercadoPagoTransactionsProps {
-  transactions: MercadoPagoTransaction[];
-  onDataChange: () => void;
-}
+const formatAmount = (amount: number, currency?: string | null) =>
+  new Intl.NumberFormat('es-MX', { style: 'currency', currency: currency || 'MXN' }).format(amount);
 
-export const AdminMercadoPagoTransactions = ({ transactions, onDataChange }: AdminMercadoPagoTransactionsProps) => {
-  const { toast } = useToast();
+export const AdminMercadoPagoTransactions = ({ transactions, nameFor }: Props) => {
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('all');
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30"><Clock className="w-3 h-3 mr-1" />Pendiente</Badge>;
-      case 'approved':
-        return <Badge className="bg-green-500/20 text-green-300 border-green-500/30"><Check className="w-3 h-3 mr-1" />Aprobado</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-500/20 text-red-300 border-red-500/30"><X className="w-3 h-3 mr-1" />Rechazado</Badge>;
-      case 'cancelled':
-        return <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30"><X className="w-3 h-3 mr-1" />Cancelado</Badge>;
-      default:
-        return <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30">{status}</Badge>;
-    }
-  };
-
-  const getSubscriptionBadge = (type: string) => {
-    switch (type) {
-      case 'basic':
-        return <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30">Básico</Badge>;
-      case 'premium':
-        return <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">Premium</Badge>;
-      case 'vip':
-        return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">VIP</Badge>;
-      default:
-        return <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30">{type}</Badge>;
-    }
-  };
-
-  const formatAmount = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: currency || 'MXN'
-    }).format(amount);
-  };
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return transactions.filter((t) => {
+      const matchesTerm =
+        !term ||
+        nameFor(t.user_id).toLowerCase().includes(term) ||
+        (t.payment_id || '').toLowerCase().includes(term);
+      return matchesTerm && (status === 'all' || (t.status || 'pending') === status);
+    });
+  }, [transactions, search, status, nameFor]);
 
   return (
-    <Card className="bg-white/10 backdrop-blur-md border-white/20">
+    <Card className="surface-card">
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <CreditCard className="w-5 h-5" />
-          Transacciones MercadoPago
+        <CardTitle className="flex items-center gap-2 text-surface-foreground">
+          <CreditCard className="h-5 w-5 text-success" />
+          Pagos con Mercado Pago
         </CardTitle>
+        <CardDescription className="text-surface-foreground/60">
+          Historial automático de las transacciones registradas por la pasarela.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {transactions.length === 0 ? (
-            <div className="text-center py-8">
-              <CreditCard className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-white/70">No hay transacciones de MercadoPago</p>
-            </div>
-          ) : (
-            transactions.map((transaction) => (
-              <Card key={transaction.id} className="bg-white/5 border-white/10">
-                <CardContent className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-white/70 text-sm">Usuario</p>
-                      <p className="text-white font-medium">
-                        {transaction.profiles?.full_name || 'Sin nombre'}
+        <AdminToolbar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Buscar por usuario o ID de pago"
+          count={filtered.length}
+          total={transactions.length}
+          filters={[
+            {
+              value: status,
+              onChange: setStatus,
+              placeholder: 'Estado',
+              options: [
+                { value: 'all', label: 'Todos' },
+                { value: 'pending', label: 'Pendientes' },
+                { value: 'approved', label: 'Aprobados' },
+                { value: 'rejected', label: 'Rechazados' },
+                { value: 'cancelled', label: 'Cancelados' },
+              ],
+            },
+          ]}
+        />
+
+        {filtered.length === 0 ? (
+          <EmptyState
+            icon={CreditCard}
+            title="Sin transacciones"
+            description="Aún no hay pagos registrados con esta combinación de filtros."
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-surface-border/20 hover:bg-transparent">
+                  <TableHead className="text-surface-foreground/70">Usuario</TableHead>
+                  <TableHead className="text-surface-foreground/70">Plan</TableHead>
+                  <TableHead className="text-surface-foreground/70">Monto</TableHead>
+                  <TableHead className="text-surface-foreground/70">Estado</TableHead>
+                  <TableHead className="text-surface-foreground/70">Fecha</TableHead>
+                  <TableHead className="text-surface-foreground/70">ID de pago</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((t) => (
+                  <TableRow key={t.id} className="border-surface-border/10">
+                    <TableCell className="text-surface-foreground">{nameFor(t.user_id)}</TableCell>
+                    <TableCell>
+                      <PlanBadge plan={t.subscription_type} />
+                      <p className="mt-1 text-xs text-surface-foreground/60">
+                        {t.subscription_months || 1} {(t.subscription_months || 1) === 1 ? 'mes' : 'meses'}
                       </p>
-                      <p className="text-white/60 text-xs">
-                        {transaction.profiles?.username}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <p className="text-white/70 text-sm">Plan y Duración</p>
-                      <div className="space-y-1">
-                        {getSubscriptionBadge(transaction.subscription_type)}
-                        <p className="text-white/80 text-sm">
-                          {transaction.subscription_months} {transaction.subscription_months === 1 ? 'mes' : 'meses'}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <p className="text-white/70 text-sm">Monto y Estado</p>
-                      <p className="text-white font-bold flex items-center gap-1">
-                        <DollarSign className="w-4 h-4" />
-                        {formatAmount(transaction.amount, transaction.currency)}
-                      </p>
-                      {getStatusBadge(transaction.status)}
-                    </div>
-                    
-                    <div>
-                      <p className="text-white/70 text-sm">Fecha</p>
-                      <p className="text-white">
-                        {new Date(transaction.created_at).toLocaleDateString('es-ES')}
-                      </p>
-                      <p className="text-white/60 text-xs">
-                        {new Date(transaction.created_at).toLocaleTimeString('es-ES')}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {transaction.payment_id && (
-                    <div className="mt-4 pt-3 border-t border-white/10">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-white/70">ID de Pago:</p>
-                          <p className="text-white/90 font-mono text-xs">{transaction.payment_id}</p>
-                        </div>
-                        {transaction.external_reference && (
-                          <div>
-                            <p className="text-white/70">Referencia:</p>
-                            <p className="text-white/90 font-mono text-xs">{transaction.external_reference}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                    </TableCell>
+                    <TableCell className="font-semibold text-surface-foreground">
+                      {formatAmount(Number(t.amount), t.currency)}
+                    </TableCell>
+                    <TableCell><StatusBadge status={t.status} /></TableCell>
+                    <TableCell className="text-sm text-surface-foreground/70">
+                      {t.created_at ? new Date(t.created_at).toLocaleDateString('es-MX') : '—'}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-surface-foreground/60">
+                      {t.payment_id || '—'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 };
+
+export default AdminMercadoPagoTransactions;
