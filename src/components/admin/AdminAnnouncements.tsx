@@ -84,39 +84,39 @@ export const AdminAnnouncements = () => {
   };
 
   return (
-    <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">
+    <Card className="surface-card">
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
+        <CardTitle className="text-surface-foreground flex items-center gap-2">
           <Megaphone className="w-5 h-5" />
           Gestión de Anuncios
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Create form */}
-        <div className="bg-white/5 rounded-lg p-4 space-y-3">
-          <h4 className="text-white font-medium">Nuevo Anuncio</h4>
+        <div className="bg-surface/5 rounded-lg p-4 space-y-3">
+          <h4 className="text-surface-foreground font-medium">Nuevo Anuncio</h4>
           <Input
             placeholder="Título del anuncio"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+            className="field-dark"
           />
           <Textarea
             placeholder="Contenido del anuncio..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
+            className="field-dark"
           />
           <div className="flex gap-3">
             <Select value={location} onValueChange={setLocation}>
-              <SelectTrigger className="w-48 bg-white/10 border-white/30 text-white">
+              <SelectTrigger className="field-dark w-48">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700">
-                <SelectItem value="all" className="text-white">Todas las páginas</SelectItem>
-                <SelectItem value="catalog" className="text-white">Catálogo</SelectItem>
-                <SelectItem value="donations" className="text-white">Donaciones</SelectItem>
-                <SelectItem value="profiles" className="text-white">Perfiles</SelectItem>
+              <SelectContent className="z-50 bg-popover">
+                <SelectItem value="all" className="text-surface-foreground">Todas las páginas</SelectItem>
+                <SelectItem value="catalog" className="text-surface-foreground">Catálogo</SelectItem>
+                <SelectItem value="donations" className="text-surface-foreground">Donaciones</SelectItem>
+                <SelectItem value="profiles" className="text-surface-foreground">Perfiles</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={createAnnouncement} className="bg-gradient-to-r from-yellow-500 to-orange-500">
@@ -127,31 +127,31 @@ export const AdminAnnouncements = () => {
 
         {/* List */}
         {loading ? (
-          <p className="text-white/60 text-center">Cargando...</p>
+          <p className="text-surface-foreground/60 text-center">Cargando...</p>
         ) : announcements.length === 0 ? (
-          <p className="text-white/60 text-center">No hay anuncios creados</p>
+          <p className="text-surface-foreground/60 text-center">No hay anuncios creados</p>
         ) : (
           <div className="space-y-3">
             {announcements.map((a) => (
-              <div key={a.id} className="flex items-center justify-between bg-white/5 rounded-lg p-3">
+              <div key={a.id} className="flex items-center justify-between bg-surface/5 rounded-lg p-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-medium truncate">{a.title}</p>
-                    <Badge className={a.is_active ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-gray-500/20 text-gray-300 border-gray-500/30'}>
+                    <p className="text-surface-foreground font-medium truncate">{a.title}</p>
+                    <Badge className={a.is_active ? 'bg-success/20 text-success border-success/30' : 'bg-surface/10 text-surface-foreground/70 border-surface-border/25'}>
                       {a.is_active ? 'Activo' : 'Inactivo'}
                     </Badge>
                     <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
                       {locationLabel(a.display_location)}
                     </Badge>
                   </div>
-                  <p className="text-white/60 text-sm truncate">{a.content}</p>
+                  <p className="text-surface-foreground/60 text-sm truncate">{a.content}</p>
                 </div>
                 <div className="flex gap-2 ml-3">
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => toggleActive(a.id, a.is_active)}
-                    className="text-white/70 hover:text-white"
+                    className="text-surface-foreground/70 hover:text-surface-foreground"
                   >
                     {a.is_active ? <ToggleRight className="w-5 h-5 text-green-400" /> : <ToggleLeft className="w-5 h-5" />}
                   </Button>
