@@ -35,10 +35,10 @@
 
     --radius: 0.5rem;
 
-    /* App shell (dark rosa/púrpura) */
-    --app-from: 322 60% 20%;
-    --app-via: 271 55% 22%;
-    --app-to: 243 55% 25%;
+    /* App shell (rosa noche) */
+    --app-from: 272 58% 16%;
+    --app-via: 269 51% 9%;
+    --app-to: 276 52% 13%;
 
     /* Superficies de vidrio sobre el fondo oscuro */
     --surface: 0 0% 100%;
@@ -47,10 +47,10 @@
     --surface-border: 0 0% 100%;
 
     /* Acentos de marca */
-    --brand: 330 81% 60%;
-    --brand-glow: 271 81% 56%;
+    --brand: 338 79% 58%;
+    --brand-glow: 288 62% 56%;
     --brand-foreground: 0 0% 100%;
-    --gold: 45 93% 58%;
+    --gold: 38 87% 69%;
     --success: 152 69% 45%;
     --info: 217 91% 60%;
 
@@ -102,7 +102,7 @@
   }
 
   body {
-    @apply bg-gradient-secondary text-foreground font-inter;
+    @apply bg-gradient-app text-foreground font-inter;
     min-height: 100vh;
   }
   
@@ -181,3 +181,47 @@
   }
 }
 
+
+@layer components {
+  /* Bento */
+  .bento-grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6;
+  }
+
+  .bento-tile {
+    @apply relative overflow-hidden rounded-3xl border border-surface-border/15 bg-surface/[0.07] p-6
+           backdrop-blur-xl transition-all duration-300;
+    box-shadow: 0 20px 50px -30px hsl(var(--brand) / 0.55);
+  }
+
+  .bento-tile:hover {
+    @apply -translate-y-1 border-surface-border/30 bg-surface/[0.11];
+  }
+
+  .bento-tile-accent {
+    @apply border-brand/30;
+    background:
+      linear-gradient(140deg, hsl(var(--brand) / 0.22) 0%, hsl(var(--brand-glow) / 0.12) 55%, transparent 100%),
+      hsl(var(--surface) / 0.07);
+  }
+
+  .bento-tile-gold {
+    @apply border-gold/30;
+    background:
+      linear-gradient(140deg, hsl(var(--gold) / 0.18) 0%, transparent 70%),
+      hsl(var(--surface) / 0.07);
+  }
+
+  .editorial-title {
+    @apply font-playfair font-normal leading-[1.05] tracking-tight text-surface-foreground;
+  }
+
+  .editorial-accent {
+    @apply italic brand-gradient-text;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-surface-border/20 bg-surface/10 px-3 py-1
+           text-[11px] uppercase tracking-[0.22em] text-surface-foreground/70;
+  }
+}
