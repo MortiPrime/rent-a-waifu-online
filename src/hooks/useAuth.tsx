@@ -18,6 +18,8 @@ interface AuthContextType {
   isClient: boolean;
   isGirlfriend: boolean;
   isAdmin: boolean;
+  /** true mientras se verifica si el usuario tiene rol de administrador */
+  roleLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [hasAdminRole, setHasAdminRole] = useState(false);
+  const [roleLoading, setRoleLoading] = useState(true);
   const { toast } = useToast();
 
   // Compute user role and permissions
@@ -52,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setHasAdminRole(false);
+          setRoleLoading(false);
         }
         
         setLoading(false);
@@ -65,6 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (session?.user) {
         fetchUserProfile(session.user.id);
         checkAdminRole(session.user.id);
+      } else {
+        setRoleLoading(false);
       }
       setLoading(false);
     });
@@ -74,6 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAdminRole = async (userId: string) => {
     try {
+      setRoleLoading(true);
       const { data } = await supabase
         .from('user_roles')
         .select('role')
@@ -84,6 +91,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setHasAdminRole(!!data);
     } catch (error) {
       console.error('Error checking admin role:', error);
+    } finally {
+      setRoleLoading(false);
     }
   };
 
@@ -241,6 +250,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isClient,
     isGirlfriend,
     isAdmin,
+    roleLoading,
   };
 
   return (
