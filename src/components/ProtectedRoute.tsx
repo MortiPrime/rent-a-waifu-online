@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
@@ -8,12 +7,14 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, roleLoading } = useAuth();
 
-  if (loading) {
+  // En rutas de admin esperamos también a que termine la verificación de rol,
+  // de lo contrario el administrador es expulsado antes de conocer su rol.
+  if (loading || (adminOnly && roleLoading)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-app">
+        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-brand" />
       </div>
     );
   }
