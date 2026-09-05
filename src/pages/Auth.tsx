@@ -1,14 +1,14 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
@@ -145,22 +145,48 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+    <div className="grid min-h-screen bg-gradient-app lg:grid-cols-2">
+      {/* Panel editorial */}
+      <aside className="relative hidden flex-col justify-between overflow-hidden p-14 lg:flex">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-20 top-10 h-96 w-96 rounded-full bg-brand/25 blur-3xl" />
+          <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-brand-glow/20 blur-3xl" />
+        </div>
+        <Link to="/" className="relative flex items-center gap-2">
+          <Heart className="h-6 w-6 text-brand" />
+          <span className="editorial-title text-2xl">AnimeDating</span>
+        </Link>
+        <div className="relative">
+          <h2 className="editorial-title text-5xl xl:text-6xl">
+            Conexiones reales,
+            <span className="block editorial-accent">personas verificadas</span>
+          </h2>
+          <p className="mt-6 max-w-md text-surface-foreground/70">
+            Crea tu cuenta para ver los perfiles completos, guardar favoritas y contactar directamente.
+          </p>
+        </div>
+        <p className="relative text-sm text-surface-foreground/50">
+          © {new Date().getFullYear()} AnimeDating
+        </p>
+      </aside>
+
+      {/* Formulario */}
+      <div className="flex items-center justify-center p-4 lg:bg-surface/[0.04]">
       <div className="w-full max-w-md">
-        <Card className="bg-white/10 backdrop-blur-md border-white/20 shadow-2xl">
+        <Card className="surface-card rounded-3xl shadow-2xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-white">
+            <CardTitle className="editorial-title text-4xl">
               Bienvenida
             </CardTitle>
           </CardHeader>
           
           <CardContent>
             <Tabs defaultValue="login" className="w-full" onValueChange={clearErrors}>
-              <TabsList className="grid w-full grid-cols-2 bg-white/10">
-                <TabsTrigger value="login" className="text-white data-[state=active]:bg-white/20">
+              <TabsList className="grid w-full grid-cols-2 bg-surface/10">
+                <TabsTrigger value="login" className="text-surface-foreground data-[state=active]:bg-surface/20">
                   Iniciar Sesión
                 </TabsTrigger>
-                <TabsTrigger value="register" className="text-white data-[state=active]:bg-white/20">
+                <TabsTrigger value="register" className="text-surface-foreground data-[state=active]:bg-surface/20">
                   Registro
                 </TabsTrigger>
               </TabsList>
@@ -168,7 +194,7 @@ const Auth = () => {
               <TabsContent value="login" className="space-y-4 mt-6">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-white font-medium">
+                    <Label htmlFor="login-email" className="text-surface-foreground font-medium">
                       Correo Electrónico
                     </Label>
                     <Input
@@ -179,14 +205,14 @@ const Auth = () => {
                         setLoginData(prev => ({ ...prev, email: e.target.value }));
                         if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
                       }}
-                      className={`bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 ${
-                        errors.email ? 'border-red-500' : ''
+                      className={`field-dark ${
+                        errors.email ? 'border-destructive' : ''
                       }`}
                       placeholder="tu@email.com"
                       disabled={loading}
                     />
                     {errors.email && (
-                      <div className="flex items-center gap-1 text-red-400 text-sm">
+                      <div className="flex items-center gap-1 text-destructive text-sm">
                         <AlertCircle className="w-4 h-4" />
                         {errors.email}
                       </div>
@@ -194,7 +220,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-white font-medium">
+                    <Label htmlFor="login-password" className="text-surface-foreground font-medium">
                       Contraseña
                     </Label>
                     <div className="relative">
@@ -206,8 +232,8 @@ const Auth = () => {
                           setLoginData(prev => ({ ...prev, password: e.target.value }));
                           if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
                         }}
-                        className={`bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 pr-10 ${
-                          errors.password ? 'border-red-500' : ''
+                        className={`field-dark pr-10 ${
+                          errors.password ? 'border-destructive' : ''
                         }`}
                         placeholder="Tu contraseña"
                         disabled={loading}
@@ -216,7 +242,7 @@ const Auth = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 text-white/60 hover:text-white"
+                        className="absolute right-0 top-0 h-full px-3 text-surface-foreground/60 hover:text-surface-foreground"
                         onClick={() => setShowPassword(!showPassword)}
                         disabled={loading}
                       >
@@ -224,7 +250,7 @@ const Auth = () => {
                       </Button>
                     </div>
                     {errors.password && (
-                      <div className="flex items-center gap-1 text-red-400 text-sm">
+                      <div className="flex items-center gap-1 text-destructive text-sm">
                         <AlertCircle className="w-4 h-4" />
                         {errors.password}
                       </div>
@@ -234,7 +260,7 @@ const Auth = () => {
                   <Button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-2 transition-all duration-300 disabled:opacity-50"
+                    className="w-full brand-button font-semibold py-2 transition-all duration-300 disabled:opacity-50"
                   >
                     {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                   </Button>
@@ -244,7 +270,7 @@ const Auth = () => {
               <TabsContent value="register" className="space-y-4 mt-6">
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-name" className="text-white font-medium">
+                    <Label htmlFor="register-name" className="text-surface-foreground font-medium">
                       Nombre Completo
                     </Label>
                     <Input
@@ -255,14 +281,14 @@ const Auth = () => {
                         setRegisterData(prev => ({ ...prev, fullName: e.target.value }));
                         if (errors.fullName) setErrors(prev => ({ ...prev, fullName: '' }));
                       }}
-                      className={`bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 ${
-                        errors.fullName ? 'border-red-500' : ''
+                      className={`field-dark ${
+                        errors.fullName ? 'border-destructive' : ''
                       }`}
                       placeholder="Tu nombre completo"
                       disabled={loading}
                     />
                     {errors.fullName && (
-                      <div className="flex items-center gap-1 text-red-400 text-sm">
+                      <div className="flex items-center gap-1 text-destructive text-sm">
                         <AlertCircle className="w-4 h-4" />
                         {errors.fullName}
                       </div>
@@ -270,7 +296,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-email" className="text-white font-medium">
+                    <Label htmlFor="register-email" className="text-surface-foreground font-medium">
                       Correo Electrónico
                     </Label>
                     <Input
@@ -281,14 +307,14 @@ const Auth = () => {
                         setRegisterData(prev => ({ ...prev, email: e.target.value }));
                         if (errors.email) setErrors(prev => ({ ...prev, email: '' }));
                       }}
-                      className={`bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 ${
-                        errors.email ? 'border-red-500' : ''
+                      className={`field-dark ${
+                        errors.email ? 'border-destructive' : ''
                       }`}
                       placeholder="tu@email.com"
                       disabled={loading}
                     />
                     {errors.email && (
-                      <div className="flex items-center gap-1 text-red-400 text-sm">
+                      <div className="flex items-center gap-1 text-destructive text-sm">
                         <AlertCircle className="w-4 h-4" />
                         {errors.email}
                       </div>
@@ -296,7 +322,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="user-role" className="text-white font-medium">
+                    <Label htmlFor="user-role" className="text-surface-foreground font-medium">
                       Tipo de Usuario
                     </Label>
                     <Select 
@@ -306,18 +332,18 @@ const Auth = () => {
                       }
                       disabled={loading}
                     >
-                      <SelectTrigger className="bg-white/10 border-white/30 text-white">
+                      <SelectTrigger className="field-dark">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-900 border-gray-700">
-                        <SelectItem value="client" className="text-white">Cliente</SelectItem>
-                        <SelectItem value="girlfriend" className="text-white">Companion</SelectItem>
+                      <SelectContent className="z-50 bg-popover">
+                        <SelectItem value="client" className="text-surface-foreground">Cliente</SelectItem>
+                        <SelectItem value="girlfriend" className="text-surface-foreground">Companion</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-password" className="text-white font-medium">
+                    <Label htmlFor="register-password" className="text-surface-foreground font-medium">
                       Contraseña
                     </Label>
                     <div className="relative">
@@ -329,8 +355,8 @@ const Auth = () => {
                           setRegisterData(prev => ({ ...prev, password: e.target.value }));
                           if (errors.password) setErrors(prev => ({ ...prev, password: '' }));
                         }}
-                        className={`bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 pr-10 ${
-                          errors.password ? 'border-red-500' : ''
+                        className={`field-dark pr-10 ${
+                          errors.password ? 'border-destructive' : ''
                         }`}
                         placeholder="Mínimo 6 caracteres"
                         disabled={loading}
@@ -339,7 +365,7 @@ const Auth = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 text-white/60 hover:text-white"
+                        className="absolute right-0 top-0 h-full px-3 text-surface-foreground/60 hover:text-surface-foreground"
                         onClick={() => setShowPassword(!showPassword)}
                         disabled={loading}
                       >
@@ -347,7 +373,7 @@ const Auth = () => {
                       </Button>
                     </div>
                     {errors.password && (
-                      <div className="flex items-center gap-1 text-red-400 text-sm">
+                      <div className="flex items-center gap-1 text-destructive text-sm">
                         <AlertCircle className="w-4 h-4" />
                         {errors.password}
                       </div>
@@ -355,7 +381,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-confirm-password" className="text-white font-medium">
+                    <Label htmlFor="register-confirm-password" className="text-surface-foreground font-medium">
                       Confirmar Contraseña
                     </Label>
                     <div className="relative">
@@ -367,8 +393,8 @@ const Auth = () => {
                           setRegisterData(prev => ({ ...prev, confirmPassword: e.target.value }));
                           if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }));
                         }}
-                        className={`bg-white/10 border-white/30 text-white placeholder:text-white/60 focus:border-white/50 pr-10 ${
-                          errors.confirmPassword ? 'border-red-500' : ''
+                        className={`field-dark pr-10 ${
+                          errors.confirmPassword ? 'border-destructive' : ''
                         }`}
                         placeholder="Confirma tu contraseña"
                         disabled={loading}
@@ -377,7 +403,7 @@ const Auth = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 text-white/60 hover:text-white"
+                        className="absolute right-0 top-0 h-full px-3 text-surface-foreground/60 hover:text-surface-foreground"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         disabled={loading}
                       >
@@ -385,7 +411,7 @@ const Auth = () => {
                       </Button>
                     </div>
                     {errors.confirmPassword && (
-                      <div className="flex items-center gap-1 text-red-400 text-sm">
+                      <div className="flex items-center gap-1 text-destructive text-sm">
                         <AlertCircle className="w-4 h-4" />
                         {errors.confirmPassword}
                       </div>
@@ -395,7 +421,7 @@ const Auth = () => {
                   <Button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-2 transition-all duration-300 disabled:opacity-50"
+                    className="w-full brand-button font-semibold py-2 transition-all duration-300 disabled:opacity-50"
                   >
                     {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
                   </Button>
@@ -404,6 +430,7 @@ const Auth = () => {
             </Tabs>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

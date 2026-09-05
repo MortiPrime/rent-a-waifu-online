@@ -30,13 +30,14 @@ const SectionHeading = ({
   >
     <h1
       className={cn(
-        'font-playfair font-bold text-surface-foreground',
-        size === 'lg' ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl',
+        'editorial-title',
+        size === 'lg' ? 'text-5xl md:text-6xl' : 'text-3xl md:text-4xl',
       )}
     >
       {title}
-      {highlight && <span className="block brand-gradient-text">{highlight}</span>}
+      {highlight && <span className="block editorial-accent">{highlight}</span>}
     </h1>
+
     {subtitle && (
       <p
         className={cn(

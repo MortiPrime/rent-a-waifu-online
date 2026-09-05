@@ -3,13 +3,12 @@ import Navbar from '@/components/Navbar';
 import CompanionDashboard from '@/components/CompanionDashboard';
 import PageShell from '@/components/layout/PageShell';
 import SectionHeading from '@/components/layout/SectionHeading';
+import { BentoGrid, BentoTile } from '@/components/layout/BentoGrid';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Heart,
   MessageCircle,
-  Users,
   Video,
   MapPin,
   Calendar,
@@ -31,12 +30,6 @@ const services = [
   { icon: Video, title: 'Video llamadas', desc: 'Videollamadas en vivo cara a cara', price: '$500/hr' },
   { icon: Calendar, title: 'Citas virtuales', desc: 'Experiencias de cita personalizadas', price: '$800/sesión' },
   { icon: MapPin, title: 'Citas presenciales', desc: 'Encuentros reales en tu ciudad', price: '$1500+' },
-];
-
-const features = [
-  { icon: Shield, title: 'Verificación real', desc: 'Todas nuestras companions están verificadas con documentos oficiales', badge: '100% verificado' },
-  { icon: Clock, title: 'Disponibilidad 24/7', desc: 'Encuentra companions disponibles en cualquier momento del día', badge: 'Siempre activo' },
-  { icon: Zap, title: 'Conexión instantánea', desc: 'Sistema de matching inteligente para conexiones perfectas', badge: 'Rápido y simple' },
 ];
 
 const premium = [
@@ -74,151 +67,170 @@ const Index = () => {
 
   return (
     <PageShell width="wide" className="pt-24 pb-0 px-0">
-      <div className="px-4 space-y-24 pb-16">
-        {/* Hero */}
-        <section className="max-w-5xl mx-auto text-center">
-          <Badge className="mb-6 border border-brand/30 bg-brand/15 text-surface-foreground">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Acceso gratuito por tiempo limitado
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-playfair font-bold text-surface-foreground mb-6">
-            Encuentra tu
-            <span className="block brand-gradient-text">Companion Perfecta</span>
-          </h1>
-          <p className="text-xl text-surface-foreground/70 mb-8 max-w-3xl mx-auto">
-            La plataforma más exclusiva para conectar con companions verificadas. Conversaciones reales, citas y
-            momentos únicos con personalidades increíbles.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/catalog">
-              <Button size="lg" className="brand-button text-lg px-8 py-6 transition-transform hover:scale-105">
-                <Heart className="w-5 h-5 mr-2" />
-                Explorar companions
-              </Button>
-            </Link>
-            <Link to="/become-companion">
-              <Button size="lg" variant="outline" className="surface-card text-lg px-8 py-6 hover:!bg-surface/20">
-                <Crown className="w-5 h-5 mr-2" />
-                Ser companion
-              </Button>
-            </Link>
-          </div>
-        </section>
-
-        {/* Stats */}
-        <section className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((s) => (
-              <div key={s.label} className="surface-card rounded-2xl p-6 text-center">
-                <h3 className="text-3xl md:text-4xl font-bold brand-gradient-text mb-1">{s.value}</h3>
-                <p className="text-surface-foreground/70 text-sm">{s.label}</p>
+      <div className="space-y-20 px-4 pb-16">
+        {/* Hero bento */}
+        <section>
+          <BentoGrid className="lg:grid-rows-2">
+            <BentoTile size="lg" tone="accent" className="flex flex-col justify-between gap-8 p-8 md:p-12 lg:row-span-2">
+              <div>
+                <span className="eyebrow mb-6">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Acceso gratuito por tiempo limitado
+                </span>
+                <h1 className="editorial-title mt-6 text-5xl md:text-7xl">
+                  Encuentra tu
+                  <span className="block editorial-accent">companion perfecta</span>
+                </h1>
+                <p className="mt-6 max-w-xl text-lg text-surface-foreground/70">
+                  La plataforma más exclusiva para conectar con companions verificadas en México. Conversaciones
+                  reales, citas y momentos únicos.
+                </p>
               </div>
-            ))}
-          </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link to="/catalog">
+                  <Button size="lg" className="brand-button w-full px-8 py-6 text-base sm:w-auto">
+                    <Heart className="mr-2 h-5 w-5" />
+                    Explorar companions
+                  </Button>
+                </Link>
+                <Link to="/become-companion">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-surface-border/30 bg-surface/10 px-8 py-6 text-base text-surface-foreground hover:bg-surface/20 sm:w-auto"
+                  >
+                    <Crown className="mr-2 h-5 w-5" />
+                    Ser companion
+                  </Button>
+                </Link>
+              </div>
+            </BentoTile>
+
+            <BentoTile size="sm" className="flex flex-col justify-center">
+              <Shield className="mb-4 h-8 w-8 text-brand" />
+              <h3 className="editorial-title text-2xl">Perfiles verificados</h3>
+              <p className="mt-2 text-sm text-surface-foreground/70">
+                Cada companion se valida con documentos oficiales antes de aparecer.
+              </p>
+              <Badge className="mt-4 w-fit border border-success/30 bg-success/15 text-success">100% verificado</Badge>
+            </BentoTile>
+
+            <BentoTile size="sm" tone="gold" className="flex flex-col justify-center">
+              <Clock className="mb-4 h-8 w-8 text-gold" />
+              <h3 className="editorial-title text-2xl">Disponible 24/7</h3>
+              <p className="mt-2 text-sm text-surface-foreground/70">
+                Encuentra companions activas a cualquier hora del día.
+              </p>
+            </BentoTile>
+
+            <BentoTile size="sm" className="flex flex-col justify-center">
+              <Zap className="mb-4 h-8 w-8 text-brand" />
+              <h3 className="editorial-title text-2xl">Conexión instantánea</h3>
+              <p className="mt-2 text-sm text-surface-foreground/70">
+                Filtra por ciudad, edad y plan y contacta en segundos.
+              </p>
+            </BentoTile>
+
+            <BentoTile size="sm" className="grid grid-cols-2 gap-4">
+              {stats.slice(0, 4).map((s) => (
+                <div key={s.label}>
+                  <p className="editorial-title text-3xl brand-gradient-text">{s.value}</p>
+                  <p className="text-xs text-surface-foreground/60">{s.label}</p>
+                </div>
+              ))}
+            </BentoTile>
+          </BentoGrid>
         </section>
 
         {/* Servicios */}
-        <section className="max-w-6xl mx-auto">
+        <section>
           <SectionHeading
-            title="Servicios disponibles"
-            subtitle="Descubre todas las formas de conectar con nuestras companions"
+            title="Servicios"
+            highlight="disponibles"
+            subtitle="Descubre todas las formas de conectar con nuestras companions."
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map(({ icon: Icon, ...s }) => (
-              <Card key={s.title} className="surface-card surface-card-hover rounded-2xl text-center">
-                <CardHeader>
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-brand to-brand-glow flex items-center justify-center mx-auto mb-3">
-                    <Icon className="w-7 h-7 text-brand-foreground" />
+          <BentoGrid>
+            {services.map(({ icon: Icon, ...s }, i) => (
+              <BentoTile key={s.title} size={i === 0 ? 'md' : i === 1 ? 'md' : 'md'} tone={i === 0 ? 'accent' : 'default'}>
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-glow">
+                    <Icon className="h-6 w-6 text-brand-foreground" />
                   </div>
-                  <CardTitle className="text-surface-foreground">{s.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-surface-foreground/70 mb-4 text-sm">{s.desc}</p>
-                  <div className="text-2xl font-bold brand-gradient-text">{s.price}</div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <h3 className="editorial-title text-2xl">{s.title}</h3>
+                    <p className="mt-1 text-sm text-surface-foreground/70">{s.desc}</p>
+                    <p className="mt-3 text-xl font-semibold text-gold">{s.price}</p>
+                  </div>
+                </div>
+              </BentoTile>
             ))}
-          </div>
+          </BentoGrid>
         </section>
 
-        {/* Características */}
-        <section className="max-w-6xl mx-auto">
-          <SectionHeading title="Características únicas" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map(({ icon: Icon, ...f }) => (
-              <Card key={f.title} className="surface-card surface-card-hover rounded-2xl">
-                <CardHeader>
-                  <Icon className="w-12 h-12 text-brand mx-auto mb-4" />
-                  <CardTitle className="text-surface-foreground text-center">{f.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-surface-foreground/70 mb-4">{f.desc}</p>
-                  <Badge className="bg-success/15 text-success border border-success/30">{f.badge}</Badge>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Extras */}
-        <section className="max-w-6xl mx-auto">
-          <SectionHeading title="Lo que incluye tu cuenta" subtitle="Todo desbloqueado mientras la plataforma sea gratuita" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Incluye tu cuenta */}
+        <section>
+          <SectionHeading
+            title="Lo que incluye"
+            highlight="tu cuenta"
+            subtitle="Todo desbloqueado mientras la plataforma sea gratuita."
+          />
+          <BentoGrid>
             {premium.map(({ icon: Icon, ...p }) => (
-              <div key={p.title} className="surface-card surface-card-hover rounded-2xl p-6">
-                <Icon className="w-8 h-8 text-brand mb-4" />
-                <h3 className="text-surface-foreground font-semibold text-lg mb-2">{p.title}</h3>
-                <p className="text-surface-foreground/70 text-sm">{p.desc}</p>
-              </div>
+              <BentoTile key={p.title} size="sm">
+                <Icon className="mb-4 h-7 w-7 text-brand" />
+                <h3 className="editorial-title text-2xl">{p.title}</h3>
+                <p className="mt-2 text-sm text-surface-foreground/70">{p.desc}</p>
+              </BentoTile>
             ))}
-          </div>
+          </BentoGrid>
         </section>
 
         {/* Cómo funciona */}
-        <section className="max-w-6xl mx-auto">
-          <SectionHeading title="¿Cómo funciona?" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section>
+          <SectionHeading title="¿Cómo" highlight="funciona?" />
+          <BentoGrid>
             {steps.map((s) => (
-              <div key={s.n} className="surface-card rounded-2xl p-8 text-center">
-                <div className="bg-gradient-to-r from-brand to-brand-glow w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-brand-foreground font-bold text-xl">{s.n}</span>
-                </div>
-                <h3 className="text-surface-foreground font-semibold text-xl mb-3">{s.title}</h3>
-                <p className="text-surface-foreground/70">{s.desc}</p>
-              </div>
+              <BentoTile key={s.n} size="sm">
+                <span className="editorial-title text-5xl text-brand/70">0{s.n}</span>
+                <h3 className="editorial-title mt-3 text-2xl">{s.title}</h3>
+                <p className="mt-2 text-sm text-surface-foreground/70">{s.desc}</p>
+              </BentoTile>
             ))}
-          </div>
+          </BentoGrid>
         </section>
 
         {/* CTA */}
-        <section className="max-w-4xl mx-auto">
-          <Card className="surface-card rounded-3xl">
-            <CardContent className="p-10 text-center">
-              <Users className="w-10 h-10 text-brand mx-auto mb-4" />
-              <h2 className="text-3xl md:text-4xl font-playfair font-bold text-surface-foreground mb-4">
-                ¿Listo para tu primera conexión?
+        <section>
+          <BentoGrid>
+            <BentoTile size="full" tone="accent" className="p-10 text-center md:p-14">
+              <h2 className="editorial-title text-4xl md:text-5xl">
+                ¿Listo para tu <span className="editorial-accent">primera conexión</span>?
               </h2>
-              <p className="text-lg text-surface-foreground/70 mb-8">
+              <p className="mx-auto mt-4 max-w-2xl text-surface-foreground/70">
                 Únete a la plataforma más exclusiva de companions y descubre un mundo de posibilidades.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 {user ? (
                   <Link to="/catalog">
-                    <Button size="lg" className="brand-button text-lg px-8 py-6">
+                    <Button size="lg" className="brand-button px-8 py-6 text-base">
                       Ver companions
-                      <ArrowRight className="w-5 h-5 ml-2" />
+                      <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </Link>
                 ) : (
                   <>
                     <Link to="/auth">
-                      <Button size="lg" className="brand-button text-lg px-8 py-6">
+                      <Button size="lg" className="brand-button px-8 py-6 text-base">
                         Registrarse gratis
-                        <ArrowRight className="w-5 h-5 ml-2" />
+                        <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
                     </Link>
                     <Link to="/catalog">
-                      <Button size="lg" variant="outline" className="surface-card text-lg px-8 py-6 hover:!bg-surface/20">
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="border-surface-border/30 bg-surface/10 px-8 py-6 text-base text-surface-foreground hover:bg-surface/20"
+                      >
                         Ver catálogo
                       </Button>
                     </Link>
@@ -226,13 +238,13 @@ const Index = () => {
                 )}
               </div>
               {!user && (
-                <p className="text-surface-foreground/60 text-sm mt-5">
-                  <CheckCircle className="w-4 h-4 inline mr-1" />
+                <p className="mt-5 text-sm text-surface-foreground/60">
+                  <CheckCircle className="mr-1 inline h-4 w-4" />
                   Sin tarjeta de crédito requerida
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </BentoTile>
+          </BentoGrid>
         </section>
       </div>
     </PageShell>

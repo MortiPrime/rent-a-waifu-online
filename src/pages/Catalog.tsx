@@ -202,6 +202,7 @@ const Catalog = () => {
             {visibleCompanions.map((companion, index) => (
               <CompanionCard
                 key={companion.id}
+                className={index === 0 ? 'sm:col-span-2 xl:col-span-2' : ''}
                 companion={companion}
                 index={index % PAGE_SIZE}
                 rating={ratings.get(companion.id)}
