@@ -29,6 +29,7 @@ interface CompanionCardProps {
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   onViewProfile: (companion: CompanionListingWithPhotos) => void;
+  className?: string;
 }
 
 const CompanionCard = ({
@@ -39,12 +40,13 @@ const CompanionCard = ({
   isFavorite,
   onToggleFavorite,
   onViewProfile,
+  className,
 }: CompanionCardProps) => {
   const photoCount = companion.photos?.length ?? 0;
 
   return (
     <Card
-      className="surface-card surface-card-hover group flex animate-fade-up flex-col overflow-hidden"
+      className={`surface-card surface-card-hover group flex animate-fade-up flex-col overflow-hidden rounded-3xl ${className ?? ''}`}
       style={{ animationDelay: `${Math.min(index, 11) * 60}ms` }}
     >
       {/* Media */}
@@ -98,7 +100,7 @@ const CompanionCard = ({
 
         {/* Identidad sobre la foto */}
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <h3 className="font-playfair text-xl font-bold text-surface-foreground">
+          <h3 className="editorial-title text-2xl">
             {companion.stage_name}
             <span className="ml-2 text-sm font-normal text-surface-foreground/70">{companion.age} años</span>
           </h3>
