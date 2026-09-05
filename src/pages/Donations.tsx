@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Heart, Coffee, Star, Gift, Copy } from 'lucide-react';
+import { Heart, Coffee, Star, Gift, Copy, Landmark } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PageShell from '@/components/layout/PageShell';
 import SectionHeading from '@/components/layout/SectionHeading';
+import { BentoGrid, BentoTile } from '@/components/layout/BentoGrid';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 
 interface DonationInfo {
@@ -47,60 +47,73 @@ const Donations = () => {
   ];
 
   return (
-    <PageShell width="narrow">
+    <PageShell>
       <SectionHeading
         title="Apoya la"
-        highlight="Plataforma"
+        highlight="plataforma"
+        align="left"
         subtitle="Esta plataforma es completamente gratuita. Si te gusta lo que hacemos, considera apoyarnos con una donación voluntaria para seguir mejorando."
       />
 
       <AnnouncementBanner location="donations" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-10">
-        {donationOptions.map((option) => {
-          const Icon = option.icon;
-          return (
-            <Card key={option.amount} className="surface-card surface-card-hover rounded-2xl">
-              <CardHeader className="text-center pb-2">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-r from-brand to-brand-glow flex items-center justify-center mx-auto mb-3">
-                  <Icon className="w-7 h-7 text-brand-foreground" />
-                </div>
-                <CardTitle className="text-surface-foreground text-lg">{option.label}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-3xl font-bold text-surface-foreground mb-4">${option.amount} MXN</p>
-                <Button className="w-full brand-button">Donar ${option.amount}</Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {donationInfo && (
-        <Card className="surface-card rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-surface-foreground text-center">Donación por transferencia</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-surface-foreground/70">
-              También puedes apoyarnos directamente por transferencia bancaria:
-            </p>
-            <div className="surface-card rounded-xl p-5 inline-block text-left">
-              <p className="text-surface-foreground font-semibold text-lg">{donationInfo.bank_name}</p>
-              <p className="text-surface-foreground/80 text-sm font-mono mt-1">CLABE: {donationInfo.clabe}</p>
+      <BentoGrid className="mt-8">
+        {donationInfo && (
+          <BentoTile size="md" tone="gold" className="flex flex-col justify-between gap-6 p-8">
+            <div>
+              <Landmark className="mb-4 h-8 w-8 text-gold" />
+              <h2 className="editorial-title text-3xl">Transferencia bancaria</h2>
+              <p className="mt-2 text-sm text-surface-foreground/70">
+                La forma más directa de apoyarnos, sin comisiones.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-surface-border/20 bg-surface/10 p-5">
+              <p className="text-lg font-semibold text-surface-foreground">{donationInfo.bank_name}</p>
+              <p className="mt-1 break-all font-mono text-sm text-surface-foreground/80">
+                CLABE: {donationInfo.clabe}
+              </p>
               {donationInfo.account_holder && (
-                <p className="text-surface-foreground/60 text-sm mt-1">Titular: {donationInfo.account_holder}</p>
+                <p className="mt-1 text-sm text-surface-foreground/60">Titular: {donationInfo.account_holder}</p>
               )}
-              <Button variant="ghost" size="sm" onClick={copyClabe} className="mt-3 text-surface-foreground hover:!bg-surface/20">
-                <Copy className="w-4 h-4 mr-2" /> Copiar CLABE
+              <Button onClick={copyClabe} className="brand-button mt-4 w-full">
+                <Copy className="mr-2 h-4 w-4" /> Copiar CLABE
               </Button>
             </div>
-            <p className="text-surface-foreground/60 text-sm">
+            <p className="text-sm text-surface-foreground/60">
               {donationInfo.extra_note || '¡Cada aportación nos ayuda a mantener la plataforma gratuita para todos!'}
             </p>
-          </CardContent>
-        </Card>
-      )}
+          </BentoTile>
+        )}
+
+        <BentoTile size="md" className="flex flex-col gap-4 p-8">
+          <div>
+            <h2 className="editorial-title text-3xl">Elige tu aportación</h2>
+            <p className="mt-2 text-sm text-surface-foreground/70">
+              Cualquier cantidad ayuda a pagar el servidor y seguir mejorando.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {donationOptions.map(({ icon: Icon, ...option }) => (
+              <div
+                key={option.amount}
+                className="rounded-2xl border border-surface-border/15 bg-surface/[0.07] p-5 text-center transition-colors hover:border-brand/40"
+              >
+                <Icon className="mx-auto mb-3 h-6 w-6 text-brand" />
+                <p className="text-sm text-surface-foreground/70">{option.label}</p>
+                <p className="editorial-title mt-1 text-3xl">${option.amount}</p>
+                <p className="text-xs text-surface-foreground/50">MXN</p>
+              </div>
+            ))}
+          </div>
+        </BentoTile>
+
+        <BentoTile size="full" className="text-center">
+          <Heart className="mx-auto mb-3 h-7 w-7 text-brand" />
+          <p className="text-surface-foreground/75">
+            Gracias por apoyar un espacio seguro, verificado y gratuito para todos.
+          </p>
+        </BentoTile>
+      </BentoGrid>
     </PageShell>
   );
 };
