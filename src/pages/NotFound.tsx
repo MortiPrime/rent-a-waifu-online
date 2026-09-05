@@ -14,8 +14,8 @@ const NotFound = () => {
   return (
     <PageShell className="flex items-center justify-center">
       <div className="px-4 text-center">
-        <h1 className="mb-2 font-playfair text-8xl font-bold text-surface-foreground/20">404</h1>
-        <h2 className="mb-4 text-2xl font-bold text-surface-foreground">Página no encontrada</h2>
+        <h1 className="editorial-title mb-2 text-9xl text-surface-foreground/20">404</h1>
+        <h2 className="editorial-title mb-4 text-3xl">Página no encontrada</h2>
         <p className="mx-auto mb-8 max-w-md text-surface-foreground/60">
           La página que buscas no existe o ha sido movida.
         </p>
