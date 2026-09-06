@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { MoreHorizontal, Users } from 'lucide-react';
+import { MoreHorizontal, Trash2, Users } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import AdminToolbar from './AdminToolbar';
 import { PlanBadge, RoleBadge } from './AdminBadges';
@@ -233,6 +233,14 @@ export const AdminUsersTable = ({ users, onDataChange }: Props) => {
                               OK
                             </Button>
                           </div>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setPendingDelete(user)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar usuario
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
