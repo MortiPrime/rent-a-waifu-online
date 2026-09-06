@@ -61,10 +61,20 @@ serve(async (req) => {
     }
 
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-    if (deleteError) throw deleteError;
 
-    console.log(`[ADMIN-DELETE-USER] ${callerId} eliminó a ${userId}`);
-    return json(200, { success: true });
+    // Si el usuario ya no existe en auth (registro huérfano), limpiamos los datos públicos igualmente
+    const notFound =
+      deleteError &&
+      (deleteError.message?.toLowerCase().includes("not found") ||
+        (deleteError as { status?: number }).status === 404);
+
+    if (deleteError && !notFound) throw deleteError;
+
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
+    await supabaseAdmin.from("profiles").delete().eq("id", userId);
+
+    console.log(`[ADMIN-DELETE-USER] ${callerId} eliminó a ${userId}${notFound ? " (huérfano)" : ""}`);
+    return json(200, { success: true, orphan: Boolean(notFound) });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("[ADMIN-DELETE-USER] Error:", message);
