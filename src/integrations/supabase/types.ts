@@ -401,6 +401,45 @@ export type Database = {
         }
         Relationships: []
       }
+      footer_settings: {
+        Row: {
+          brand_name: string
+          contact_email: string | null
+          copyright_text: string | null
+          created_at: string
+          id: string
+          links: Json
+          privacy_text: string | null
+          tagline: string
+          terms_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand_name?: string
+          contact_email?: string | null
+          copyright_text?: string | null
+          created_at?: string
+          id?: string
+          links?: Json
+          privacy_text?: string | null
+          tagline?: string
+          terms_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand_name?: string
+          contact_email?: string | null
+          copyright_text?: string | null
+          created_at?: string
+          id?: string
+          links?: Json
+          privacy_text?: string | null
+          tagline?: string
+          terms_text?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mercadopago_transactions: {
         Row: {
           amount: number
