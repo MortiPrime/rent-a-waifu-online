@@ -75,6 +75,8 @@ function App() {
             <div className="App">
               <Routes>
                 <Route path="/" element={<Catalog />} />
+                <Route path="/catalog" element={<Catalog />} />
+
                 <Route path="/home" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route 
