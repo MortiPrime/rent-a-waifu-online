@@ -43,6 +43,7 @@ export const AdminUsersTable = ({ users, onDataChange }: Props) => {
   const [updating, setUpdating] = useState<string | null>(null);
   const [expiry, setExpiry] = useState<Record<string, string>>({});
   const [pendingAdmin, setPendingAdmin] = useState<AdminProfile | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<AdminProfile | null>(null);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
