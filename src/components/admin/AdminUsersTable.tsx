@@ -92,6 +92,23 @@ export const AdminUsersTable = ({ users, onDataChange }: Props) => {
     return patchProfile(user.id, { subscription_expires_at: new Date(value).toISOString() }, 'Fecha de vencimiento actualizada');
   };
 
+  const deleteUser = async (user: AdminProfile) => {
+    try {
+      setUpdating(user.id);
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId: user.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: 'Usuario eliminado', description: `${user.full_name || user.username || 'La cuenta'} fue eliminada permanentemente.` });
+      onDataChange();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'No se pudo eliminar el usuario', variant: 'destructive' });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   return (
     <Card className="surface-card">
       <CardHeader>
