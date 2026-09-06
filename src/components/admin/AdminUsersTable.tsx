@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { MoreHorizontal, Users } from 'lucide-react';
+import { MoreHorizontal, Trash2, Users } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import AdminToolbar from './AdminToolbar';
 import { PlanBadge, RoleBadge } from './AdminBadges';
@@ -43,6 +43,7 @@ export const AdminUsersTable = ({ users, onDataChange }: Props) => {
   const [updating, setUpdating] = useState<string | null>(null);
   const [expiry, setExpiry] = useState<Record<string, string>>({});
   const [pendingAdmin, setPendingAdmin] = useState<AdminProfile | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<AdminProfile | null>(null);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -89,6 +90,23 @@ export const AdminUsersTable = ({ users, onDataChange }: Props) => {
     if (!value) return;
     setExpiry((prev) => ({ ...prev, [user.id]: '' }));
     return patchProfile(user.id, { subscription_expires_at: new Date(value).toISOString() }, 'Fecha de vencimiento actualizada');
+  };
+
+  const deleteUser = async (user: AdminProfile) => {
+    try {
+      setUpdating(user.id);
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId: user.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: 'Usuario eliminado', description: `${user.full_name || user.username || 'La cuenta'} fue eliminada permanentemente.` });
+      onDataChange();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'No se pudo eliminar el usuario', variant: 'destructive' });
+    } finally {
+      setUpdating(null);
+    }
   };
 
   return (
@@ -215,6 +233,14 @@ export const AdminUsersTable = ({ users, onDataChange }: Props) => {
                               OK
                             </Button>
                           </div>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setPendingDelete(user)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar usuario
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -244,6 +270,30 @@ export const AdminUsersTable = ({ users, onDataChange }: Props) => {
               }}
             >
               Sí, hacer admin
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(open) => !open && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar esta cuenta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete?.full_name || pendingDelete?.username || 'Este usuario'} será eliminado permanentemente,
+              junto con su perfil y datos asociados. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (pendingDelete) deleteUser(pendingDelete);
+                setPendingDelete(null);
+              }}
+            >
+              Sí, eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
