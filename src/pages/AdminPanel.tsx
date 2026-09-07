@@ -11,6 +11,7 @@ import AdminPaymentProofs from '@/components/admin/AdminPaymentProofs';
 import AdminMercadoPagoTransactions from '@/components/admin/AdminMercadoPagoTransactions';
 import { AdminAnnouncements } from '@/components/admin/AdminAnnouncements';
 import AdminDonationSettings from '@/components/admin/AdminDonationSettings';
+import AdminFooterSettings from '@/components/admin/AdminFooterSettings';
 
 const tabTrigger =
   'data-[state=active]:bg-surface/15 data-[state=active]:text-surface-foreground text-surface-foreground/70 rounded-md px-3 py-2 text-sm transition-colors';
@@ -82,12 +83,16 @@ const AdminPanel = () => {
               <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 border border-surface-border/20 bg-surface/5 p-1">
                 <TabsTrigger value="announcements" className={tabTrigger}>Anuncios</TabsTrigger>
                 <TabsTrigger value="donations" className={tabTrigger}>Donaciones</TabsTrigger>
+                <TabsTrigger value="footer" className={tabTrigger}>Pie de página</TabsTrigger>
               </TabsList>
               <TabsContent value="announcements">
                 <AdminAnnouncements />
               </TabsContent>
               <TabsContent value="donations">
                 <AdminDonationSettings />
+              </TabsContent>
+              <TabsContent value="footer">
+                <AdminFooterSettings />
               </TabsContent>
             </Tabs>
           </TabsContent>
