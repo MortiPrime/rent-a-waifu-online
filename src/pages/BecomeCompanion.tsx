@@ -214,58 +214,47 @@ const BecomeCompanion = () => {
             </Card>
           </div>
 
-          {/* Pricing Plans */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-playfair font-bold text-white text-center mb-8">
-              Planes de Promoción
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:border-white/30 transition-all duration-300">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white">Básico</CardTitle>
-                  <div className="text-3xl font-bold text-pink-400">$99<span className="text-lg text-gray-400">/mes</span></div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Perfil visible en búsquedas</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Hasta 5 fotos</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Chat básico</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Soporte estándar</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/10 backdrop-blur-md border-2 border-pink-500 relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-600 p-2 text-center">
-                  <Badge className="bg-white text-pink-600 font-semibold">Más Popular</Badge>
-                </div>
-                <CardHeader className="text-center pt-12">
-                  <CardTitle className="text-white">Premium</CardTitle>
-                  <div className="text-3xl font-bold text-pink-400">$199<span className="text-lg text-gray-400">/mes</span></div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Todo del plan Básico</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Hasta 15 fotos</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Prioridad en búsquedas</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Video llamadas</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Soporte prioritario</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:border-yellow-500/50 transition-all duration-300">
-                <CardHeader className="text-center">
-                  <Crown className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                  <CardTitle className="text-white">VIP</CardTitle>
-                  <div className="text-3xl font-bold text-pink-400">$399<span className="text-lg text-gray-400">/mes</span></div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Todo del plan Premium</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Fotos ilimitadas</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Destacado especial</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Manager personal</div>
-                  <div className="text-gray-300 flex items-center"><CheckCircle className="w-4 h-4 text-green-400 mr-2" />Comisiones reducidas</div>
-                </CardContent>
-              </Card>
+          {/* Pricing Plans — visible solo si el admin la activa */}
+          {plansVisible && promotionPlans.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-3xl font-playfair font-bold text-white text-center mb-8">
+                {plansTitle}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {promotionPlans.map((plan) => (
+                  <Card
+                    key={plan.id}
+                    className={
+                      plan.popular
+                        ? 'bg-white/10 backdrop-blur-md border-2 border-pink-500 relative overflow-hidden'
+                        : 'bg-white/10 backdrop-blur-md border-white/20 hover:border-white/30 transition-all duration-300'
+                    }
+                  >
+                    {plan.popular && (
+                      <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-pink-500 to-purple-600 p-2 text-center">
+                        <Badge className="bg-white text-pink-600 font-semibold">Más Popular</Badge>
+                      </div>
+                    )}
+                    <CardHeader className={plan.popular ? 'text-center pt-12' : 'text-center'}>
+                      {plan.id === 'vip' && <Crown className="w-8 h-8 text-yellow-500 mx-auto mb-2" />}
+                      <CardTitle className="text-white">{plan.name}</CardTitle>
+                      <div className="text-3xl font-bold text-pink-400">
+                        ${plan.price}<span className="text-lg text-gray-400">/mes</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {plan.features.map((feature, i) => (
+                        <div key={i} className="text-gray-300 flex items-center">
+                          <CheckCircle className="w-4 h-4 text-green-400 mr-2" />
+                          {feature}
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Requirements */}
           <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">
