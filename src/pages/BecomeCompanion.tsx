@@ -8,12 +8,43 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, Star, DollarSign, Shield, Users, Crown, Phone, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import CompanionProfileForm from '@/components/CompanionProfileForm';
+import { supabase } from '@/integrations/supabase/client';
+
+interface PromotionPlan {
+  id: string;
+  name: string;
+  price: number;
+  popular: boolean;
+  features: string[];
+}
 
 const BecomeCompanion = () => {
   const { user, profile, isGirlfriend } = useAuth();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [plansVisible, setPlansVisible] = useState(false);
+  const [plansTitle, setPlansTitle] = useState('Planes de Promoción');
+  const [promotionPlans, setPromotionPlans] = useState<PromotionPlan[]>([]);
+
+  // Cargar configuración de planes de promoción (visible solo si el admin la activa)
+  useEffect(() => {
+    const loadPlans = async () => {
+      const { data } = await supabase
+        .from('promotion_plans_settings')
+        .select('is_visible, title, plans')
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (data?.is_visible) {
+        setPlansVisible(true);
+        setPlansTitle(data.title || 'Planes de Promoción');
+        setPromotionPlans(Array.isArray(data.plans) ? (data.plans as unknown as PromotionPlan[]) : []);
+      }
+    };
+    loadPlans();
+  }, []);
 
   // Verificar si el usuario es companion y mostrar formulario automáticamente
   useEffect(() => {
