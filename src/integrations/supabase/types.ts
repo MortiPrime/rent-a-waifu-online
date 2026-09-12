@@ -566,6 +566,33 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_plans_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_visible: boolean
+          plans: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          plans?: Json
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          plans?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null

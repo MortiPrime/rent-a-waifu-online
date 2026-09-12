@@ -12,6 +12,7 @@ import AdminMercadoPagoTransactions from '@/components/admin/AdminMercadoPagoTra
 import { AdminAnnouncements } from '@/components/admin/AdminAnnouncements';
 import AdminDonationSettings from '@/components/admin/AdminDonationSettings';
 import AdminFooterSettings from '@/components/admin/AdminFooterSettings';
+import AdminPromotionPlansSettings from '@/components/admin/AdminPromotionPlansSettings';
 
 const tabTrigger =
   'data-[state=active]:bg-surface/15 data-[state=active]:text-surface-foreground text-surface-foreground/70 rounded-md px-3 py-2 text-sm transition-colors';
@@ -84,6 +85,7 @@ const AdminPanel = () => {
                 <TabsTrigger value="announcements" className={tabTrigger}>Anuncios</TabsTrigger>
                 <TabsTrigger value="donations" className={tabTrigger}>Donaciones</TabsTrigger>
                 <TabsTrigger value="footer" className={tabTrigger}>Pie de página</TabsTrigger>
+                <TabsTrigger value="promotion-plans" className={tabTrigger}>Planes de promoción</TabsTrigger>
               </TabsList>
               <TabsContent value="announcements">
                 <AdminAnnouncements />
@@ -93,6 +95,9 @@ const AdminPanel = () => {
               </TabsContent>
               <TabsContent value="footer">
                 <AdminFooterSettings />
+              </TabsContent>
+              <TabsContent value="promotion-plans">
+                <AdminPromotionPlansSettings />
               </TabsContent>
             </Tabs>
           </TabsContent>
