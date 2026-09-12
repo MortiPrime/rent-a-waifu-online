@@ -85,6 +85,7 @@ const AdminPanel = () => {
                 <TabsTrigger value="announcements" className={tabTrigger}>Anuncios</TabsTrigger>
                 <TabsTrigger value="donations" className={tabTrigger}>Donaciones</TabsTrigger>
                 <TabsTrigger value="footer" className={tabTrigger}>Pie de página</TabsTrigger>
+                <TabsTrigger value="promotion-plans" className={tabTrigger}>Planes de promoción</TabsTrigger>
               </TabsList>
               <TabsContent value="announcements">
                 <AdminAnnouncements />
@@ -94,6 +95,9 @@ const AdminPanel = () => {
               </TabsContent>
               <TabsContent value="footer">
                 <AdminFooterSettings />
+              </TabsContent>
+              <TabsContent value="promotion-plans">
+                <AdminPromotionPlansSettings />
               </TabsContent>
             </Tabs>
           </TabsContent>
