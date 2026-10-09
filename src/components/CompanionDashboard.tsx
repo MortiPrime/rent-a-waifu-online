@@ -10,6 +10,8 @@ import { AlertCircle, User, Users, MessageCircle, DollarSign, Star, Crown, Setti
 import CompanionChatHistory from './CompanionChatHistory';
 import CompanionPhotosManager from './CompanionPhotosManager';
 import CompanionRulesManager from './CompanionRulesManager';
+import CompanionServicesManager from './social/CompanionServicesManager';
+import ProfileWall from './social/ProfileWall';
 
 interface Stats {
   totalClients: number;
@@ -230,6 +232,16 @@ const CompanionDashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          <CompanionServicesManager />
+
+          {user && (
+            <Card className="surface-card">
+              <CardContent className="p-6">
+                <ProfileWall ownerId={user.id} ownerName={profileData?.stage_name || 'Yo'} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Historial de chats */}
           <CompanionChatHistory />

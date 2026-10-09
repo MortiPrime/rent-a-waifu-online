@@ -8,6 +8,13 @@
       "when": 1789178894799,
       "tag": "0000_create_promotion_plans_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791585319390,
+      "tag": "0001_social_services_wall_messages",
+      "breakpoints": true
     }
   ]
 }

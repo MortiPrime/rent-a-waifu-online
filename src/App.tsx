@@ -14,6 +14,7 @@ import Subscription from '@/pages/Subscription';
 import AdminPanel from '@/pages/AdminPanel';
 import Donations from '@/pages/Donations';
 import NotFound from '@/pages/NotFound';
+import Messages from '@/pages/Messages';
 import { Component, ErrorInfo, ReactNode } from 'react';
 import './App.css';
 
@@ -106,6 +107,7 @@ function App() {
                   } 
                 />
                 <Route path="/donations" element={<Donations />} />
+                <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <Toaster />

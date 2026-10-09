@@ -338,6 +338,45 @@ export type Database = {
           },
         ]
       }
+      companion_services: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          price: number
+          price_unit: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          price?: number
+          price_unit?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          price?: number
+          price_unit?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           character_id: number
@@ -365,6 +404,74 @@ export type Database = {
           last_message_at?: string | null
           messages?: Json | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      dm_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "dm_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_threads: {
+        Row: {
+          client_id: string
+          client_name: string | null
+          companion_id: string
+          companion_name: string | null
+          created_at: string
+          id: string
+          last_message: string | null
+          last_message_at: string
+        }
+        Insert: {
+          client_id: string
+          client_name?: string | null
+          companion_id: string
+          companion_name?: string | null
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
+        }
+        Update: {
+          client_id?: string
+          client_name?: string | null
+          companion_id?: string
+          companion_name?: string | null
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string
         }
         Relationships: []
       }
@@ -723,6 +830,44 @@ export type Database = {
         }
         Relationships: []
       }
+      wall_posts: {
+        Row: {
+          author_id: string
+          author_name: string | null
+          content: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          wall_owner_id: string
+        }
+        Insert: {
+          author_id: string
+          author_name?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          wall_owner_id: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          wall_owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wall_posts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "wall_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -733,6 +878,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_thread_participant: {
+        Args: { _thread: string; _user: string }
         Returns: boolean
       }
     }
