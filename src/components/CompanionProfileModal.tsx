@@ -6,6 +6,11 @@ import { MapPin, Crown, Star, DollarSign, Heart, ChevronLeft, ChevronRight, X, P
 import { CompanionListingWithPhotos } from '@/hooks/useCompanionListings';
 import { useFavorites } from '@/hooks/useFavorites';
 import ReviewSection from '@/components/reviews/ReviewSection';
+import CompanionServicesList from '@/components/social/CompanionServicesList';
+import ProfileWall from '@/components/social/ProfileWall';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { MessageCircle } from 'lucide-react';
 
 interface CompanionProfileModalProps {
   companion: CompanionListingWithPhotos | null;
@@ -18,6 +23,8 @@ const CompanionProfileModal = ({ companion, open, onOpenChange, canSeeContact }:
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [fullscreenPhoto, setFullscreenPhoto] = useState(false);
   const { isFavorite, toggleFavorite } = useFavorites();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const photos = companion?.photos || [];
   const hasPhotos = photos.length > 0;
@@ -220,24 +227,19 @@ const CompanionProfileModal = ({ companion, open, onOpenChange, canSeeContact }:
                   <p className="text-sm leading-relaxed text-surface-foreground/75">{companion.description}</p>
                 </section>
 
-                {companion.pricing && (
-                  <section className="rounded-lg bg-surface/5 p-4">
-                    <h4 className="mb-3 flex items-center gap-2 font-semibold">
-                      <DollarSign className="h-4 w-4" />Precios
-                    </h4>
-                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                      {[
-                        ['Chat Básico', (companion.pricing as any).basic_chat],
-                        ['Chat Premium', (companion.pricing as any).premium_chat],
-                        ['Video Llamada', (companion.pricing as any).video_call],
-                      ].map(([label, price]) => (
-                        <div key={label as string} className="rounded-md bg-surface/5 p-2">
-                          <p className="text-xs text-surface-foreground/55">{label}</p>
-                          <p className="font-semibold">${price} MXN</p>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
+                <CompanionServicesList
+                  companionUserId={companion.user_id}
+                  companionName={companion.stage_name}
+                  canMessage={!!user && user.id !== companion.user_id}
+                />
+
+                {user && user.id !== companion.user_id && (
+                  <Button
+                    className="brand-button w-full"
+                    onClick={() => navigate(`/messages?to=${companion.user_id}&name=${encodeURIComponent(companion.stage_name)}`)}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />Enviar mensaje privado
+                  </Button>
                 )}
 
                 <section>
@@ -273,6 +275,8 @@ const CompanionProfileModal = ({ companion, open, onOpenChange, canSeeContact }:
                     </Button>
                   </div>
                 )}
+
+                <ProfileWall ownerId={companion.user_id} ownerName={companion.stage_name} />
 
                 <ReviewSection companionListingId={companion.id} />
               </div>

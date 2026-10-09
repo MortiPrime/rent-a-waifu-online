@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Heart, Menu, X, User, LogOut, Crown, Settings, Home, Gift, Star } from 'lucide-react';
+import { Heart, Menu, X, User, LogOut, Crown, Settings, Home, Gift, Star, MessageCircle } from 'lucide-react';
 
 const Navbar = () => {
   const { user, signOut, isGirlfriend, isAdmin } = useAuth();
@@ -76,6 +76,7 @@ const Navbar = () => {
             {user ? (
               <>
                 <Link to="/profile" className={linkClass('/profile')}>Mi Perfil</Link>
+                <Link to="/messages" className={linkClass('/messages')}>Mensajes</Link>
                 {!isGirlfriend && (
                   <Link to="/subscription" className={linkClass('/subscription')}>Planes</Link>
                 )}
@@ -134,6 +135,9 @@ const Navbar = () => {
                 <>
                   <Link to="/profile" className={mobileLinkClass('/profile')}>
                     <User className="h-4 w-4" />Mi Perfil
+                  </Link>
+                  <Link to="/messages" className={mobileLinkClass('/messages')}>
+                    <MessageCircle className="h-4 w-4" />Mensajes
                   </Link>
                   {!isGirlfriend && (
                     <Link to="/subscription" className={mobileLinkClass('/subscription')}>
